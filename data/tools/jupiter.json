@@ -1,0 +1,96 @@
+{
+  "id": "jupiter",
+  "name": "Jupiter",
+  "aliases": ["jup-ag", "@jup-ag/core", "@jup-ag/api", "jup"],
+  "category": "defi-protocol",
+  "subcategory": "dex",
+  "description": "The dominant Solana DEX aggregator and trade execution platform. Provides optimal swap routing across Solana liquidity sources, plus limit orders, DCA automation, perpetuals, and a lending market. The default execution layer for Solana trading agents.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "The canonical token swap aggregator for Solana. Agents that execute trades on Solana route through Jupiter." },
+    { "ecosystem": "base", "strength": "none" },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "token-swap-aggregation",
+    "optimal-routing",
+    "limit-order-execution",
+    "dca-automation",
+    "perpetuals-trading",
+    "lending-and-borrowing",
+    "swap-api",
+    "ultra-mode-swaps"
+  ],
+  "workflow_positions": ["execution-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius provides onchain data and event triggers; Jupiter executes the resulting trade decisions.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "jito-mev",
+      "relationship": "often-used-with",
+      "context": "Jupiter for routing/pricing, Jito for MEV-protected bundle submission of the resulting transactions."
+    },
+    {
+      "tool_id": "birdeye",
+      "relationship": "often-used-with",
+      "context": "Birdeye for market data signals, Jupiter for executing the resulting trades."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Jupiter is the dominant DEX aggregator on Solana. Confirmed by official skill availability from the Jupiter team and appearance in sendaifun community skills.",
+      "verifiable": true,
+      "source_url": "https://github.com/jup-ag/agent-skills/tree/35f50e9f00288cfddbbecc31c9e97d036df8541a/skills/integrating-jupiter"
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Jupiter appears in every Solana trading agent workflow pattern in the corpus as the default execution layer.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Jupiter maintains an official agent skill with Ultra swaps, limit orders, DCA, perpetuals, and lending coverage.",
+      "verifiable": true,
+      "source_url": "https://github.com/jup-ag/agent-skills"
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@jup-ag/core", "@jup-ag/api", "@jup-ag/react-hook"]
+  },
+  "skill_refs": ["jupiter-skill-official"],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Use Jupiter API (REST) — simplest integration, no SDK setup required.",
+    "mvp": "Jupiter API for swaps. Add limit orders if product requires it.",
+    "production": "Use Jupiter API with retry logic. Consider Ultra mode for MEV protection at higher volumes."
+  },
+  "alternatives": [
+    {
+      "tool_id": "raydium",
+      "when_to_prefer": "When direct AMM interaction is needed (liquidity provision, specific pool management). Jupiter routes through Raydium but Raydium SDK is needed for LP operations.",
+      "ecosystem_context": "Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using Jupiter for non-Solana chains — Jupiter is Solana-only.",
+    "Not implementing slippage protection when using Jupiter in automated agent contexts.",
+    "Skipping simulation before executing live Jupiter swaps in autonomous agents."
+  ],
+  "retrieval_tags": ["solana-dex", "swap-aggregation", "limit-orders", "dca", "solana-trading", "token-swap"],
+  "source": {
+    "primary_url": "https://jup.ag",
+    "docs_url": "https://dev.jup.ag",
+    "github_url": "https://github.com/jup-ag"
+  },
+  "updated_at": "2026-05-13"
+}

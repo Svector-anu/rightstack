@@ -1,0 +1,120 @@
+{
+  "id": "neynar",
+  "name": "Neynar",
+  "aliases": ["@neynar/nodejs-sdk", "neynar-sdk"],
+  "category": "social-layer",
+  "description": "The dominant commercial API for Farcaster social data — feeds, casts, users, social graph, notifications, and webhooks. Abstracts direct Farcaster Hub access behind a reliable, rate-limited REST and SDK interface.",
+  "ecosystem_fit": [
+    { "ecosystem": "farcaster", "strength": "dominant", "notes": "The default Farcaster data layer. Appears in the majority of production Farcaster miniapps and social apps." },
+    { "ecosystem": "base", "strength": "limited", "notes": "Relevant only when Base apps have Farcaster social features." },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "cast-api",
+    "farcaster-social-graph",
+    "user-search",
+    "feed-api",
+    "notification-webhooks",
+    "fid-lookup",
+    "hub-abstraction",
+    "cast-reactions",
+    "channel-data",
+    "frame-validation",
+    "miniapp-context"
+  ],
+  "workflow_positions": ["social-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "privy",
+      "relationship": "often-used-with",
+      "context": "Neynar provides the Farcaster social context (FID, custody address, social graph); Privy creates the embedded wallet for that Farcaster user.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "onchainkit",
+      "relationship": "often-used-with",
+      "context": "Neynar for Farcaster social data and cast operations; OnchainKit for the Base-native UI components and frame rendering.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "farcaster-frames-sdk",
+      "relationship": "complements",
+      "context": "Neynar handles social data reads and writes (casts, reactions, follows); Farcaster Frames SDK handles frame rendering and message validation."
+    },
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "often-used-with",
+      "context": "Neynar webhooks trigger AI agent logic; Neynar cast APIs allow agents to post replies. The canonical Farcaster social AI agent pairing.",
+      "workflow_ref": "farcaster-social-ai-agent"
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Neynar webhooks deliver Farcaster events; Trigger.dev provides durable execution for the agent logic triggered by those webhooks."
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Neynar for Farcaster social layer; Alchemy for Base chain data. Used together in Farcaster miniapps that interact with Base."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Neynar is the dominant commercial Farcaster API. Appears in the majority of production Farcaster miniapps and social applications.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Neynar + Privy + Base is the most consistently cited Farcaster miniapp production stack across WORKFLOWS.md and corpus analysis.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Neynar maintains an active @neynar/nodejs-sdk with typed APIs, webhook infrastructure, and comprehensive Farcaster protocol coverage.",
+      "source_url": "https://docs.neynar.com",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Integrated by or paired with: Privy, OnchainKit, Vercel AI SDK, Trigger.dev — high integration density across Farcaster production stacks.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@neynar/nodejs-sdk", "@neynar/react"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["farcaster-consumer-onboarding", "farcaster-social-ai-agent"],
+  "scale_guidance": {
+    "hackathon": "Use the free tier API key. Neynar free tier is sufficient for development and hackathon use.",
+    "mvp": "Paid tier required for production. Set up cost monitoring early — Neynar pricing scales with API requests.",
+    "production": "Plan Neynar tier based on DAU and social action frequency. At very high scale (>100k DAU), evaluate direct Farcaster Hub access for the highest-volume queries while keeping Neynar for lower-volume features."
+  },
+  "alternatives": [
+    {
+      "tool_id": "farcaster-hub-direct",
+      "when_to_prefer": "When Neynar pricing becomes unsustainable at high volume. Direct Hub access requires operating your own Farcaster Hub node or using a free hub endpoint. Significant operational complexity tradeoff.",
+      "ecosystem_context": "Farcaster only."
+    }
+  ],
+  "anti_patterns": [
+    "Building Farcaster apps without Neynar at MVP scale — direct Hub access is operationally complex and not worth it until Neynar pricing is a confirmed bottleneck.",
+    "Using Neynar for non-Farcaster social data — Neynar is Farcaster-specific.",
+    "Not setting up Neynar webhooks for event-driven apps — polling Neynar APIs instead of using webhooks adds latency and wastes API quota."
+  ],
+  "retrieval_tags": ["farcaster-api", "social-graph", "cast-data", "farcaster-hub", "social-layer", "farcaster-webhooks", "farcaster-miniapp"],
+  "source": {
+    "primary_url": "https://neynar.com",
+    "docs_url": "https://docs.neynar.com",
+    "github_url": "https://github.com/neynarxyz/nodejs-sdk"
+  },
+  "updated_at": "2026-05-13"
+}

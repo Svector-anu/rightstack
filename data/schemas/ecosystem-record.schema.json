@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/EcosystemRecord.json",
+  "title": "EcosystemRecord",
+  "description": "A normalized record for a blockchain ecosystem or social layer. Encodes the AI-readiness, tooling philosophy, and current state of the ecosystem as a reasoning context.",
+  "type": "object",
+  "required": ["id", "name", "type", "trust_state", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["l1", "l2", "social-layer", "defi-protocol", "general"],
+      "description": "Architectural classification. L2 chains are differentiated from L1 because tooling assumptions differ (bridging, fee structure, deployment constraints)."
+    },
+    "chain_ids": {
+      "type": "object",
+      "description": "EVM chain IDs where applicable.",
+      "properties": {
+        "mainnet": { "type": "integer" },
+        "testnet": { "type": "integer" }
+      }
+    },
+    "skill_install": {
+      "type": "string",
+      "description": "Primary command to install the official ecosystem skill pack."
+    },
+    "docs_ai_access": {
+      "type": "object",
+      "description": "AI-specific documentation access points. Populated only with confirmed endpoints — do not guess.",
+      "properties": {
+        "llms_txt": {
+          "type": ["string", "null"],
+          "description": "URL of llms.txt if ecosystem has implemented the standard."
+        },
+        "llms_full_txt": {
+          "type": ["string", "null"],
+          "description": "URL of llms-full.txt (full content dump)."
+        },
+        "mcp_server": {
+          "type": ["string", "null"],
+          "description": "MCP server URL if live endpoint exists."
+        },
+        "mcp_install_command": {
+          "type": ["string", "null"]
+        },
+        "resources_for_agents": {
+          "type": ["string", "null"],
+          "description": "Dedicated documentation page for AI agents (not human developers)."
+        }
+      }
+    },
+    "official_skill_count": {
+      "type": ["integer", "null"],
+      "description": "Number of official (foundation/team-maintained) skills available."
+    },
+    "community_skill_count": {
+      "type": ["integer", "null"],
+      "description": "Number of community-maintained skills available. Rough estimate is acceptable."
+    },
+    "community_hub": {
+      "type": ["string", "null"],
+      "description": "Primary community skill aggregation point. e.g. 'sendaifun/skills' for Solana."
+    },
+    "dominant_workflows": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "WorkflowRecord IDs that represent the primary use cases in this ecosystem."
+    },
+    "sdk_migration": {
+      "type": "object",
+      "description": "Active SDK migration state. Critical for freshness — skills referencing deprecated SDKs are wrong.",
+      "properties": {
+        "active": { "type": "boolean" },
+        "from_package": { "type": "string" },
+        "to_package": { "type": "string" },
+        "migration_skill_ref": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "philosophy": {
+      "type": "string",
+      "description": "One-sentence description of the ecosystem's operational philosophy. Used in cross-ecosystem recommendation reasoning."
+    },
+    "agent_assumptions": {
+      "type": "string",
+      "description": "How this ecosystem assumes AI agents will interact with it. e.g. 'Agents interface directly with protocols — no abstraction layer assumed.'"
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["production-grade", "emerging", "experimental", "abandoned", "hype-driven"]
+    },
+    "orchestration_maturity": {
+      "type": "string",
+      "enum": ["none", "low", "medium", "high"],
+      "description": "How mature the orchestration tooling is in this ecosystem. Informs whether multi-step agent workflows are production-ready."
+    },
+    "security_maturity": {
+      "type": "string",
+      "enum": ["none", "low", "medium", "high"],
+      "description": "How mature the security tooling and culture is."
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    }
+  }
+}

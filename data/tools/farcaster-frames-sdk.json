@@ -1,0 +1,134 @@
+{
+  "id": "farcaster-frames-sdk",
+  "name": "Farcaster Frames SDK",
+  "aliases": [
+    "@farcaster/frame-sdk",
+    "@farcaster/frames-client",
+    "farcaster-frames-client",
+    "frames.js",
+    "@frames.js/next",
+    "frog"
+  ],
+  "category": "social-layer",
+  "subcategory": "frame-sdk",
+  "description": "The official SDK for building Farcaster MiniApps (formerly Frames v2). Provides client-side APIs for accessing Farcaster context (FID, custody address, cast hash), triggering wallet transactions from within a Frame, and communicating with the embedding Farcaster client.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "farcaster",
+      "strength": "dominant",
+      "notes": "The only SDK for building Farcaster-native MiniApps. Every Frame/MiniApp that needs Farcaster context (FID, wallet, cast hash) uses this SDK."
+    },
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "Farcaster MiniApps deploy on Base. Most miniapp onchain actions execute on Base — the Frames SDK provides the wallet bridge to Base transactions."
+    },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "ethereum", "strength": "limited", "notes": "Frames can trigger Ethereum mainnet transactions, but Base is the dominant choice for Farcaster miniapps." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "farcaster-context-access",
+    "fid-retrieval",
+    "cast-hash-access",
+    "wallet-transaction-triggering",
+    "frame-ready-signaling",
+    "farcaster-client-communication",
+    "miniapp-lifecycle-management",
+    "social-auth-context",
+    "farcaster-user-identity"
+  ],
+  "workflow_positions": ["ui-layer", "social-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "neynar",
+      "relationship": "complements",
+      "context": "Farcaster Frames SDK provides the client-side Farcaster context (FID, cast hash). Neynar provides the server-side social graph enrichment (user profile, follow graph, cast metadata). In a MiniApp, both are standard: Frames SDK for client state, Neynar for server-side social data.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "complements",
+      "context": "Frames SDK exposes the Farcaster custody address; Privy creates or retrieves the embedded wallet linked to that identity. Use Privy's miniapp-specific configuration — the standard @privy-io/react-auth SDK has rendering issues inside Farcaster Frames.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "onchainkit",
+      "relationship": "complements",
+      "context": "OnchainKit provides the wallet UI components (wallet button, transaction button); Frames SDK provides the Farcaster context that lets OnchainKit know who the user is and what wallet they have.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Alchemy provides the RPC layer for reading Base chain state within a MiniApp (balances, NFTs, transaction status)."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "The official Farcaster-maintained SDK for MiniApps. All production Farcaster MiniApps that access Farcaster context use this SDK.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "Actively maintained by the Farcaster core team. V2 MiniApps spec represents a significant evolution from v1 Frames — the SDK reflects the current protocol standard.",
+      "source_url": "https://docs.farcaster.xyz/developers/frames/v2",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Official Farcaster developer documentation covers the SDK API, MiniApp lifecycle, and wallet interaction patterns.",
+      "source_url": "https://docs.farcaster.xyz",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@farcaster/frame-sdk",
+      "@farcaster/frames-client",
+      "frames.js",
+      "@frames.js/next",
+      "frog",
+      "@coinbase/onchainkit"
+    ]
+  },
+  "sdk_migration": {
+    "status": "migrating-from",
+    "from_package": "@farcaster/frames-client",
+    "to_package": "@farcaster/frame-sdk",
+    "notes": "v1 Frames used @farcaster/frames-client for server-side frame handling. v2 MiniApps use @farcaster/frame-sdk for client-side context access. These are architecturally different — v1 frames are stateless OpenGraph-based; v2 MiniApps are stateful client applications. A repo using @farcaster/frames-client is building a v1 Frame and should migrate to v2 MiniApps for richer functionality. Additionally, third-party frame builder SDKs (frames.js, frog) are community alternatives to the official SDK — they use different patterns and should be detected separately."
+  },
+  "skill_refs": [],
+  "workflow_refs": ["farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Use @farcaster/frame-sdk directly. For rapid frame creation, frames.js or frog provide higher-level abstractions with less boilerplate.",
+    "mvp": "Use the official @farcaster/frame-sdk for production-quality MiniApps. Third-party abstractions (frames.js, frog) introduce additional dependency risk.",
+    "production": "Pin the @farcaster/frame-sdk version explicitly — the Farcaster protocol is evolving and breaking changes have occurred between minor versions. Monitor Farcaster developer Discord for SDK updates."
+  },
+  "alternatives": [
+    {
+      "tool_id": "neynar",
+      "when_to_prefer": "Not a direct alternative — Neynar is server-side social data, Frames SDK is client-side context. Use both together in production MiniApps.",
+      "ecosystem_context": "Farcaster."
+    }
+  ],
+  "anti_patterns": [
+    "Using @privy-io/react-auth (standard Privy SDK) inside a Farcaster Frame without miniapp-specific configuration — the standard SDK has rendering issues in the embedded Frame context. Use Privy's miniapp mode or the @privy-io/expo package for Frame environments.",
+    "Building v1 Frames (@farcaster/frames-client) for new projects — v2 MiniApps provide a dramatically better user experience with client-side state, wallet interactions, and full React app capabilities.",
+    "Accessing Farcaster context via Neynar only without the Frames SDK — Neynar provides server-side data enrichment, not the client-side context (FID, cast hash, wallet address) that Frames SDK exposes at runtime.",
+    "Not calling sdk.actions.ready() after the Frame renders — without this signal, the Farcaster client shows a loading state indefinitely.",
+    "Treating frames.js or frog as equivalent to the official SDK — they add useful abstractions but introduce additional abstraction layers and update lag relative to the official protocol spec."
+  ],
+  "retrieval_tags": ["farcaster-frame", "miniapp", "frame-sdk", "farcaster-miniapp", "v2-frames", "farcaster-wallet", "social-miniapp", "farcaster-client"],
+  "source": {
+    "primary_url": "https://docs.farcaster.xyz/developers/frames/v2",
+    "docs_url": "https://docs.farcaster.xyz",
+    "github_url": "https://github.com/farcasterxyz/frames"
+  },
+  "updated_at": "2026-05-14"
+}

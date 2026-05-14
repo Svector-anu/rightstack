@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/QueryIntent.json",
+  "title": "QueryIntent",
+  "description": "Structured decomposition of a raw developer query. Output of Stage 1 (intent extraction) in the RightStack retrieval pipeline. The retrieval system operates on this object, not the raw query string.",
+  "type": "object",
+  "required": ["raw_query", "build_goal", "intent_categories", "confidence"],
+  "properties": {
+    "raw_query": {
+      "type": "string",
+      "description": "The original unmodified query string."
+    },
+    "build_goal": {
+      "type": "string",
+      "description": "Canonical single-sentence description of what the builder wants to accomplish, normalized from raw_query. Used for workflow matching."
+    },
+    "primary_ecosystem": {
+      "type": ["string", "null"],
+      "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general", null],
+      "description": "The primary blockchain/social layer the builder is targeting. null means not specified — a clarifying question should be generated if confidence is also low."
+    },
+    "secondary_ecosystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general"]
+      },
+      "description": "Additional ecosystems in scope (cross-chain queries). Empty array if only one ecosystem in scope."
+    },
+    "scale": {
+      "type": ["string", "null"],
+      "enum": ["hackathon", "mvp", "production", null],
+      "description": "Builder's scale target. null means not specified — default to mvp if not determinable."
+    },
+    "user_type": {
+      "type": ["string", "null"],
+      "enum": ["vibe-coder", "advanced-builder", "ai-agent", null],
+      "description": "Inferred user type based on query signals. Affects recommendation depth and tradeoff presentation."
+    },
+    "intent_categories": {
+      "type": "array",
+      "description": "V2 ontology categories relevant to this query. Ordered by relevance (most relevant first). Used for category-level retrieval filtering — only tools in these categories are candidates.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "wallet-infrastructure",
+          "account-abstraction",
+          "chain-data",
+          "market-data",
+          "defi-protocol",
+          "execution",
+          "agent-framework",
+          "workflow-orchestration",
+          "social-layer",
+          "frontend-sdk",
+          "developer-tooling",
+          "security-tooling",
+          "storage",
+          "identity",
+          "context-protocol"
+        ]
+      },
+      "minItems": 1
+    },
+    "workflow_match": {
+      "type": ["string", "null"],
+      "description": "ID of the best-matching WorkflowRecord from the workflow corpus. null if no confident match — fall back to category-based retrieval."
+    },
+    "workflow_match_confidence": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence that workflow_match is the correct workflow. Below 0.6: present multiple workflow candidates to the user."
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Extracted constraint signals from the query. Each constraint narrows the tool candidate set or adjusts scoring.",
+      "properties": {
+        "gasless_required": {
+          "type": ["boolean", "null"],
+          "description": "Builder explicitly needs gasless UX for users. Routes to account-abstraction category."
+        },
+        "no_existing_wallet": {
+          "type": ["boolean", "null"],
+          "description": "Target users have no existing wallet. Routes to wallet-infrastructure subcategory=embedded."
+        },
+        "has_existing_wallet": {
+          "type": ["boolean", "null"],
+          "description": "Target users have existing wallets (MetaMask etc). Routes to wallet-infrastructure subcategory=external-connection."
+        },
+        "autonomous_agent": {
+          "type": ["boolean", "null"],
+          "description": "Agent operates without user interaction. Routes to wallet-infrastructure subcategory=server-side + agent-framework."
+        },
+        "python_only": {
+          "type": ["boolean", "null"],
+          "description": "Builder requires Python. Affects agent-framework recommendations (LangChain over Vercel AI SDK)."
+        },
+        "high_frequency_execution": {
+          "type": ["boolean", "null"],
+          "description": "High-frequency trade or action execution. Routes to execution category, boosts Jito on Solana."
+        },
+        "mev_sensitive": {
+          "type": ["boolean", "null"],
+          "description": "Trade or action execution is sensitive to MEV. Hard requirement for execution category tool."
+        },
+        "cross_chain": {
+          "type": ["boolean", "null"],
+          "description": "App needs to function on multiple chains. Affects ecosystem weighting — multi-chain tools score higher."
+        },
+        "hackathon_timeline": {
+          "type": ["boolean", "null"],
+          "description": "Builder needs to ship within hours or days. Applies hackathon scale modifiers from WorkflowRecord.constraint_modifiers."
+        },
+        "social_features_required": {
+          "type": ["boolean", "null"],
+          "description": "App needs Farcaster social data or social interactions. Routes to social-layer category."
+        },
+        "ai_reasoning_required": {
+          "type": ["boolean", "null"],
+          "description": "App includes AI agent reasoning or LLM integration. Routes to agent-framework category."
+        },
+        "hybrid_wallet": {
+          "type": ["boolean", "null"],
+          "description": "App must support BOTH users with existing wallets AND users without wallets in a single flow. Routes to wallet-infrastructure tools that span both embedded and external-connection subcategories (e.g., Dynamic). Prevents false constraint contradiction when has_existing_wallet and no_existing_wallet are both true."
+        }
+      }
+    },
+    "ambiguity_flags": {
+      "type": "array",
+      "description": "Identified ambiguities in the query that may require clarification before high-confidence retrieval. If any flag is present and confidence < 0.7, generate a clarifying question.",
+      "items": {
+        "type": "object",
+        "required": ["field", "issue"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Which QueryIntent field is ambiguous."
+          },
+          "issue": {
+            "type": "string",
+            "description": "Description of the ambiguity."
+          },
+          "resolution_options": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Possible interpretations to present to the builder."
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence in the intent extraction. Below 0.65: generate a clarifying question before retrieval. 0.65-0.80: proceed with retrieval, note assumption. Above 0.80: proceed with full confidence."
+    },
+    "repo_context": {
+      "type": ["object", "null"],
+      "description": "If a repo was analyzed, detected context that supplements the query. null if no repo provided.",
+      "properties": {
+        "detected_ecosystem": {
+          "type": ["string", "null"],
+          "description": "Ecosystem detected from repo dependencies. Overrides primary_ecosystem if more specific."
+        },
+        "detected_tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool IDs already present in the repo. Excluded from recommendation (already in use)."
+        },
+        "detected_anti_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool IDs detected in the repo that match anti-patterns for the workflow. Flagged for review."
+        },
+        "detected_missing_categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "V2 category IDs that production workflows in this ecosystem typically include but are absent from the repo."
+        }
+      }
+    }
+  }
+}

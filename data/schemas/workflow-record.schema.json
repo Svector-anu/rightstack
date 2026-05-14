@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/WorkflowRecord.json",
+  "title": "WorkflowRecord",
+  "description": "A production-oriented workflow template encoding the full stack pattern for a specific build goal. The primary retrieval unit in RightStack — tools are secondary.",
+  "type": "object",
+  "required": ["id", "name", "goal", "ecosystems", "scale", "phases", "trust_state", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": { "type": "string" },
+    "goal": {
+      "type": "string",
+      "description": "Natural language description of what this workflow builds. Written to match builder intent queries. e.g. 'Build an autonomous AI agent that executes trades on Solana.'"
+    },
+    "goal_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Short intent keywords for retrieval matching. e.g. ['trading-agent', 'autonomous', 'onchain-execution']"
+    },
+    "ecosystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general"]
+      },
+      "description": "Which ecosystems this workflow applies to. Most workflows are single-ecosystem. Multi-ecosystem workflows require explicit cross-chain context."
+    },
+    "scale": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["hackathon", "mvp", "production"]
+      },
+      "description": "Scales this workflow template is valid for. Some workflows are only production-appropriate (e.g., complex AA patterns)."
+    },
+    "user_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["vibe-coder", "advanced-builder", "ai-agent"]
+      },
+      "description": "Which builder types this workflow is designed for. Affects tool selection and explanation depth in recommendations."
+    },
+    "phases": {
+      "type": "array",
+      "description": "Ordered sequence of workflow phases. Each phase is a distinct layer in the stack. Order matters — phases should be listed in dependency order.",
+      "items": {
+        "type": "object",
+        "required": ["id", "role", "required"],
+        "properties": {
+          "id": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": [
+              "wallet-setup",
+              "data-indexing",
+              "execution",
+              "ai-reasoning",
+              "orchestration",
+              "auth",
+              "social-layer",
+              "ui",
+              "security",
+              "signing",
+              "payment",
+              "monitoring"
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this phase is mandatory for the workflow to function. Optional phases improve the workflow but are not blockers."
+          },
+          "primary_tools": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tool IDs recommended for this phase. Ordered by preference. First entry is the default recommendation."
+          },
+          "alternative_tools": {
+            "type": "array",
+            "description": "Alternative tools for this phase with context on when to prefer each.",
+            "items": {
+              "type": "object",
+              "required": ["tool_id", "when_to_prefer"],
+              "properties": {
+                "tool_id": { "type": "string" },
+                "when_to_prefer": { "type": "string" }
+              }
+            }
+          },
+          "skill_refs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Skills that should be injected into agent context before executing this phase."
+          },
+          "phase_notes": {
+            "type": "string",
+            "description": "Critical information about this phase. Tradeoffs, gotchas, ordering constraints."
+          },
+          "scale_overrides": {
+            "type": "object",
+            "description": "Phase-level tool or approach changes at specific scales.",
+            "properties": {
+              "hackathon": { "type": "string" },
+              "production": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "prerequisite_workflows": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "WorkflowRecord IDs that must be completed before this workflow. Encodes dependency ordering that is currently missing from all ecosystem skill systems."
+    },
+    "prerequisite_skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "SkillRecord IDs that should be loaded before executing this workflow."
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["production-grade", "emerging", "experimental", "abandoned", "hype-driven"],
+      "description": "Whether this workflow pattern has been validated in production. A workflow can be production-grade even if some of its component tools are emerging."
+    },
+    "production_notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Insights from production usage of this workflow. The highest-value content in the record — encode real lessons, not documentation summaries."
+    },
+    "tradeoffs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Honest tradeoffs of this workflow pattern. What you give up to gain what. Required for trust-worthy recommendations."
+    },
+    "anti_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Common mistakes when implementing this workflow. These become repo-audit flags."
+    },
+    "constraint_modifiers": {
+      "type": "array",
+      "description": "How specific builder constraints change this workflow's recommendations.",
+      "items": {
+        "type": "object",
+        "required": ["constraint", "modification"],
+        "properties": {
+          "constraint": {
+            "type": "string",
+            "description": "The constraint condition. e.g. 'gasless_ux_required', 'hackathon_timeline', 'python_only'"
+          },
+          "modification": { "type": "string" },
+          "affects_phase": { "type": "string" }
+        }
+      }
+    },
+    "retrieval_tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "derived_from": { "type": "string", "description": "Where this workflow pattern was observed. e.g. 'WORKFLOWS.md', 'corpus-analysis-v1'" },
+        "last_verified": { "type": "string", "format": "date" }
+      }
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    }
+  }
+}

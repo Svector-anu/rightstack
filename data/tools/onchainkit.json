@@ -1,0 +1,95 @@
+{
+  "id": "onchainkit",
+  "name": "OnchainKit",
+  "aliases": ["@coinbase/onchainkit"],
+  "category": "frontend-sdk",
+  "subcategory": "component-library",
+  "description": "Coinbase-maintained React component library and toolkit for building Base-native consumer apps and Farcaster miniapps. Provides pre-built UI components for wallets, transactions, identity (Basenames), and Farcaster Frames.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "dominant", "notes": "Maintained by Coinbase. The default UI and interaction toolkit for Base consumer applications." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Has dedicated Frames SDK integration. Key tool in Farcaster miniapp stacks." },
+    { "ecosystem": "ethereum", "strength": "limited", "notes": "Works on Ethereum but components are Base-opinionated. Less useful outside Base context." },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "wallet-ui-components",
+    "transaction-ui-components",
+    "identity-components",
+    "basename-resolution",
+    "farcaster-frames-sdk",
+    "onchain-interactions",
+    "nft-minting-components",
+    "token-display-components",
+    "base-account-integration"
+  ],
+  "workflow_positions": ["ui-layer", "wallet-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "privy",
+      "relationship": "often-used-with",
+      "context": "Privy handles wallet creation and auth; OnchainKit provides the React UI components that wrap the wallet. The dominant Base consumer app combination.",
+      "workflow_ref": "base-consumer-app"
+    },
+    {
+      "tool_id": "neynar",
+      "relationship": "often-used-with",
+      "context": "Neynar for Farcaster social data, OnchainKit for the Frame and UI layer.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Alchemy as the RPC provider under OnchainKit's transaction components."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Maintained by Coinbase/Base team. Dominant UI toolkit in Base ecosystem.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Privy + OnchainKit is the most consistently cited Base consumer app pattern in the corpus and WORKFLOWS.md.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "builder-reputation",
+      "description": "Maintained by the Coinbase Base team. Official Coinbase product — strong shipping track record.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@coinbase/onchainkit"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-consumer-app", "farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Fastest path to a working Base app with wallet, transaction, and identity UI.",
+    "production": "Opinionated components reduce custom design flexibility. If product requires heavy custom UI, consider using OnchainKit's core logic hooks without its UI components."
+  },
+  "alternatives": [
+    {
+      "tool_id": "wagmi",
+      "when_to_prefer": "When OnchainKit's opinionated UI components are too restrictive and custom design is required. wagmi provides the underlying hooks without enforced UI.",
+      "ecosystem_context": "Ethereum, Base."
+    }
+  ],
+  "anti_patterns": [
+    "Using OnchainKit for Solana or non-EVM chains — it is Base/Ethereum-specific.",
+    "Treating OnchainKit as a wallet provider — it is a UI layer. It wraps Privy, Coinbase Wallet SDK, or other wallet providers.",
+    "Using OnchainKit components in production without understanding their Base-opinionated assumptions around chain ID and network."
+  ],
+  "retrieval_tags": ["base-ui", "farcaster-frames", "react-components", "onchain-ui", "basenames", "coinbase"],
+  "source": {
+    "primary_url": "https://onchainkit.xyz",
+    "docs_url": "https://onchainkit.xyz/getting-started",
+    "github_url": "https://github.com/coinbase/onchainkit"
+  },
+  "updated_at": "2026-05-13"
+}

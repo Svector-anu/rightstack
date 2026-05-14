@@ -1,0 +1,160 @@
+{
+  "id": "solana-trading-agent",
+  "name": "Solana AI Trading Agent Workflow",
+  "goal": "Build an autonomous AI agent that monitors Solana onchain data, makes trading decisions, and executes trades with MEV protection.",
+  "goal_tags": ["trading-agent", "autonomous-agent", "solana-defi", "ai-agent", "onchain-execution", "mev-protection"],
+  "ecosystems": ["solana"],
+  "scale": ["mvp", "production"],
+  "user_types": ["advanced-builder", "ai-agent"],
+  "phases": [
+    {
+      "id": "data-indexing",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["helius"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When multi-chain support is needed or QuickNode Yellowstone gRPC streaming is required for ultra-low-latency."
+        }
+      ],
+      "skill_refs": ["helius-skill-sendaifun"],
+      "phase_notes": "Helius webhooks are the cleanest way to trigger agent logic on onchain events. Set up webhook subscriptions before building agent logic — the event model shapes everything downstream. Never use public RPCs for production agents."
+    },
+    {
+      "id": "market-data",
+      "role": "data-indexing",
+      "required": false,
+      "primary_tools": ["birdeye"],
+      "alternative_tools": [
+        {
+          "tool_id": "coingecko",
+          "when_to_prefer": "For cross-chain market data or when Birdeye pricing is a concern."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add Birdeye when the agent needs market data beyond raw transaction events — price signals, OHLCV, wallet P&L, trader intelligence. Helius covers onchain events; Birdeye covers market context."
+    },
+    {
+      "id": "agent-reasoning",
+      "role": "ai-reasoning",
+      "required": true,
+      "primary_tools": ["vercel-ai-sdk"],
+      "alternative_tools": [
+        {
+          "tool_id": "elizaos",
+          "when_to_prefer": "When building a character-based social trading agent with persona requirements. Less production-stable than Vercel AI SDK."
+        },
+        {
+          "tool_id": "langchain",
+          "when_to_prefer": "When complex multi-step reasoning chains or Python-native tooling is required."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Claude is the recommended LLM for complex trading reasoning. Use structured outputs to extract trading decisions from LLM responses — avoid parsing free text. Build the reasoning layer to be testable in isolation before connecting to live execution."
+    },
+    {
+      "id": "signing",
+      "role": "signing",
+      "required": true,
+      "primary_tools": ["turnkey"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Server-side wallet signing is a hard requirement for autonomous agents. NEVER use browser wallets or user-facing wallets for agent signing. Turnkey provides programmatic key management for server-side use. This is not optional."
+    },
+    {
+      "id": "execution",
+      "role": "execution",
+      "required": true,
+      "primary_tools": ["jupiter"],
+      "alternative_tools": [
+        {
+          "tool_id": "raydium",
+          "when_to_prefer": "When the agent needs direct AMM interactions or liquidity provisioning rather than swap aggregation."
+        }
+      ],
+      "skill_refs": ["jupiter-skill-official"],
+      "phase_notes": "Jupiter is the default swap aggregator. For MEV-sensitive execution, combine Jupiter routing with Jito bundle submission — Jupiter handles route optimization, Jito handles submission priority."
+    },
+    {
+      "id": "mev-protection",
+      "role": "execution",
+      "required": false,
+      "primary_tools": ["jito-mev"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Add Jito when competitive execution matters — e.g., arbitrage, high-frequency signals, or protecting against sandwich attacks. Jito bundle submission adds latency complexity. Build retry logic: bundle success rates are not 100%.",
+      "scale_overrides": {
+        "production": "Production trading agents at any meaningful volume need Jito. Build it in from the start rather than retrofitting."
+      }
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["trigger-dev"],
+      "alternative_tools": [
+        {
+          "tool_id": "inngest",
+          "when_to_prefer": "Simpler workflows with less complex retry requirements."
+        },
+        {
+          "tool_id": "temporal",
+          "when_to_prefer": "For very complex multi-step workflows requiring durable execution guarantees."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Workflow orchestration adds durability to agent execution — retries, step visibility, failure handling. Worth adding from MVP for any production-bound agent. Debugging autonomous agents without execution traces is extremely difficult.",
+      "scale_overrides": {
+        "production": "Required. Production trading agents without durable orchestration will have unexplainable failures."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": ["solana-foundation-security"],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Server-side wallet management (Turnkey) is a non-negotiable production requirement. Browser wallets in autonomous agents are a security failure mode.",
+    "Build a simulation/dry-run mode before connecting to live execution. Test every agent action in simulation before going live.",
+    "Implement spending limits and rate limiting for autonomous agents. An unconstrained agent can execute expensive actions at machine speed.",
+    "Helius rate limits matter at high frequency — plan your tier before launch, not after you hit the limit.",
+    "Jito bundle success rates vary. Build exponential backoff and alternative submission paths for production agents.",
+    "Agent memory design (how state is stored and retrieved) is as important as agent reasoning design. Plan it early."
+  ],
+  "tradeoffs": [
+    "Helius + Jito adds infrastructure complexity but is required for competitive Solana execution.",
+    "Turnkey adds a server-side signing dependency — single point of failure if not architected with redundancy.",
+    "Python preferred if heavy ML/model work is needed; Node.js if JS-native tooling alignment is more important.",
+    "ElizaOS has stronger character/persona tooling but is less production-stable than Vercel AI SDK for trading agents."
+  ],
+  "anti_patterns": [
+    "Using browser wallets or user-facing wallets for server-side agent signing.",
+    "Shipping without a simulation/dry-run mode — live trading bugs are financially expensive.",
+    "Skipping spending limits and rate limiting for autonomous execution.",
+    "Using public Solana RPCs instead of Helius — rate limits will fail under agent workload.",
+    "Not building retry logic for Jito bundle submission."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "python_only",
+      "modification": "Replace Vercel AI SDK with LangChain or direct Claude API. Replace Node.js orchestration with Python-native tools.",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "low_frequency_signals",
+      "modification": "Jito MEV protection is less critical. Can use standard RPC submission via QuickNode instead.",
+      "affects_phase": "mev-protection"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Skip Jito and orchestration phases. Use Helius + Jupiter + Turnkey + Vercel AI SDK as the minimal viable stack.",
+      "affects_phase": "orchestration"
+    }
+  ],
+  "retrieval_tags": ["solana-agent", "trading-agent", "autonomous", "defi", "mev", "jito", "helius", "jupiter"],
+  "source": {
+    "derived_from": "WORKFLOWS.md workflow #3 + corpus-analysis-v1",
+    "last_verified": "2026-05-13"
+  },
+  "updated_at": "2026-05-13"
+}

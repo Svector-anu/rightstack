@@ -1,0 +1,108 @@
+{
+  "id": "farcaster-auth-kit",
+  "name": "Farcaster Auth Kit",
+  "aliases": [
+    "@farcaster/auth-kit",
+    "sign-in-with-farcaster",
+    "SIWF",
+    "@farcaster/connect"
+  ],
+  "category": "identity",
+  "subcategory": "social-auth",
+  "description": "Sign In With Farcaster (SIWF) SDK — enables web applications to authenticate users by their Farcaster identity (FID) rather than wallet address. Returns a verified Farcaster custody address, FID, and username that can be used to retrieve the user's social graph via Neynar.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "farcaster",
+      "strength": "dominant",
+      "notes": "The canonical authentication primitive for non-Frame Farcaster apps (web apps, mobile apps that want Farcaster login). For Farcaster MiniApps (Frames), the Farcaster Frames SDK provides context directly — Auth Kit is for external web apps wanting Farcaster login."
+    },
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "SIWF resolves Farcaster identity to an Ethereum address, which is then used to create or retrieve the user's Base wallet (typically via Privy). Farcaster identity → wallet identity pipeline."
+    },
+    { "ecosystem": "ethereum", "strength": "limited" },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "farcaster-identity-verification",
+    "sign-in-with-farcaster",
+    "fid-authentication",
+    "custody-address-resolution",
+    "farcaster-session-management",
+    "social-login-via-farcaster",
+    "nonce-challenge-response",
+    "farcaster-username-retrieval"
+  ],
+  "workflow_positions": ["auth-layer", "social-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "neynar",
+      "relationship": "complements",
+      "context": "Auth Kit authenticates the user's Farcaster identity (verifies their FID and custody address). Neynar then enriches that identity with social graph data (followers, casts, profile). The canonical Farcaster app auth flow: Auth Kit for login, Neynar for enrichment.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "complements",
+      "context": "Auth Kit verifies the Farcaster identity and provides a verified custody address. Privy uses that address to create or retrieve the user's embedded wallet, linking social identity to onchain identity.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "farcaster-frames-sdk",
+      "relationship": "complements",
+      "context": "Auth Kit is for web apps outside Farcaster Frames; Frames SDK provides context inside Frames. A full Farcaster app may use both: Auth Kit for the standalone web experience, Frames SDK for the in-client Frame experience."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "The official Farcaster-maintained authentication SDK. Used in all production Farcaster web apps that implement Sign In With Farcaster.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "Maintained by the Farcaster core team. Auth Kit implements the SIWF specification which is a live Farcaster Improvement Proposal.",
+      "source_url": "https://docs.farcaster.xyz/auth-kit/introduction",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@farcaster/auth-kit",
+      "@farcaster/connect",
+      "@farcaster/auth-client"
+    ]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Auth Kit is a drop-in component — adds Farcaster login in under 30 minutes. The 'Sign in with Farcaster' button is the fastest path to Farcaster-authenticated hackathon demos.",
+    "mvp": "SIWF is the right choice for any web app that wants Farcaster login. Pair immediately with Neynar to enrich the authenticated FID with social graph context.",
+    "production": "SIWF generates a one-time authentication message. Implement server-side session management using the verified FID — do not use the Auth Kit client state as your server-side auth source of truth."
+  },
+  "alternatives": [
+    {
+      "tool_id": "farcaster-frames-sdk",
+      "when_to_prefer": "When building inside a Farcaster Frame (MiniApp) rather than a standalone web app. Frames SDK provides context directly from the Farcaster client without an explicit login flow — no Auth Kit needed inside a Frame.",
+      "ecosystem_context": "Farcaster MiniApps."
+    }
+  ],
+  "anti_patterns": [
+    "Using Auth Kit inside a Farcaster Frame — the Frames SDK already provides the authenticated Farcaster context without a login flow. Auth Kit adds unnecessary complexity inside Frame environments.",
+    "Using Auth Kit as a server-side auth primitive directly — SIWF produces a signed message. Your server must verify the signature against the Farcaster registry. Use @farcaster/auth-client for server-side verification.",
+    "Treating the custody address from SIWF as the user's primary transaction address — Farcaster users often have a separate 'verified address' linked to their FID that is different from the custody address. Neynar's user profile exposes both.",
+    "Not storing the FID as the primary user identifier — the FID (Farcaster ID) is stable; custody addresses can change when users change their recovery. Use FID as the canonical user key."
+  ],
+  "retrieval_tags": ["sign-in-with-farcaster", "SIWF", "farcaster-auth", "farcaster-login", "farcaster-identity", "social-auth", "fid-auth"],
+  "source": {
+    "primary_url": "https://docs.farcaster.xyz/auth-kit/introduction",
+    "docs_url": "https://docs.farcaster.xyz/auth-kit",
+    "github_url": "https://github.com/farcasterxyz/auth-monorepo"
+  },
+  "updated_at": "2026-05-14"
+}

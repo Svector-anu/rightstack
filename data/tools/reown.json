@@ -1,0 +1,99 @@
+{
+  "id": "reown",
+  "name": "Reown",
+  "aliases": [
+    "walletconnect",
+    "wallet-connect",
+    "@reown/appkit",
+    "@reown/appkit-adapter-wagmi",
+    "@walletconnect/web3modal",
+    "@walletconnect/modal"
+  ],
+  "category": "wallet-infrastructure",
+  "subcategory": "external-connection",
+  "description": "External wallet connection infrastructure enabling dApps to connect to user-owned wallets (MetaMask, Phantom, Coinbase Wallet, etc.) via a standardized protocol. Complement to embedded wallet tools — use when users already have a wallet.",
+  "ecosystem_fit": [
+    { "ecosystem": "ethereum", "strength": "dominant", "notes": "The default external wallet connection standard for Ethereum dApps." },
+    { "ecosystem": "base", "strength": "strong" },
+    { "ecosystem": "solana", "strength": "limited", "notes": "Solana support exists via adapters but not the primary choice in Solana ecosystem." },
+    { "ecosystem": "farcaster", "strength": "limited", "notes": "Less relevant in Farcaster miniapp context where Privy embedded wallet is dominant." },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "external-wallet-connection",
+    "multi-chain-wallet-support",
+    "dapp-to-wallet-session-management",
+    "wallet-connect-protocol",
+    "multi-wallet-ui-modal"
+  ],
+  "workflow_positions": ["wallet-layer", "auth-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "wagmi",
+      "relationship": "depends-on",
+      "context": "Reown AppKit is built on top of wagmi for Ethereum wallet interactions."
+    },
+    {
+      "tool_id": "viem",
+      "relationship": "often-used-with",
+      "context": "viem as the underlying Ethereum interaction library in the Reown + wagmi stack."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "WalletConnect protocol (now Reown) is the long-standing standard for external wallet connection in Ethereum ecosystem.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "active-maintenance",
+      "description": "Rebranded from WalletConnect to Reown with active AppKit development.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@reown/appkit",
+      "@reown/appkit-adapter-wagmi",
+      "@reown/appkit-adapter-ethers",
+      "@walletconnect/web3modal",
+      "@walletconnect/modal",
+      "@walletconnect/sign-client"
+    ]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["ethereum-aa-native-app"],
+  "sdk_migration": {
+    "status": "successor",
+    "from_package": "@walletconnect/web3modal",
+    "to_package": "@reown/appkit",
+    "notes": "WalletConnect rebranded to Reown in 2024. @walletconnect/* packages remain functional but @reown/* is the current recommended path. Repo detection of @walletconnect/* should map to this record."
+  },
+  "alternatives": [
+    {
+      "tool_id": "privy",
+      "when_to_prefer": "When the goal is onboarding users WITHOUT existing wallets. Privy creates embedded wallets; Reown connects existing wallets.",
+      "ecosystem_context": "Base, Farcaster, Ethereum."
+    },
+    {
+      "tool_id": "dynamic",
+      "when_to_prefer": "When unified support for both embedded wallet creation AND external wallet connection is needed in a single SDK.",
+      "ecosystem_context": "Ethereum, Base."
+    }
+  ],
+  "anti_patterns": [
+    "Using Reown for embedded wallet creation — it is an external wallet connection protocol, not a wallet provider.",
+    "Using Reown in contexts where users are non-crypto-native (no existing wallet). Use Privy or Dynamic instead.",
+    "Referencing @walletconnect/* in new projects — use @reown/appkit instead."
+  ],
+  "retrieval_tags": ["external-wallet", "wallet-connect", "multi-wallet", "bring-your-own-wallet"],
+  "source": {
+    "primary_url": "https://reown.com",
+    "docs_url": "https://docs.reown.com",
+    "github_url": "https://github.com/reown-com/appkit"
+  },
+  "updated_at": "2026-05-13"
+}

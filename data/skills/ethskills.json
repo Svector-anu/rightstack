@@ -1,0 +1,152 @@
+{
+  "id": "ethskills",
+  "name": "ETHSkills",
+  "skill_type": "collection",
+  "ecosystems": ["ethereum"],
+  "fetch_pattern": "plugin-marketplace",
+  "fetch_url": "https://ethskills.com",
+  "github_url": null,
+  "commit_hash": null,
+  "install_commands": {
+    "claude_code": "/plugin marketplace add austintgriffith/ethskills",
+    "cursor": "Add ethskills.mdc to .cursor/rules/",
+    "codex": "Add to AGENTS.md in repo root",
+    "generic": "Fetch https://ethskills.com/<skill-name>/SKILL.md before session"
+  },
+  "purpose": "End-to-end Ethereum development knowledge pack — from dApp idea to production deployment, including security audit, testing, orchestration, and QA as a separate reviewer agent task.",
+  "tools_contextualized": [],
+  "workflow_refs": [],
+  "maintainer": {
+    "type": "official-adjacent",
+    "org": "ethskills",
+    "person": "austintgriffith",
+    "github_handle": "austintgriffith"
+  },
+  "environments_validated": ["claude", "chatgpt", "cursor", "codex"],
+  "trust_state": "production-grade",
+  "staleness_risk": "medium",
+  "staleness_reason": "URL-based delivery means content can be updated transparently, which is good for freshness. However, the 'gas/SKILL.md' endpoint references current gas prices which are inherently stale without real-time data backing.",
+  "sub_skills": [
+    {
+      "name": "Ship",
+      "fetch_url": "https://ethskills.com/ship/SKILL.md",
+      "purpose": "End-to-end guide from dApp idea to deployed production app. Load FIRST before any Ethereum development.",
+      "skill_type": "workflow"
+    },
+    {
+      "name": "Why Ethereum",
+      "fetch_url": "https://ethskills.com/why/SKILL.md",
+      "purpose": "Why to build on Ethereum — Pectra/Fusaka upgrades, use case matching, countering stale FUD.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Orchestration",
+      "fetch_url": "https://ethskills.com/orchestration/SKILL.md",
+      "purpose": "Three-phase build system and dApp orchestration patterns for AI agents.",
+      "skill_type": "orchestration"
+    },
+    {
+      "name": "Security",
+      "fetch_url": "https://ethskills.com/security/SKILL.md",
+      "purpose": "Solidity security patterns — reentrancy, oracle manipulation, vault attacks, pre-deploy checklist.",
+      "skill_type": "security"
+    },
+    {
+      "name": "Audit",
+      "fetch_url": "https://ethskills.com/audit/SKILL.md",
+      "purpose": "500+ checklist items across 19 domains — AMM, lending, oracles, proxies, bridges.",
+      "skill_type": "security"
+    },
+    {
+      "name": "QA",
+      "fetch_url": "https://ethskills.com/qa/SKILL.md",
+      "purpose": "Production QA checklist — intended for a separate reviewer agent, not the build agent.",
+      "skill_type": "security"
+    },
+    {
+      "name": "Testing",
+      "fetch_url": "https://ethskills.com/testing/SKILL.md",
+      "purpose": "Foundry unit tests, fuzz testing, fork testing, invariant testing.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Standards",
+      "fetch_url": "https://ethskills.com/standards/SKILL.md",
+      "purpose": "ERC-20, ERC-721, ERC-1155, ERC-8004 (agent identity), EIP-7702 (smart EOAs).",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Layer 2s",
+      "fetch_url": "https://ethskills.com/l2s/SKILL.md",
+      "purpose": "Current L2 landscape, bridging, deployment differences, when to use which.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Indexing",
+      "fetch_url": "https://ethskills.com/indexing/SKILL.md",
+      "purpose": "Reading onchain data — events, The Graph, Dune, why you can't loop blocks.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Frontend UX",
+      "fetch_url": "https://ethskills.com/frontend-ux/SKILL.md",
+      "purpose": "Scaffold-ETH 2 rules — button loaders, approval flow, USD values.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Frontend Playbook",
+      "fetch_url": "https://ethskills.com/frontend-playbook/SKILL.md",
+      "purpose": "Full build-to-production — fork mode, IPFS, Vercel, ENS subdomain, go-live checklist.",
+      "skill_type": "workflow"
+    },
+    {
+      "name": "Gas & Costs",
+      "fetch_url": "https://ethskills.com/gas/SKILL.md",
+      "purpose": "Current gas prices, real costs today, mainnet vs L2 honest comparison.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Wallets",
+      "fetch_url": "https://ethskills.com/wallets/SKILL.md",
+      "purpose": "Wallet creation, dApp connection, signing, multisig (Gnosis Safe), account abstraction.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Tools",
+      "fetch_url": "https://ethskills.com/tools/SKILL.md",
+      "purpose": "Foundry, Scaffold-ETH 2, x402 HTTP payments, MCPs, abi.ninja, RPCs.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Money Legos",
+      "fetch_url": "https://ethskills.com/building-blocks/SKILL.md",
+      "purpose": "DeFi composability — Uniswap, Aave, Compound, MakerDAO, Yearn, Curve.",
+      "skill_type": "integration"
+    },
+    {
+      "name": "Noir (ZK Privacy)",
+      "fetch_url": "https://ethskills.com/noir/SKILL.md",
+      "purpose": "ZK privacy apps with Noir — circuits, Solidity verifiers, NoirJS frontend.",
+      "skill_type": "integration"
+    },
+    {
+      "name": "Contract Addresses",
+      "fetch_url": "https://ethskills.com/addresses/SKILL.md",
+      "purpose": "Verified contract addresses for major protocols across mainnet and L2s.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Concepts",
+      "fetch_url": "https://ethskills.com/concepts/SKILL.md",
+      "purpose": "Core mental models — 'nothing is automatic,' incentive design, hyperstructure test.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "Protocol",
+      "fetch_url": "https://ethskills.com/protocol/SKILL.md",
+      "purpose": "EIP lifecycle, fork process, how to verify what's actually planned.",
+      "skill_type": "reference"
+    }
+  ],
+  "updated_at": "2026-05-13"
+}

@@ -1,0 +1,126 @@
+{
+  "id": "alchemy-rpc",
+  "name": "Alchemy (RPC & Data)",
+  "aliases": ["alchemy-sdk", "@alchemy-sdk", "alchemy"],
+  "category": "chain-data",
+  "subcategory": "rpc+indexing+streaming-webhooks",
+  "description": "The dominant EVM RPC, enhanced data APIs, and webhook infrastructure provider. Covers Base, Ethereum, and other EVM chains with enhanced transaction APIs, NFT data, token data, and real-time event webhooks. The default EVM data layer in production consumer and agent apps.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "dominant", "notes": "The default RPC and data provider for Base consumer apps. Referenced in Coinbase/Base documentation as the recommended infrastructure." },
+    { "ecosystem": "ethereum", "strength": "dominant", "notes": "Long-standing dominant Ethereum RPC and enhanced data provider." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used as the Base chain data layer under Farcaster miniapps." },
+    { "ecosystem": "solana", "strength": "none", "notes": "EVM-only. For Solana, use Helius." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "rpc-endpoints",
+    "enhanced-transaction-apis",
+    "nft-api",
+    "token-api",
+    "webhook-streaming",
+    "trace-api",
+    "debug-api",
+    "mempool-monitoring",
+    "address-activity-webhooks",
+    "historical-data-queries",
+    "gas-estimation"
+  ],
+  "workflow_positions": ["data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "privy",
+      "relationship": "often-used-with",
+      "context": "Privy for wallet management; Alchemy as the RPC layer for chain reads and transaction submission.",
+      "workflow_ref": "base-consumer-app"
+    },
+    {
+      "tool_id": "onchainkit",
+      "relationship": "often-used-with",
+      "context": "OnchainKit's transaction components use Alchemy as the underlying RPC provider for Base.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "pimlico",
+      "relationship": "often-used-with",
+      "context": "Pimlico for AA bundler/paymaster; Alchemy for the underlying RPC and chain data in the same EVM stack."
+    },
+    {
+      "tool_id": "wagmi",
+      "relationship": "often-used-with",
+      "context": "wagmi hooks route through Alchemy RPC for all chain reads and transaction submissions on Ethereum/Base."
+    },
+    {
+      "tool_id": "coinbase-agentkit",
+      "relationship": "often-used-with",
+      "context": "AgentKit uses Alchemy for chain data reads and webhook triggers in Base AI agent workflows.",
+      "workflow_ref": "base-onchain-ai-agent"
+    },
+    {
+      "tool_id": "neynar",
+      "relationship": "often-used-with",
+      "context": "Neynar for Farcaster social data; Alchemy for Base chain data. Used together in Farcaster miniapps.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Alchemy is the dominant EVM infrastructure provider. Referenced as the recommended RPC in Coinbase/Base developer documentation.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Alchemy appears in every EVM production workflow in WORKFLOWS.md as the chain data layer. Privy + OnchainKit + Alchemy is the canonical Base consumer app stack.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Alchemy maintains alchemy-sdk (npm) with typed APIs for all enhanced endpoints, comprehensive webhook documentation, and active SDK maintenance.",
+      "source_url": "https://docs.alchemy.com",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Integrated by OnchainKit (official Coinbase pairing), referenced by Pimlico, wagmi examples, and AgentKit documentation.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["alchemy-sdk", "@alchemy/aa-core"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-consumer-app", "farcaster-consumer-onboarding", "embedded-wallet-onboarding", "ethereum-aa-native-app", "base-onchain-ai-agent"],
+  "sdk_migration": {
+    "status": "stable",
+    "notes": "Note: alchemy-sdk (chain-data) and @alchemy/aa-core (account-abstraction / Alchemy Account Kit) are separate products. Package detection must distinguish between them. alchemy-sdk → this record. @alchemy/aa-core → alchemy-account-kit record."
+  },
+  "scale_guidance": {
+    "hackathon": "Free tier is sufficient. Never use public RPCs — Alchemy free tier is easy to get and prevents rate limit failures during development.",
+    "mvp": "Paid tier for any app expecting real users. Public RPCs will fail under load.",
+    "production": "Plan Alchemy compute unit budget before launch. Webhook reliability is critical for event-driven agents — test failure modes and implement retry logic."
+  },
+  "alternatives": [
+    {
+      "tool_id": "quicknode",
+      "when_to_prefer": "When multi-chain RPC support is needed beyond EVM (QuickNode supports Solana, Aptos, and others). Also when QuickNode Yellowstone gRPC streaming is required for ultra-low-latency Solana data.",
+      "ecosystem_context": "Multi-chain."
+    }
+  ],
+  "anti_patterns": [
+    "Using public RPCs in production — Alchemy free tier is nearly free and prevents rate limit failures.",
+    "Conflating alchemy-sdk (this record / chain-data) with Alchemy Account Kit (@alchemy/aa-core / account-abstraction) — they are different products with different purposes.",
+    "Using Alchemy for Solana — Alchemy is EVM-only. Use Helius for Solana RPC and indexing."
+  ],
+  "retrieval_tags": ["evm-rpc", "base-rpc", "ethereum-rpc", "nft-api", "token-api", "webhooks", "enhanced-apis", "chain-data"],
+  "source": {
+    "primary_url": "https://alchemy.com",
+    "docs_url": "https://docs.alchemy.com",
+    "github_url": "https://github.com/alchemyplatform/alchemy-sdk-js"
+  },
+  "updated_at": "2026-05-13"
+}

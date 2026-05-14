@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/SkillRecord.json",
+  "title": "SkillRecord",
+  "description": "A normalized record for an AI coding skill — a markdown document or live endpoint injected into LLM context to enable ecosystem-specific workflows.",
+  "type": "object",
+  "required": ["id", "name", "skill_type", "ecosystems", "fetch_pattern", "purpose", "trust_state", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": { "type": "string" },
+    "skill_type": {
+      "type": "string",
+      "enum": ["reference", "workflow", "integration", "security", "orchestration", "collection"],
+      "description": "reference=static knowledge (error catalog, addresses). workflow=sequential execution pattern. integration=protocol-specific context. security=audit/review. orchestration=multi-agent coordination. collection=a set of sub-skills."
+    },
+    "ecosystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general"]
+      }
+    },
+    "fetch_pattern": {
+      "type": "string",
+      "enum": ["url-static", "github-repo", "mcp-server", "cli", "plugin-marketplace"],
+      "description": "How the skill is retrieved. Determines staleness model: url-static and github-repo can become stale; mcp-server is always current."
+    },
+    "fetch_url": {
+      "type": "string",
+      "description": "Primary URL to fetch the skill. For github-repo, this is the repo root. For url-static, this is the direct markdown URL."
+    },
+    "github_url": { "type": "string" },
+    "commit_hash": {
+      "type": ["string", "null"],
+      "description": "Git commit hash if the skill is pinned to a specific revision. Null = floating. Pinned = reproducible but won't receive upstream fixes."
+    },
+    "install_commands": {
+      "type": "object",
+      "description": "How to install this skill in each supported environment.",
+      "properties": {
+        "claude_code": { "type": "string" },
+        "cursor": { "type": "string" },
+        "codex": { "type": "string" },
+        "generic": { "type": "string" }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "description": "What this skill does when injected. One sentence. Written for retrieval — should match the queries that would benefit from this skill."
+    },
+    "tools_contextualized": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs of ToolRecords this skill provides context for. Used for reverse lookup: given a tool, find skills that teach it."
+    },
+    "workflow_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs of WorkflowRecords where this skill should be injected."
+    },
+    "maintainer": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["official", "community-hub", "institutional", "individual", "official-adjacent"]
+        },
+        "org": { "type": "string" },
+        "person": { "type": "string" },
+        "github_handle": { "type": "string" }
+      }
+    },
+    "environments_validated": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["claude", "chatgpt", "cursor", "codex", "copilot"]
+      },
+      "description": "Environments where this skill has been confirmed to work correctly. Multi-env validation is a strong trust signal."
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["production-grade", "emerging", "experimental", "abandoned", "hype-driven"]
+    },
+    "staleness_risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "How quickly this skill's content is likely to go stale. Reference skills for stable APIs = low. Gas price skills = critical."
+    },
+    "staleness_reason": {
+      "type": "string",
+      "description": "Why the staleness_risk is rated as it is. Required when risk is high or critical."
+    },
+    "sub_skills": {
+      "type": "array",
+      "description": "For collection-type skills — the individual skills in the set.",
+      "items": {
+        "type": "object",
+        "required": ["name", "fetch_url"],
+        "properties": {
+          "name": { "type": "string" },
+          "fetch_url": { "type": "string" },
+          "purpose": { "type": "string" },
+          "skill_type": { "type": "string" }
+        }
+      }
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    }
+  }
+}

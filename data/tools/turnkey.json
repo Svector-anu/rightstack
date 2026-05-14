@@ -1,0 +1,111 @@
+{
+  "id": "turnkey",
+  "name": "Turnkey",
+  "aliases": ["@turnkey/sdk-server", "@turnkey/ethers", "@turnkey/viem", "@turnkey/solana"],
+  "category": "wallet-infrastructure",
+  "subcategory": "server-side",
+  "description": "Programmatic server-side key management and wallet signing for autonomous agents and server processes. Provides MPC-based key management with a policy engine for controlling signing permissions. The canonical solution for autonomous agent wallet infrastructure.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "The recommended server-side signing solution in solana-trading-agent. No alternative of comparable quality for server-side Solana agent signing." },
+    { "ecosystem": "base", "strength": "strong", "notes": "Used in Base AI agent patterns where fully autonomous signing without user interaction is required." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Production server-side signing for Ethereum autonomous agents and institutional flows." },
+    { "ecosystem": "farcaster", "strength": "limited", "notes": "Used in Farcaster agents where autonomous transaction signing is required." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "server-side-wallet-management",
+    "programmatic-signing",
+    "mpc-key-management",
+    "policy-engine",
+    "sub-organization-model",
+    "api-key-authentication",
+    "signing-request-approval",
+    "multi-chain-signing",
+    "key-export",
+    "spending-limit-policies"
+  ],
+  "workflow_positions": ["signing-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "often-used-with",
+      "context": "Vercel AI SDK provides the reasoning layer that decides what transaction to execute; Turnkey signs the resulting transaction server-side.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius monitors onchain events; Turnkey signs the agent's responses to those events.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "jupiter",
+      "relationship": "often-used-with",
+      "context": "Jupiter computes the swap route; Turnkey signs the resulting transaction for submission.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "jito-mev",
+      "relationship": "often-used-with",
+      "context": "Turnkey signs the transaction; Jito submits the signed transaction as an MEV-protected bundle.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Trigger.dev orchestrates the agent workflow steps; Turnkey handles signing within those steps."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Turnkey is the default server-side signing solution in solana-trading-agent and recommended for all autonomous agent wallet management in WORKFLOWS.md.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Turnkey maintains separate SDKs for server (@turnkey/sdk-server), Ethereum (@turnkey/ethers, @turnkey/viem), and Solana (@turnkey/solana), indicating mature product segmentation.",
+      "source_url": "https://docs.turnkey.com",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "builder-reputation",
+      "description": "Built by the former Coinbase Custody engineering team. Strong institutional pedigree for key management.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@turnkey/sdk-server", "@turnkey/sdk-browser", "@turnkey/ethers", "@turnkey/viem", "@turnkey/solana", "@turnkey/api-key-stamper"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent", "base-onchain-ai-agent"],
+  "scale_guidance": {
+    "hackathon": "Skip Turnkey at hackathon scale. Use a simple keypair from a .env file for development. Never put private keys in production.",
+    "mvp": "Integrate Turnkey before connecting to live funds. Private key in .env is not acceptable for any real value flow.",
+    "production": "Required for any autonomous agent handling real funds. Configure policy engine with per-transaction spending limits before live trading. Turnkey is the production standard for autonomous agent signing."
+  },
+  "alternatives": [
+    {
+      "tool_id": "privy",
+      "when_to_prefer": "When the agent has user interaction and the signing is user-initiated (not fully autonomous). Privy's server-auth SDK handles user-delegated signing but is not designed for fully autonomous agent signing.",
+      "ecosystem_context": "Base, Farcaster, Ethereum."
+    }
+  ],
+  "anti_patterns": [
+    "CRITICAL: Using browser wallets or @privy-io/react-auth for autonomous server-side agent signing. Browser wallets require user interaction. For autonomous agents, use Turnkey.",
+    "CRITICAL: Storing raw private keys in environment variables for production agents. Turnkey provides proper key management with policy controls.",
+    "Skipping Turnkey's policy engine configuration — an agent with no spending limits can execute expensive actions at machine speed.",
+    "Using Turnkey without defining a sub-organization per agent — isolating agent keys to sub-organizations provides blast radius containment."
+  ],
+  "retrieval_tags": ["server-side-wallet", "autonomous-agent", "mpc-signing", "key-management", "programmatic-signing", "agent-wallet"],
+  "source": {
+    "primary_url": "https://turnkey.com",
+    "docs_url": "https://docs.turnkey.com",
+    "github_url": "https://github.com/tkhq"
+  },
+  "updated_at": "2026-05-13"
+}

@@ -1,0 +1,120 @@
+{
+  "id": "pimlico",
+  "name": "Pimlico",
+  "aliases": ["permissionless", "@pimlico/sdk", "pimlico-bundler"],
+  "category": "account-abstraction",
+  "subcategory": "bundler+paymaster",
+  "description": "The dominant ERC-4337 bundler and paymaster infrastructure for EVM chains. Submits UserOperations to the AA mempool and sponsors gas for users. The default AA infrastructure layer in Base and Ethereum consumer apps.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "dominant", "notes": "Default AA infrastructure for Base consumer apps. Paired with Privy in the canonical gasless onboarding stack." },
+    { "ecosystem": "ethereum", "strength": "dominant", "notes": "Production-grade bundler and paymaster for Ethereum mainnet and L2s." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used for gasless actions inside Farcaster miniapps on Base." },
+    { "ecosystem": "solana", "strength": "none", "notes": "ERC-4337 is EVM-only. Solana has a different account model — gasless patterns on Solana require different approaches." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "erc-4337-bundler",
+    "paymaster-gas-sponsorship",
+    "gas-policy-management",
+    "per-user-spending-limits",
+    "smart-account-support",
+    "useroperation-submission",
+    "multi-chain-bundler",
+    "token-paymaster",
+    "session-key-support"
+  ],
+  "workflow_positions": ["payment-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "privy",
+      "relationship": "complements",
+      "context": "Privy creates the embedded wallet; Pimlico sponsors gas for the first transactions. The canonical gasless consumer onboarding pairing.",
+      "workflow_ref": "embedded-wallet-onboarding"
+    },
+    {
+      "tool_id": "zerodev",
+      "relationship": "complements",
+      "context": "ZeroDev provides the smart account (Kernel) with session keys; Pimlico provides the bundler and paymaster infrastructure that submits ZeroDev UserOperations.",
+      "workflow_ref": "ethereum-aa-native-app"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Pimlico for AA infrastructure; Alchemy for the underlying RPC and chain data. Standard EVM production stack."
+    },
+    {
+      "tool_id": "dynamic",
+      "relationship": "often-used-with",
+      "context": "Dynamic for wallet management; Pimlico for gasless transaction sponsorship in AA flows."
+    },
+    {
+      "tool_id": "onchainkit",
+      "relationship": "often-used-with",
+      "context": "OnchainKit UI for transaction components; Pimlico handles the gas sponsorship layer underneath.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Pimlico is the dominant ERC-4337 bundler/paymaster provider. Cited as the default AA infrastructure in Base and Ethereum production stacks.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Privy + Pimlico is the most frequently confirmed gasless onboarding pattern in WORKFLOWS.md. Pimlico appears in every production AA workflow.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Pimlico maintains the permissionless.js SDK (the canonical open-source ERC-4337 SDK) and comprehensive bundler/paymaster documentation.",
+      "source_url": "https://docs.pimlico.io",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Integrated by ZeroDev (bundler), Biconomy (competitor with similar patterns), Safe (smart account), and referenced by Privy documentation as the recommended paymaster.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["permissionless", "@pimlico/sdk", "@pimlico/permissionless"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["embedded-wallet-onboarding", "farcaster-consumer-onboarding", "base-consumer-app", "ethereum-aa-native-app"],
+  "scale_guidance": {
+    "hackathon": "Use Pimlico's free tier for hackathons. Simple policy: sponsor all transactions.",
+    "mvp": "Define gas policy early: per-user daily limits, per-transaction caps. Unbounded sponsorship is a budget risk.",
+    "production": "Model gas sponsorship cost per user before launch. Implement per-user spending limits. Plan for bundler SLA — Pimlico uptime is critical if gasless UX is a product promise."
+  },
+  "alternatives": [
+    {
+      "tool_id": "zerodev",
+      "when_to_prefer": "When kernel-level smart account features (session keys, plugin system) are required, not just bundler/paymaster. ZeroDev bundles smart account + bundler + paymaster; Pimlico is bundler + paymaster only.",
+      "ecosystem_context": "Base, Ethereum."
+    },
+    {
+      "tool_id": "alchemy-account-kit",
+      "when_to_prefer": "When fully in the Alchemy ecosystem and prefer single-vendor infrastructure for RPC + AA.",
+      "ecosystem_context": "Base, Ethereum."
+    }
+  ],
+  "anti_patterns": [
+    "Using Pimlico for Solana — ERC-4337 does not apply to Solana. Gasless patterns on Solana require a different approach.",
+    "Not setting per-user spending limits — an unlimited paymaster policy is a budget vulnerability at scale.",
+    "Treating Pimlico as a smart account provider — Pimlico is a bundler/paymaster. Smart account logic (session keys, plugins) requires ZeroDev Kernel or Safe.",
+    "Skipping bundler failure handling — Pimlico's bundler can reject UserOperations; agents and apps must handle rejection gracefully."
+  ],
+  "retrieval_tags": ["erc-4337", "bundler", "paymaster", "gasless", "gas-sponsorship", "account-abstraction", "useroperation"],
+  "source": {
+    "primary_url": "https://pimlico.io",
+    "docs_url": "https://docs.pimlico.io",
+    "github_url": "https://github.com/pimlicolabs/permissionless.js"
+  },
+  "updated_at": "2026-05-13"
+}

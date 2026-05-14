@@ -1,0 +1,135 @@
+{
+  "id": "wagmi",
+  "name": "wagmi",
+  "aliases": ["wagmi-core", "@wagmi/core", "@wagmi/connectors", "use-wagmi"],
+  "category": "frontend-sdk",
+  "subcategory": "evm-hooks",
+  "description": "The foundational React hooks library for EVM chain interactions — wallet connection, balance reads, contract calls, transaction status. The underlying data layer that OnchainKit and most Ethereum/Base frontend SDKs build on.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "ethereum",
+      "strength": "dominant",
+      "notes": "The de facto standard for React-based Ethereum frontend development. Every major Ethereum frontend SDK (OnchainKit, Rainbowkit, ConnectKit) is built on wagmi."
+    },
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "OnchainKit wraps wagmi for Base apps. Building directly with wagmi gives more design control at the cost of implementing what OnchainKit provides out of the box."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "strong",
+      "notes": "Farcaster MiniApps built on Base use wagmi for chain interactions. The Farcaster Frames SDK exposes wallet access; wagmi provides the hooks to use that wallet for transactions."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "none",
+      "notes": "wagmi is EVM-only. Solana frontends use @solana/web3.js or @solana/kit for equivalent chain interactions."
+    },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "wallet-connection-hooks",
+    "balance-reading",
+    "contract-read-write",
+    "transaction-status-tracking",
+    "block-data-hooks",
+    "account-state-management",
+    "multi-chain-configuration",
+    "connector-abstraction",
+    "transaction-signing",
+    "ens-resolution-hooks"
+  ],
+  "workflow_positions": ["ui-layer", "data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "onchainkit",
+      "relationship": "complements",
+      "context": "OnchainKit is built on top of wagmi. When building Base apps with full design control (custom components, design system), use wagmi directly instead of OnchainKit's opinionated components. When using OnchainKit, wagmi is the underlying dependency.",
+      "workflow_ref": "base-consumer-app"
+    },
+    {
+      "tool_id": "reown",
+      "relationship": "complements",
+      "context": "Reown (WalletConnect) provides the wallet connection protocol; wagmi provides the React hooks that applications use to interact with connected wallets. Reown's AppKit is itself built on wagmi.",
+      "workflow_ref": "ethereum-aa-native-app"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "wagmi's transport layer is configured with an Alchemy RPC URL. All wagmi hooks that read chain state route through the configured transport."
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "often-used-with",
+      "context": "Privy provides authentication and embedded wallet creation; wagmi provides the hooks to use that wallet for onchain interactions. Privy exposes a wagmi-compatible interface."
+    },
+    {
+      "tool_id": "dynamic",
+      "relationship": "often-used-with",
+      "context": "Dynamic provides a wagmi connector — @dynamic-labs/wagmi-connector. Dynamic handles wallet creation/connection; wagmi provides the interaction hooks."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "dependency-graph-frequency",
+      "description": "wagmi is a foundational dependency in the vast majority of Ethereum/Base frontend repositories. Every major EVM wallet SDK (Privy, Dynamic, Reown) exposes a wagmi-compatible interface.",
+      "verifiable": true
+    },
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "The de facto standard for React + EVM interactions. No competing hooks library approaches wagmi's ecosystem footprint.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "Actively maintained by the wevm team. wagmi v2 is the current stable version with active development.",
+      "source_url": "https://wagmi.sh",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "wagmi",
+      "@wagmi/core",
+      "@wagmi/connectors"
+    ]
+  },
+  "sdk_migration": {
+    "status": "stable",
+    "from_package": "wagmi@^1",
+    "to_package": "wagmi@^2",
+    "notes": "wagmi v1 to v2 was a breaking change with significant API differences. Repos using wagmi@^1 should migrate to wagmi@^2. Key changes: hooks renamed (useContractRead → useReadContract), connector API refactored. v2 is the current stable version — all new projects should use v2."
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-consumer-app", "ethereum-aa-native-app", "farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Use OnchainKit instead for Base hackathons — OnchainKit builds on wagmi but provides ready-made components. Use wagmi directly only when OnchainKit's component opinions conflict with the design.",
+    "mvp": "wagmi is the right choice when building custom UI components. For rapid Base development with Coinbase design, OnchainKit is faster. For Ethereum dApps with Reown, wagmi + Reown is the canonical stack.",
+    "production": "wagmi v2 introduces query caching (via TanStack Query) — configure properly for production. Understand the difference between SSR-safe and client-only hooks. Account for Next.js hydration edge cases with wallet state."
+  },
+  "alternatives": [
+    {
+      "tool_id": "onchainkit",
+      "when_to_prefer": "When building on Base and the design can accept OnchainKit's component opinions. OnchainKit wraps wagmi and adds pre-built transaction, swap, and identity components. Faster than raw wagmi; less design control.",
+      "ecosystem_context": "Base."
+    }
+  ],
+  "anti_patterns": [
+    "Using wagmi v1 in new projects — wagmi v2 is the current stable version. v1 imports will trigger deprecation warnings and miss v2 caching improvements.",
+    "Using wagmi without configuring a proper RPC transport — the default wagmi transport uses public RPCs that rate-limit at any meaningful user volume. Always configure Alchemy or QuickNode as the transport.",
+    "Calling wagmi hooks at the top level outside a WagmiProvider — hooks require the provider context. A common SSR error in Next.js apps.",
+    "Using wagmi directly on Solana — wagmi is EVM-only. Solana frontends need @solana/web3.js or @solana/kit."
+  ],
+  "retrieval_tags": ["react-hooks", "evm-hooks", "ethereum-frontend", "wallet-hooks", "contract-hooks", "base-frontend", "viem", "blockchain-react"],
+  "source": {
+    "primary_url": "https://wagmi.sh",
+    "docs_url": "https://wagmi.sh/react/getting-started",
+    "github_url": "https://github.com/wevm/wagmi"
+  },
+  "updated_at": "2026-05-14"
+}

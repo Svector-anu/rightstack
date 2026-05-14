@@ -1,0 +1,134 @@
+{
+  "id": "coinbase-smart-wallet",
+  "name": "Coinbase Smart Wallet",
+  "aliases": [
+    "@coinbase/wallet-sdk",
+    "coinbase-wallet-sdk",
+    "base-account",
+    "coinbase-smart-account",
+    "cbw-sdk"
+  ],
+  "category": "account-abstraction",
+  "subcategory": "smart-account",
+  "description": "Coinbase's ERC-4337 smart contract wallet for Base. Enables passkey-based transaction signing (no seed phrase), gasless transactions via Coinbase's paymaster, and one-click wallet creation embedded in any Base app. The Base-native smart account layer surfaced through OnchainKit wallet components.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "The primary smart account product for Base apps. Coinbase's paymaster sponsors gas for Smart Wallet users on Base. Deeply integrated with OnchainKit's wallet components and the Coinbase ecosystem."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong",
+      "notes": "Supports Ethereum mainnet and L2s as an ERC-4337 smart wallet. Gas sponsorship is most mature on Base."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "strong",
+      "notes": "Many Farcaster users have Coinbase Wallet — Smart Wallet is accessible from the same surface. Farcaster MiniApps built with OnchainKit can access Smart Wallet directly."
+    },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "passkey-transaction-signing",
+    "seed-phrase-free-onboarding",
+    "gasless-transactions",
+    "erc-4337-smart-account",
+    "coinbase-paymaster-access",
+    "batched-transactions",
+    "cross-app-wallet",
+    "one-click-checkout",
+    "session-management",
+    "base-native-gas-sponsorship"
+  ],
+  "workflow_positions": ["wallet-layer", "payment-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "onchainkit",
+      "relationship": "complements",
+      "context": "OnchainKit's ConnectWallet component surfaces Coinbase Smart Wallet as the primary wallet option for Base apps. The wallet UI and the smart account are tightly integrated through this pairing.",
+      "workflow_ref": "base-consumer-app"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Alchemy RPC for Base chain state reads; Coinbase Smart Wallet for the AA signing and gas layer. Standard Base production stack."
+    },
+    {
+      "tool_id": "pimlico",
+      "relationship": "complements",
+      "context": "When building apps that need to support both Smart Wallet users (who get Coinbase's paymaster) and other wallet users (who need Pimlico's paymaster), both can coexist. Smart Wallet handles its own bundler; Pimlico serves other wallets."
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "often-used-with",
+      "context": "Privy creates embedded wallets for new users; Smart Wallet serves existing Coinbase Wallet users. Both can be offered in a hybrid flow to maximize conversion across user types."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "institutional-endorsement",
+      "description": "Built and maintained by Coinbase. The primary AA product in the Coinbase developer ecosystem. Backed by Coinbase's production infrastructure and paymaster budget.",
+      "verifiable": true
+    },
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Default smart wallet option surfaced by OnchainKit in Base apps. Coinbase's recommended path for AA-enabled consumer apps on Base.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Coinbase provides comprehensive documentation for Smart Wallet integration, passkey setup, and paymaster configuration.",
+      "source_url": "https://www.smartwallet.dev",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@coinbase/wallet-sdk",
+      "coinbase-wallet-sdk"
+    ]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-consumer-app", "embedded-wallet-onboarding", "farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Use OnchainKit's ConnectWallet component — it surfaces Smart Wallet by default on Base. Zero additional configuration needed.",
+    "mvp": "Smart Wallet's passkey-based signing is the best UX for Base consumer apps. Coinbase's built-in paymaster covers gas for early users without Pimlico configuration overhead.",
+    "production": "Coinbase's paymaster has usage policies — verify sponsorship limits and terms for production workloads. Plan fallback for non-Smart Wallet users (those using MetaMask, WalletConnect) who will not get Smart Wallet's sponsored gas."
+  },
+  "alternatives": [
+    {
+      "tool_id": "pimlico",
+      "when_to_prefer": "When gas sponsorship must cover wallets BEYOND Coinbase Smart Wallet users — Privy embedded wallets, MetaMask users, etc. Pimlico's paymaster is wallet-agnostic; Smart Wallet's paymaster only covers Smart Wallet users.",
+      "ecosystem_context": "Base, Ethereum."
+    },
+    {
+      "tool_id": "zerodev",
+      "when_to_prefer": "When advanced smart account features are needed — session keys, plugin system, custom policy logic. ZeroDev Kernel offers a more programmable smart account than Coinbase Smart Wallet.",
+      "ecosystem_context": "Base, Ethereum."
+    },
+    {
+      "tool_id": "privy",
+      "when_to_prefer": "When the app targets users who do not have Coinbase Wallet and need embedded wallet creation from scratch. Smart Wallet requires existing Coinbase Wallet or passkey setup; Privy creates a wallet from email/social login with no prior wallet needed.",
+      "ecosystem_context": "Base, Ethereum."
+    }
+  ],
+  "anti_patterns": [
+    "Using Coinbase Smart Wallet for autonomous agents — Smart Wallet requires passkey or user approval for signing. Autonomous agents need Turnkey for programmatic server-side key management.",
+    "Conflating Coinbase Smart Wallet with standard Coinbase Wallet (EOA) — Smart Wallet is a distinct ERC-4337 smart contract wallet with a different address from the Coinbase Wallet EOA.",
+    "Assuming all users have Coinbase Wallet — Smart Wallet is accessible via passkey on any device without a prior Coinbase Wallet. But users without Coinbase Wallet may have friction creating a passkey for the first time.",
+    "Relying solely on Coinbase's paymaster without a fallback — if Coinbase's paymaster is unavailable or the sponsorship policy changes, unplanned gas costs hit users unexpectedly."
+  ],
+  "retrieval_tags": ["base-account", "coinbase-smart-wallet", "passkey-wallet", "smart-account", "gasless-base", "erc-4337", "coinbase-wallet", "base-native-aa"],
+  "source": {
+    "primary_url": "https://www.smartwallet.dev",
+    "docs_url": "https://www.smartwallet.dev/why",
+    "github_url": "https://github.com/coinbase/coinbase-wallet-sdk"
+  },
+  "updated_at": "2026-05-14"
+}

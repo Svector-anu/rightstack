@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/TrustSignalRecord.json",
+  "title": "TrustSignalRecord",
+  "description": "Detailed evidence record for a trust state classification. The authoritative source for trust decisions. ToolRecord.trust_state is a denormalized copy of derived_trust_state here.",
+  "type": "object",
+  "required": ["id", "subject_id", "subject_type", "observed_signals", "derived_trust_state", "reviewed_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "ID of the ToolRecord, SkillRecord, or EcosystemRecord being evaluated."
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": ["tool", "skill", "ecosystem", "organization"]
+    },
+    "observed_signals": {
+      "type": "array",
+      "description": "All signals observed. Each signal has a tier, type, and evidence description.",
+      "items": {
+        "type": "object",
+        "required": ["tier", "type", "description"],
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "enum": [1, 2, 3],
+            "description": "1=production evidence. 2=quality indicators. 3=surface metrics. Tier 3 signals alone cannot establish production-grade trust."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "production-repo-presence",
+              "dependency-graph-frequency",
+              "recurring-workflow-pattern",
+              "active-maintenance",
+              "ecosystem-native-adoption",
+              "documentation-quality",
+              "release-consistency",
+              "integration-density",
+              "builder-reputation",
+              "institutional-endorsement",
+              "github-stars",
+              "social-mentions",
+              "vc-backing",
+              "hackathon-sponsor"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "What was observed. Be specific — avoid 'high production adoption' without evidence."
+          },
+          "source_url": { "type": "string" },
+          "observed_at": { "type": "string", "format": "date" },
+          "verifiable": {
+            "type": "boolean",
+            "description": "Whether this signal can be independently verified by checking the source."
+          }
+        }
+      }
+    },
+    "derived_trust_state": {
+      "type": "string",
+      "enum": ["production-grade", "emerging", "experimental", "abandoned", "hype-driven"],
+      "description": "Trust state derived from the balance of observed signals. Must be justified by Tier 1 signals for production-grade classification."
+    },
+    "trust_reasoning": {
+      "type": "string",
+      "description": "Narrative explanation of how the observed signals lead to the derived trust state. Required for non-obvious classifications."
+    },
+    "anti_patterns_observed": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Trust anti-patterns detected. e.g. 'High GitHub stars with low issue activity — star inflation suspected.'"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "When this trust evaluation was performed. Trust states decay — web3 tooling moves fast."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Who or what performed this evaluation."
+    },
+    "next_review_at": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Scheduled next review. Emerging tools should be reviewed every 60 days. Production-grade tools every 180 days."
+    }
+  }
+}

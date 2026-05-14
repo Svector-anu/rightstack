@@ -1,0 +1,88 @@
+{
+  "id": "jito-mev",
+  "name": "Jito (MEV & Bundle Submission)",
+  "aliases": ["jito-ts", "jito-foundation", "@jito-ts/sdk", "jito-bundles"],
+  "category": "execution",
+  "subcategory": "mev-protection",
+  "description": "MEV-protected bundle submission infrastructure for Solana. Submits ordered transaction bundles to Jito validators with priority landing guarantees, protecting against sandwich attacks and front-running. Required for competitive Solana trade execution.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "The only production-grade MEV protection on Solana. Required for high-frequency trading agents and any execution sensitive to sandwich attacks." },
+    { "ecosystem": "base", "strength": "none", "notes": "EVM MEV protection is handled by Flashbots (separate record). Jito is Solana-specific." },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "bundle-submission",
+    "mev-protection",
+    "priority-landing",
+    "transaction-ordering",
+    "tip-account-management",
+    "bundle-simulation",
+    "validator-priority-fees",
+    "sandwich-attack-protection"
+  ],
+  "workflow_positions": ["execution-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "jupiter",
+      "relationship": "often-used-with",
+      "context": "Jupiter computes the optimal swap route and outputs the transaction. Jito wraps that transaction in a bundle and submits it with MEV-protected priority landing.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius monitors for the onchain signal; Jito submits the agent's response transaction with MEV protection.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "turnkey",
+      "relationship": "often-used-with",
+      "context": "Turnkey signs the transaction; Jito submits the signed transaction as an MEV-protected bundle.",
+      "workflow_ref": "solana-trading-agent"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Jito bundles are the production standard for competitive Solana execution. Dominant MEV solution for Solana trading agents.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Jupiter + Jito is the most frequently confirmed Solana trading execution pattern. Jito appears in solana-trading-agent as the mev-protection phase.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["jito-ts", "@jito-foundation/mev-protos"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Skip Jito at hackathon scale. Use standard RPC submission. Only add Jito when competitive execution matters.",
+    "mvp": "Add Jito if the product requires competitive trade execution or if sandwich attacks are a real concern at MVP scale.",
+    "production": "Required for production trading agents at any meaningful volume. Build retry logic — Jito bundle success rates are not 100% and vary with validator adoption. Exponential backoff with fallback to standard submission."
+  },
+  "alternatives": [],
+  "anti_patterns": [
+    "Skipping Jito for production trading agents that execute at volume — sandwich attacks are real and will occur at scale.",
+    "Not building retry logic for Jito bundle submission — bundles are not guaranteed to land. Production agents must handle rejection gracefully with alternative submission paths.",
+    "Using Jito for non-execution-sensitive operations — Jito adds latency overhead. Only use for MEV-sensitive execution."
+  ],
+  "sdk_migration": {
+    "status": "stable",
+    "notes": "Important: Jito also has a liquid staking product (Jito Staking / jitoSOL). That is a separate record: jito-staking (category: defi-protocol, subcategory: liquid-staking). Do NOT conflate jito-mev with jito-staking."
+  },
+  "retrieval_tags": ["mev-protection", "bundle-submission", "solana-execution", "sandwich-protection", "priority-landing", "jito-bundles"],
+  "source": {
+    "primary_url": "https://jito.network",
+    "docs_url": "https://docs.jito.network",
+    "github_url": "https://github.com/jito-foundation/jito-ts"
+  },
+  "updated_at": "2026-05-13"
+}

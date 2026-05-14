@@ -1,0 +1,132 @@
+{
+  "id": "dynamic",
+  "name": "Dynamic",
+  "aliases": ["@dynamic-labs/sdk-react-core", "@dynamic-labs/ethereum", "@dynamic-labs/solana", "dynamic-labs"],
+  "category": "wallet-infrastructure",
+  "subcategory": "hybrid",
+  "description": "Multi-chain wallet SDK that handles both embedded wallet creation (for new users without wallets) and external wallet connection (for users with MetaMask, Coinbase Wallet, etc.) in a single unified flow. The only wallet infrastructure tool that resolves the hybrid_wallet constraint without building two separate onboarding paths.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "Used in Base apps where the target audience spans new users (no wallet) and existing web3 users (MetaMask, Coinbase Wallet). Dynamic handles both without a branching onboarding path."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong",
+      "notes": "Strong EVM support. Commonly used in Ethereum dApps where the user base includes both crypto-native users with existing wallets and new users."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "strong",
+      "notes": "Native Solana wallet support including Phantom, Backpack. Multi-chain apps that span Solana + EVM can use Dynamic as a unified wallet layer."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "limited",
+      "notes": "Dynamic can be used in Farcaster apps as an alternative to Privy, but Privy's miniapp-specific mode is purpose-built for Farcaster Frame environments. Dynamic is the better choice when non-Farcaster users also use the same app."
+    },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "embedded-wallet-creation",
+    "external-wallet-connection",
+    "hybrid-wallet-flow",
+    "social-login",
+    "email-login",
+    "multi-chain-support",
+    "wallet-unification",
+    "progressive-auth-upgrade",
+    "walletconnect-integration",
+    "farcaster-auth",
+    "smart-wallet-support"
+  ],
+  "workflow_positions": ["wallet-layer", "auth-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "pimlico",
+      "relationship": "complements",
+      "context": "Dynamic manages the wallet (embedded creation or external connection); Pimlico sponsors gas. The pairing resolves the full hybrid-wallet-with-gasless-UX requirement.",
+      "workflow_ref": "embedded-wallet-onboarding"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Standard EVM infrastructure pairing: Dynamic for wallet, Alchemy for RPC and chain data."
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "replaces",
+      "context": "When the hybrid_wallet constraint is true (app must support both users with existing wallets AND new users without wallets), replace Privy with Dynamic. Privy is embedded-wallet-only; Dynamic handles both. If all target users are new to crypto, Privy is simpler."
+    },
+    {
+      "tool_id": "zerodev",
+      "relationship": "often-used-with",
+      "context": "Dynamic for wallet management; ZeroDev for smart account functionality (session keys, batched transactions). Dynamic integrates with ZeroDev Kernel via their connector.",
+      "workflow_ref": "ethereum-aa-native-app"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Dynamic is cited as the default recommendation for hybrid wallet scenarios in multiple production web3 app stacks. Appears as the alternative to Privy in every workflow where hybrid_wallet is required.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "Dynamic maintains active SDK versions for React, React Native, and multi-chain connectors with regular release cadence.",
+      "source_url": "https://docs.dynamic.xyz",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Referenced as an alternative to Privy in multiple WorkflowRecords (base-consumer-app, embedded-wallet-onboarding, ethereum-aa-native-app). Cross-references indicate broad adoption.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@dynamic-labs/sdk-react-core",
+      "@dynamic-labs/ethereum",
+      "@dynamic-labs/solana",
+      "@dynamic-labs/wagmi-connector",
+      "@dynamic-labs/viem-utils"
+    ]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["embedded-wallet-onboarding", "base-consumer-app", "ethereum-aa-native-app"],
+  "scale_guidance": {
+    "hackathon": "Use Privy instead if only building embedded wallet flows — simpler setup. Use Dynamic when hackathon demo requires both wallet creation and wallet connection in the same flow.",
+    "mvp": "Dynamic adds more configuration surface area than Privy for pure embedded wallet cases. Only add Dynamic when the hybrid_wallet constraint is real — determined by actual user research, not assumption.",
+    "production": "Dynamic's pricing scales with active users. Model MAU cost before launch. The alternative-path management (embedded vs. external) creates two different user experiences to maintain — ensure both paths are thoroughly tested."
+  },
+  "alternatives": [
+    {
+      "tool_id": "privy",
+      "when_to_prefer": "When ALL target users are new to crypto (no existing wallet). Privy's embedded-only approach is simpler, has better miniapp integration for Farcaster, and has lower configuration overhead for pure consumer onboarding.",
+      "ecosystem_context": "Base, Farcaster, Ethereum."
+    },
+    {
+      "tool_id": "reown",
+      "when_to_prefer": "When ALL target users have existing wallets (MetaMask, Coinbase Wallet, Phantom) and wallet creation for new users is explicitly out of scope. Reown (WalletConnect) provides the cleanest connection experience for existing wallet holders.",
+      "ecosystem_context": "Ethereum, Base, Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using Dynamic when Privy is sufficient — the hybrid capability adds configuration complexity that is unnecessary when all users are new to crypto. Let user research, not assumptions, drive the decision to use Dynamic.",
+    "Using Dynamic for fully autonomous agent signing — Dynamic, like Privy, is user-facing wallet infrastructure. Server-side autonomous agents require Turnkey for programmatic key management.",
+    "Configuring Dynamic for one chain when the app targets multiple chains without setting up multi-chain wallet support — Dynamic requires explicit configuration per chain connector.",
+    "Not testing both the embedded creation path AND the external connection path in production — two wallet paths means double the edge cases in transaction signing, session management, and error handling."
+  ],
+  "retrieval_tags": ["hybrid-wallet", "wallet-sdk", "embedded-wallet", "external-wallet", "multi-chain-wallet", "social-login", "walletconnect", "wallet-unification"],
+  "source": {
+    "primary_url": "https://dynamic.xyz",
+    "docs_url": "https://docs.dynamic.xyz",
+    "github_url": "https://github.com/dynamic-labs"
+  },
+  "updated_at": "2026-05-14"
+}

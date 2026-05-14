@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/OrchestrationPatternRecord.json",
+  "title": "OrchestrationPatternRecord",
+  "description": "A normalized record for a recurring architectural pattern in AI-native or workflow orchestration contexts. Derived from observation, not invented. Only add when a pattern is observed in 2+ independent sources.",
+  "type": "object",
+  "required": ["id", "name", "pattern_type", "observed_in", "ecosystems", "maturity", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": { "type": "string" },
+    "description": {
+      "type": "string",
+      "description": "What the pattern is and why it exists. Architecture-oriented — not a feature description."
+    },
+    "pattern_type": {
+      "type": "string",
+      "enum": [
+        "multi-agent-coordination",
+        "execution-pipeline",
+        "event-driven",
+        "payment-flow",
+        "security-gate",
+        "data-pipeline",
+        "context-injection",
+        "simulation-before-execute",
+        "identity-and-auth"
+      ]
+    },
+    "observed_in": {
+      "type": "array",
+      "description": "Where this pattern was observed. Minimum 2 independent sources to be included as a record.",
+      "items": {
+        "type": "object",
+        "required": ["source"],
+        "properties": {
+          "source": { "type": "string" },
+          "quote": { "type": "string" },
+          "source_url": { "type": "string" }
+        }
+      }
+    },
+    "ecosystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general"]
+      }
+    },
+    "maturity": {
+      "type": "string",
+      "enum": ["theoretical", "emerging", "established", "production-standard"],
+      "description": "theoretical=documented but not yet observed in production. emerging=observed in 2-3 places. established=consistent production pattern. production-standard=the expected approach."
+    },
+    "requires": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What this pattern requires to implement. Can reference tool IDs, skill IDs, or infrastructure types."
+    },
+    "implementation_notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Concrete guidance for implementing this pattern. Not generic — specific to the observed implementations."
+    },
+    "anti_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Common ways this pattern is incorrectly implemented."
+    },
+    "related_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs of related OrchestrationPatternRecords."
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    }
+  }
+}

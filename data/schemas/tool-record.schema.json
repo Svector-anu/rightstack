@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rightstack.dev/schemas/ToolRecord.json",
+  "title": "ToolRecord",
+  "description": "Normalized intelligence object representing a tool, SDK, or protocol. Designed for intent-aware retrieval, trust-weighted ranking, and workflow composition — not CRUD.",
+  "type": "object",
+  "required": ["id", "name", "category", "ecosystem_fit", "capabilities", "trust_state", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable slug. Never change after first publication — it is the foreign key target for WorkflowRecord.phases[].tools and all cross-references."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name. May differ from id if tool was rebranded. Historical names live in aliases[]."
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "All previous names and ALL package names that identify this tool in a user repo. Critical for repo-aware matching. e.g. WalletConnect → Reown means aliases includes '@walletconnect/web3modal'."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wallet-infrastructure",
+        "account-abstraction",
+        "chain-data",
+        "market-data",
+        "defi-protocol",
+        "execution",
+        "agent-framework",
+        "workflow-orchestration",
+        "social-layer",
+        "frontend-sdk",
+        "developer-tooling",
+        "security-tooling",
+        "storage",
+        "identity",
+        "context-protocol"
+      ],
+      "description": "Primary ontology category (V2). ONE per tool. Multi-role tools express secondary roles via workflow_positions[] and subcategory, not additional categories. See docs/ONTOLOGY-V2.md for membership tests."
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Subcategory within the primary category. See taxonomy-map.json for valid subcategory values per category. Subcategories are metadata — they do not affect retrieval routing but narrow results within a category query."
+    },
+    "description": {
+      "type": "string",
+      "description": "Retrieval-oriented description. Written to answer 'what builder intent does this serve?' Not marketing copy. Max 2 sentences."
+    },
+    "ecosystem_fit": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Per-ecosystem fit assessments. Structured — not a string tag. Required for ecosystem-filtering at retrieval time.",
+      "items": {
+        "type": "object",
+        "required": ["ecosystem", "strength"],
+        "properties": {
+          "ecosystem": {
+            "type": "string",
+            "enum": ["base", "farcaster", "solana", "ethereum", "aptos", "general"]
+          },
+          "strength": {
+            "type": "string",
+            "enum": ["dominant", "strong", "limited", "none", "not-applicable"],
+            "description": "dominant=the default choice in this ecosystem. strong=actively used, good fit. limited=possible but suboptimal. none=not used. not-applicable=architectural mismatch."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Only populate when strength is non-obvious or requires ecosystem-specific context."
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What this tool does. Use kebab-case verb phrases: 'embedded-wallet-creation', 'webhook-streaming', 'transaction-simulation'. These drive capability-based retrieval — do not use noun phrases."
+    },
+    "workflow_positions": {
+      "type": "array",
+      "description": "Roles this tool occupies within a workflow stack. Different from category — category is what it IS, positions are WHERE it sits in an execution pipeline. A tool can have multiple positions.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "wallet-layer",
+          "data-layer",
+          "execution-layer",
+          "ai-reasoning-layer",
+          "orchestration-layer",
+          "ui-layer",
+          "auth-layer",
+          "social-layer",
+          "security-layer",
+          "signing-layer",
+          "payment-layer"
+        ]
+      }
+    },
+    "common_pairings": {
+      "type": "array",
+      "description": "Tools that appear alongside this one in production workflows. Each pairing has relationship context and the workflow situation where it applies.",
+      "items": {
+        "type": "object",
+        "required": ["tool_id", "relationship"],
+        "properties": {
+          "tool_id": { "type": "string" },
+          "relationship": {
+            "type": "string",
+            "enum": ["complements", "depends-on", "often-used-with", "replaces", "is-replaced-by"]
+          },
+          "context": {
+            "type": "string",
+            "description": "When this pairing is appropriate. Not required but strongly preferred."
+          },
+          "workflow_ref": {
+            "type": "string",
+            "description": "WorkflowRecord id where this pairing is the canonical pattern."
+          }
+        }
+      }
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["production-grade", "emerging", "experimental", "abandoned", "hype-driven"],
+      "description": "Current trust classification per TRUST_MODEL.md. Denormalized copy of TrustSignalRecord.derived_trust_state for retrieval performance."
+    },
+    "trust_evidence": {
+      "type": "array",
+      "description": "Specific evidence backing the trust_state. Kept inline on ToolRecord for retrieval co-location. Full signal analysis lives in TrustSignalRecord.",
+      "items": {
+        "type": "object",
+        "required": ["tier", "type", "description"],
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "enum": [1, 2, 3],
+            "description": "1=production evidence (hardest to fake). 2=quality indicators. 3=surface metrics (weakest)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "production-repo-presence",
+              "dependency-graph-frequency",
+              "recurring-workflow-pattern",
+              "active-maintenance",
+              "ecosystem-native-adoption",
+              "documentation-quality",
+              "integration-density",
+              "institutional-endorsement"
+            ]
+          },
+          "description": { "type": "string" },
+          "source_url": { "type": "string" },
+          "verifiable": { "type": "boolean" }
+        }
+      }
+    },
+    "package_identifiers": {
+      "type": "object",
+      "description": "Package manager names for repo-aware detection. Include ALL package names for this tool including historical ones. A user's package.json may reference an old package name.",
+      "properties": {
+        "npm": { "type": "array", "items": { "type": "string" } },
+        "pip": { "type": "array", "items": { "type": "string" } },
+        "cargo": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "skill_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs of SkillRecords that provide operational context for this tool."
+    },
+    "workflow_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs of WorkflowRecords where this tool appears. Used for reverse lookup: given a tool, find all workflows that use it."
+    },
+    "sdk_migration": {
+      "type": "object",
+      "description": "Present when tool is in an active SDK transition. This is a retrieval safety field — tools in migration produce stale recommendations if this is ignored.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["stable", "migrating-from", "migrating-to", "deprecated", "successor"]
+        },
+        "from_package": { "type": "string" },
+        "to_package": { "type": "string" },
+        "to_tool_id": {
+          "type": "string",
+          "description": "ID of the ToolRecord that supersedes this one, if applicable."
+        },
+        "migration_skill_ref": {
+          "type": "string",
+          "description": "SkillRecord that guides the migration."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "scale_guidance": {
+      "type": "object",
+      "description": "How recommendation changes across scales. Do NOT duplicate generic best practices — only populate when this tool behaves differently at different scales.",
+      "properties": {
+        "hackathon": { "type": "string" },
+        "mvp": { "type": "string" },
+        "production": { "type": "string" }
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "description": "Alternatives for the same workflow slot. Encode WHY you would choose each — not just a list.",
+      "items": {
+        "type": "object",
+        "required": ["tool_id", "when_to_prefer"],
+        "properties": {
+          "tool_id": { "type": "string" },
+          "when_to_prefer": { "type": "string" },
+          "ecosystem_context": { "type": "string" }
+        }
+      }
+    },
+    "anti_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Known misuse patterns. Critical for repo-audit mode — these are the things to flag when this tool is detected in a repo."
+    },
+    "retrieval_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Supplemental terms for semantic retrieval not captured by structured fields. Keep minimal — if a concept belongs in capabilities or description, put it there instead."
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "primary_url": { "type": "string" },
+        "docs_url": { "type": "string" },
+        "github_url": { "type": "string" }
+      }
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "When this record was last reviewed for accuracy. null = never reviewed. Records older than 90 days should be flagged for review in web3 tooling."
+    }
+  }
+}

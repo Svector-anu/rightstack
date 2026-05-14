@@ -1,0 +1,128 @@
+{
+  "id": "farcaster-consumer-onboarding",
+  "name": "Farcaster Consumer Onboarding Workflow",
+  "goal": "Build a Farcaster-native miniapp with social login, embedded wallet, and onchain actions on Base.",
+  "goal_tags": ["farcaster-miniapp", "social-login", "embedded-wallet", "miniapp", "consumer-onboarding", "farcaster-frames"],
+  "ecosystems": ["farcaster", "base"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "social-data",
+      "role": "social-layer",
+      "required": true,
+      "primary_tools": ["neynar"],
+      "alternative_tools": [
+        {
+          "tool_id": "farcaster-hub-direct",
+          "when_to_prefer": "At scale where Neynar pricing becomes prohibitive. Adds significant operational complexity."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Neynar abstracts Farcaster Hub complexity significantly. The cost tradeoff is almost always worth it at MVP and early production scale. Only migrate to direct Hub access when you have confirmed the user volume makes Neynar pricing unsustainable.",
+      "scale_overrides": {
+        "production": "Plan for Neynar pricing as user volume grows. Set up cost monitoring early."
+      }
+    },
+    {
+      "id": "frame-rendering",
+      "role": "ui",
+      "required": true,
+      "primary_tools": ["farcaster-frames-sdk"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Farcaster Frames SDK is the only real choice for frame rendering. OnchainKit has Frame components that simplify this further."
+    },
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["privy"],
+      "alternative_tools": [
+        {
+          "tool_id": "dynamic",
+          "when_to_prefer": "When more authentication options are required beyond Privy's standard social/email login."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Use Privy in miniapp mode specifically. Privy's miniapp mode handles the edge cases of wallet management inside a Farcaster Frame context. Do not use the standard react-auth SDK without configuring it for the miniapp context."
+    },
+    {
+      "id": "ui-components",
+      "role": "ui",
+      "required": false,
+      "primary_tools": ["onchainkit"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "OnchainKit reduces boilerplate for Base-native UI significantly. Optional but highly recommended for speed."
+    },
+    {
+      "id": "chain",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "If already using QuickNode for other infrastructure."
+        }
+      ],
+      "phase_notes": "Base is the natural chain for Farcaster miniapps. Use Alchemy for Base RPC — do not use public RPCs in production."
+    },
+    {
+      "id": "gasless-actions",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [
+        {
+          "tool_id": "alchemy-account-kit",
+          "when_to_prefer": "If already fully in the Alchemy stack."
+        }
+      ],
+      "phase_notes": "Gasless actions inside a Farcaster Frame significantly improve conversion. Add Pimlico if onchain actions are part of the frame interaction — users should not need ETH to complete a frame action.",
+      "scale_overrides": {
+        "production": "Model gas sponsorship costs before launch. Implement per-user spending limits."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Neynar + Privy + Base is the dominant Farcaster miniapp stack in production. Most successful Farcaster miniapps ship with this pattern.",
+    "Social graph data from Neynar is often more valuable than onchain data in this workflow — the Farcaster social context can power personalization and engagement loops.",
+    "Frame performance matters for conversion — keep backend response times under 300ms for frame interactions.",
+    "Privy miniapp mode handles wallet edge cases specific to the Frame context. Not configuring it for miniapp mode is a common mistake."
+  ],
+  "tradeoffs": [
+    "Neynar abstracts complexity but adds per-request cost that scales with usage.",
+    "Privy + OnchainKit is tightly coupled to Base/Coinbase ecosystem — strong for this use case, less portable to other chains.",
+    "OnchainKit has opinionated UI components — good for speed, constraining for custom designs.",
+    "Farcaster miniapps operate in a constrained UX context (inside a feed) — full dApp patterns don't translate directly."
+  ],
+  "anti_patterns": [
+    "Using public Solana or non-Base RPCs — Farcaster miniapps should use Base.",
+    "Not using Privy in miniapp mode — the standard react-auth mode has UX issues inside frames.",
+    "Building complex multi-step flows in a single frame — keep frame interactions atomic.",
+    "Not implementing gas sponsorship for actions — requiring users to have ETH in a miniapp context kills conversion."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "ai_features_required",
+      "modification": "Add Vercel AI SDK + Claude to the ai-reasoning phase between social-data and frame-rendering.",
+      "affects_phase": "ai-reasoning"
+    },
+    {
+      "constraint": "scale_over_10k_dau",
+      "modification": "Evaluate Neynar tier and consider direct Farcaster Hub for highest-volume social data queries.",
+      "affects_phase": "social-data"
+    }
+  ],
+  "retrieval_tags": ["farcaster", "miniapp", "frames", "social-crypto", "consumer-app", "neynar", "embedded-wallet"],
+  "source": {
+    "derived_from": "WORKFLOWS.md workflow #2 + corpus-analysis-v1",
+    "last_verified": "2026-05-13"
+  },
+  "updated_at": "2026-05-13"
+}

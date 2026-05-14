@@ -1,0 +1,130 @@
+{
+  "id": "vercel-ai-sdk",
+  "name": "Vercel AI SDK",
+  "aliases": ["ai", "@ai-sdk/core", "@ai-sdk/anthropic", "@ai-sdk/openai", "ai-sdk"],
+  "category": "agent-framework",
+  "subcategory": "general-ai-sdk",
+  "description": "Production-grade TypeScript SDK for building AI agents and LLM-powered applications. Provides structured tool use, streaming, structured outputs, and multi-model support. The default AI reasoning layer in web3 agent stacks where Python is not required.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "strong", "notes": "Paired with AgentKit in Base AI agent workflows. The reasoning layer in the Base onchain AI agent stack." },
+    { "ecosystem": "solana", "strength": "strong", "notes": "The recommended AI reasoning layer in solana-trading-agent. Claude is the recommended LLM for complex trading reasoning per WORKFLOWS.md." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "The reasoning layer in Farcaster social AI agents. Neynar webhooks → Vercel AI SDK → Neynar cast APIs." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Used in AI agent patterns on Ethereum." },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "llm-integration",
+    "tool-use",
+    "streaming-responses",
+    "structured-outputs",
+    "multi-model-support",
+    "agent-loop",
+    "multi-step-tool-chains",
+    "prompt-engineering",
+    "provider-abstraction",
+    "react-hooks-for-ai",
+    "server-side-generation"
+  ],
+  "workflow_positions": ["ai-reasoning-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius delivers onchain events via webhooks; Vercel AI SDK processes those events in the agent reasoning loop.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "turnkey",
+      "relationship": "often-used-with",
+      "context": "Vercel AI SDK handles LLM reasoning; Turnkey handles server-side transaction signing for the resulting decisions.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "jupiter",
+      "relationship": "often-used-with",
+      "context": "Vercel AI SDK decides what trade to make; Jupiter provides the swap routing for executing that decision.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "neynar",
+      "relationship": "often-used-with",
+      "context": "Neynar delivers Farcaster social events; Vercel AI SDK processes them and generates cast responses for social AI agents.",
+      "workflow_ref": "farcaster-social-ai-agent"
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Trigger.dev orchestrates agent runs with retry logic; Vercel AI SDK provides the LLM reasoning within each step.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "coinbase-agentkit",
+      "relationship": "complements",
+      "context": "AgentKit provides web3-native onchain actions; Vercel AI SDK provides the LLM backbone. AgentKit is built on top of Vercel AI SDK for Base agents.",
+      "workflow_ref": "base-onchain-ai-agent"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Vercel AI SDK is the default AI reasoning layer in every web3 AI agent workflow in WORKFLOWS.md. Appears in solana-trading-agent, base-onchain-ai-agent, farcaster-social-ai-agent.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "active-maintenance",
+      "description": "Official Vercel product. v4 (ai package) is actively maintained with frequent releases and strong documentation.",
+      "source_url": "https://sdk.vercel.ai",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Vercel AI SDK has comprehensive documentation including guides for tool use, structured outputs, and agentic patterns.",
+      "source_url": "https://sdk.vercel.ai/docs",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["ai", "@ai-sdk/core", "@ai-sdk/anthropic", "@ai-sdk/openai", "@ai-sdk/google", "@ai-sdk/mistral"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent", "base-onchain-ai-agent", "farcaster-social-ai-agent"],
+  "scale_guidance": {
+    "hackathon": "Use the `ai` package directly. Streaming hooks for React are the fastest path to a chat or agent UI.",
+    "mvp": "Use structured outputs for agent decision extraction — do not parse free-text LLM responses. Build tool use with proper validation.",
+    "production": "Use Claude (claude-opus-4-7 or claude-sonnet-4-6) for complex agent reasoning. Model LLM API costs per agent invocation. Implement max-step limits to prevent infinite loops."
+  },
+  "alternatives": [
+    {
+      "tool_id": "langchain",
+      "when_to_prefer": "When complex multi-step reasoning chains are required, Python-native tooling is preferred, or when heavy ML/model work accompanies the agent logic.",
+      "ecosystem_context": "Python-native, all chains."
+    },
+    {
+      "tool_id": "coinbase-agentkit",
+      "when_to_prefer": "When building specifically for Base and want web3-native onchain actions with minimal plumbing. AgentKit wraps Vercel AI SDK for Base.",
+      "ecosystem_context": "Base."
+    },
+    {
+      "tool_id": "elizaos",
+      "when_to_prefer": "When building a character-based social agent with persistent persona requirements. Less production-stable than Vercel AI SDK.",
+      "ecosystem_context": "Farcaster, Solana (experimental)."
+    }
+  ],
+  "anti_patterns": [
+    "Parsing free-text LLM responses to extract trading decisions — use structured outputs (`generateObject`) instead.",
+    "Not implementing max-step limits in agentic loops — unbounded agents can run expensive multi-step loops.",
+    "Using Vercel AI SDK React hooks in server-side autonomous agents — the UI hooks are browser-only. Use the Node.js `generateText` / `generateObject` functions for server-side agents.",
+    "Skipping tool validation — unvalidated tool call parameters cause runtime failures in production."
+  ],
+  "retrieval_tags": ["llm-sdk", "ai-agent", "tool-use", "structured-outputs", "claude-sdk", "openai-sdk", "agent-loop", "streaming"],
+  "source": {
+    "primary_url": "https://sdk.vercel.ai",
+    "docs_url": "https://sdk.vercel.ai/docs",
+    "github_url": "https://github.com/vercel/ai"
+  },
+  "updated_at": "2026-05-13"
+}

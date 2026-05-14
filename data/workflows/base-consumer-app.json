@@ -1,0 +1,130 @@
+{
+  "id": "base-consumer-app",
+  "name": "Base Consumer App Workflow",
+  "goal": "Build a consumer-facing web3 application on Base with embedded wallet, onchain actions, and optional gasless transactions.",
+  "goal_tags": ["base-app", "consumer-app", "embedded-wallet", "onchain-actions", "erc-4337", "gasless", "social-login"],
+  "ecosystems": ["base", "ethereum"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["privy"],
+      "alternative_tools": [
+        {
+          "tool_id": "dynamic",
+          "when_to_prefer": "When the app needs to support both embedded wallet creation and connection of existing external wallets (MetaMask, Coinbase Wallet, WalletConnect). Dynamic handles the hybrid case in one SDK."
+        },
+        {
+          "tool_id": "reown",
+          "when_to_prefer": "When the target audience is primarily existing wallet holders. Reown connects external wallets — does not create embedded wallets for new users."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Privy is the default for consumer apps that need to onboard users who don't have a wallet yet. The key decision here is embedded vs. external — Privy excels at embedded (email/social login → wallet creation). If your users already have wallets and you only need connection, Reown is simpler. If you need both paths, use Dynamic."
+    },
+    {
+      "id": "ui-components",
+      "role": "ui",
+      "required": false,
+      "primary_tools": ["onchainkit"],
+      "alternative_tools": [
+        {
+          "tool_id": "wagmi",
+          "when_to_prefer": "When you need lower-level hooks without opinionated UI components. OnchainKit wraps wagmi — use wagmi directly for custom UI designs."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "OnchainKit accelerates Base app development with pre-built transaction, swap, and identity components. If you want the acceleration without OnchainKit's visual opinions, use wagmi directly. For hackathons, OnchainKit's ready-made components are the fastest path."
+    },
+    {
+      "id": "chain",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "If you need multi-chain RPC beyond Base/Ethereum or are already on the QuickNode stack."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Alchemy is the reference RPC for Base — it's what Coinbase documentation recommends and what OnchainKit is optimized for. Never use public RPCs in production. Alchemy free tier is sufficient for development and early MVP."
+    },
+    {
+      "id": "gasless-actions",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [
+        {
+          "tool_id": "alchemy-account-kit",
+          "when_to_prefer": "When already fully in the Alchemy stack and AA is required alongside chain data in the same provider relationship."
+        },
+        {
+          "tool_id": "zerodev",
+          "when_to_prefer": "When session keys or advanced smart account programmability is needed beyond standard gas sponsorship."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Gasless actions dramatically improve conversion for consumer apps — users should never encounter a 'you need ETH' barrier in a well-designed consumer flow. Pimlico's gas policy API makes per-action sponsorship rules easy. Add this phase when any user action requires a transaction.",
+      "scale_overrides": {
+        "hackathon": "Skip unless gasless is a core demo requirement. Standard transaction flow is sufficient for demos.",
+        "production": "Required for any consumer app with meaningful transaction volume. Model gas sponsorship costs and set per-user spending limits before launch."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Privy + OnchainKit + Alchemy is the dominant Base consumer app stack. The majority of successful Base consumer apps ship with this exact pattern.",
+    "Wallet onboarding UX is the highest-leverage conversion optimization in consumer crypto apps — Privy's social/email login is the current best practice.",
+    "Gas sponsorship economics must be modeled before production launch. Track per-action cost against user LTV from day one.",
+    "Alchemy compute unit budget matters at scale — plan tier before launch, not after hitting limits.",
+    "Privy handles the wallet/auth layer. Do not build your own wallet management on top of raw private keys."
+  ],
+  "tradeoffs": [
+    "Privy provides excellent onboarding UX but locks into their wallet infrastructure — extracting users later is complex.",
+    "OnchainKit's visual components accelerate development but limit design flexibility. Trade-off: speed vs. design control.",
+    "Pimlico adds gas sponsorship complexity. The UX improvement is significant, but requires policy configuration to avoid budget overruns.",
+    "Alchemy + Pimlico creates two provider relationships for a single chain — manageable but adds configuration surface area."
+  ],
+  "anti_patterns": [
+    "Using public RPCs in production — Alchemy free tier is nearly free and prevents rate limit failures.",
+    "Skipping embedded wallet entirely and requiring MetaMask/Coinbase Wallet — user drop-off at the wallet step kills consumer apps.",
+    "Building without gas sponsorship for consumer-facing transaction flows — users should not need ETH.",
+    "Using Privy's react-auth SDK for server-side autonomous operations — Privy is user-facing. Use Turnkey for server-side signing.",
+    "Hardcoding a specific wallet address without Privy policy controls — no spending limits means no blast radius containment."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "has_existing_wallet",
+      "modification": "Replace Privy with Reown (external wallet connection only) or upgrade to Dynamic (hybrid embedded + external).",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "Promote gasless-actions phase to required. Configure Pimlico gas policy before any user-facing transaction flow.",
+      "affects_phase": "gasless-actions"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Skip gasless-actions phase. Use Privy + OnchainKit + Alchemy as the minimal viable stack.",
+      "affects_phase": "gasless-actions"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Add Vercel AI SDK as an ai-reasoning phase. Pair with Trigger.dev if durable background execution is needed.",
+      "affects_phase": "ai-reasoning"
+    }
+  ],
+  "retrieval_tags": ["base-app", "consumer-onboarding", "embedded-wallet", "gasless", "onchainkit", "privy", "alchemy", "erc-4337"],
+  "source": {
+    "derived_from": "corpus-expansion-strategy-v1 + WORKFLOWS.md + ToolRecord analysis",
+    "last_verified": "2026-05-13"
+  },
+  "updated_at": "2026-05-13"
+}

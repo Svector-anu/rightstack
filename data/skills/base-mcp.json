@@ -1,0 +1,49 @@
+{
+  "id": "base-mcp",
+  "name": "Base Documentation MCP Server",
+  "skill_type": "reference",
+  "ecosystems": ["base"],
+  "fetch_pattern": "mcp-server",
+  "fetch_url": "https://docs.base.org/mcp",
+  "github_url": null,
+  "commit_hash": null,
+  "install_commands": {
+    "claude_code": "claude mcp add --transport http base-docs https://docs.base.org/mcp",
+    "cursor": "{\"mcpServers\": {\"base-docs\": {\"url\": \"https://docs.base.org/mcp\"}}}",
+    "codex": null,
+    "generic": null
+  },
+  "purpose": "Live MCP server providing real-time access to Base documentation — including AI agent setup, wallet configuration, x402 payments, trading patterns, Base Account, and Flashblocks.",
+  "tools_contextualized": ["onchainkit", "privy"],
+  "workflow_refs": ["base-consumer-app", "onchain-ai-agent-base"],
+  "maintainer": {
+    "type": "official",
+    "org": "Coinbase / Base",
+    "github_handle": "base-org"
+  },
+  "environments_validated": ["claude"],
+  "trust_state": "production-grade",
+  "staleness_risk": "low",
+  "staleness_reason": "MCP server pattern delivers live documentation — content is as current as the Base docs themselves. No commit pinning, no static snapshot risk. Lowest staleness risk of any delivery pattern in the corpus.",
+  "sub_skills": [
+    {
+      "name": "llms.txt",
+      "fetch_url": "https://docs.base.org/llms.txt",
+      "purpose": "AI-readable index of all Base documentation pages.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "llms-full.txt",
+      "fetch_url": "https://docs.base.org/llms-full.txt",
+      "purpose": "Full documentation content dump for AI context injection.",
+      "skill_type": "reference"
+    },
+    {
+      "name": "AI Agents on Base",
+      "fetch_url": "https://docs.base.org/ai-agents/index",
+      "purpose": "Agent-native documentation — wallet setup, payments, trading, identity for AI agents.",
+      "skill_type": "workflow"
+    }
+  ],
+  "updated_at": "2026-05-13"
+}

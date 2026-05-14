@@ -1,0 +1,475 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "2.0.0",
+  "generated_from": "docs/ONTOLOGY-V2.md",
+  "updated_at": "2026-05-13",
+  "categories": [
+    {
+      "id": "wallet-infrastructure",
+      "display_name": "Wallet Infrastructure",
+      "description": "Tools that create, store, connect, and manage cryptographic keys and wallet sessions.",
+      "membership_test": "Does this tool's primary job involve managing a cryptographic keypair or wallet session?",
+      "subcategories": [
+        { "id": "embedded", "description": "Creates wallets for users who don't have one (email/social login, passkeys, custodial or MPC-based)" },
+        { "id": "external-connection", "description": "Connects to wallets users already own (WalletConnect protocol, browser extension detection)" },
+        { "id": "server-side", "description": "Manages wallets programmatically for server processes and autonomous agents (no user interaction)" },
+        { "id": "multi-sig", "description": "Multi-party signing and threshold approval for high-value or institutional wallets" }
+      ],
+      "intent_signals": [
+        "how do I add a wallet to my app",
+        "user login with email",
+        "embedded wallet",
+        "wallet connection",
+        "give my agent a wallet",
+        "user onboarding without existing wallet",
+        "wallet provider",
+        "social login crypto",
+        "passkey wallet",
+        "connect wallet button"
+      ],
+      "ecosystem_applicability": {
+        "base": "dominant",
+        "farcaster": "dominant",
+        "ethereum": "dominant",
+        "solana": "strong",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["privy", "reown", "turnkey", "dynamic"],
+      "stability": "high"
+    },
+    {
+      "id": "account-abstraction",
+      "display_name": "Account Abstraction",
+      "description": "EVM-specific smart contract account infrastructure — bundlers that submit ERC-4337 operations, paymasters that sponsor gas, and smart account implementations.",
+      "membership_test": "Does this tool implement ERC-4337 infrastructure (bundler, paymaster, or smart account)?",
+      "subcategories": [
+        { "id": "bundler", "description": "Submits UserOperations to the ERC-4337 mempool" },
+        { "id": "paymaster", "description": "Sponsors or processes gas payments" },
+        { "id": "smart-account", "description": "Smart contract account implementations with programmable rules" }
+      ],
+      "intent_signals": [
+        "gasless transactions",
+        "sponsored gas",
+        "session keys",
+        "smart account",
+        "paymaster",
+        "ERC-4337",
+        "batch transactions",
+        "account abstraction",
+        "gas sponsorship",
+        "UserOperation"
+      ],
+      "ecosystem_applicability": {
+        "base": "dominant",
+        "ethereum": "dominant",
+        "farcaster": "strong",
+        "solana": "none",
+        "aptos": "none"
+      },
+      "example_tool_ids": ["pimlico", "zerodev", "biconomy", "alchemy-account-kit"],
+      "stability": "high"
+    },
+    {
+      "id": "chain-data",
+      "display_name": "Chain Data",
+      "description": "Infrastructure for reading blockchain state — RPC endpoints, transaction indexing, event webhooks, and onchain data APIs.",
+      "membership_test": "Does this tool's primary job involve reading confirmed blockchain state (transactions, events, balances, account state)?",
+      "subcategories": [
+        { "id": "rpc", "description": "Raw RPC access to blockchain nodes" },
+        { "id": "indexing", "description": "Structured querying of historical onchain data" },
+        { "id": "streaming-webhooks", "description": "Real-time event delivery on onchain activity" },
+        { "id": "nft-data", "description": "NFT metadata, ownership, and collection APIs" },
+        { "id": "analytics", "description": "SQL-queryable analytics over historical onchain data" }
+      ],
+      "intent_signals": [
+        "read onchain data",
+        "transaction history",
+        "webhook for onchain events",
+        "NFT metadata",
+        "RPC endpoint",
+        "blockchain indexing",
+        "onchain event listener",
+        "get token balance",
+        "DAS API",
+        "real-time blockchain data",
+        "historical transactions"
+      ],
+      "ecosystem_applicability": {
+        "solana": "dominant",
+        "base": "dominant",
+        "ethereum": "dominant",
+        "farcaster": "strong",
+        "aptos": "strong"
+      },
+      "example_tool_ids": ["helius", "alchemy-rpc", "quicknode", "the-graph", "dune"],
+      "stability": "high"
+    },
+    {
+      "id": "market-data",
+      "display_name": "Market Data",
+      "description": "Price feeds, market analytics, and financial market intelligence derived from trading activity — as distinct from raw chain state.",
+      "membership_test": "Does this tool's primary output answer 'what is the price/market condition?' rather than 'what happened onchain?'",
+      "subcategories": [
+        { "id": "price-oracle", "description": "Onchain price feeds published to smart contracts" },
+        { "id": "market-analytics", "description": "Off-chain price APIs, OHLCV, market cap, trading volume" },
+        { "id": "portfolio-data", "description": "Wallet P&L and portfolio tracking" }
+      ],
+      "intent_signals": [
+        "price feed",
+        "token price",
+        "OHLCV",
+        "market data",
+        "oracle",
+        "portfolio tracking",
+        "trading signals",
+        "wallet P&L",
+        "price API",
+        "market analytics",
+        "token market cap"
+      ],
+      "ecosystem_applicability": {
+        "solana": "dominant",
+        "base": "strong",
+        "ethereum": "strong",
+        "farcaster": "limited",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["birdeye", "pyth", "switchboard", "chainlink", "coingecko"],
+      "stability": "medium"
+    },
+    {
+      "id": "defi-protocol",
+      "display_name": "DeFi Protocol",
+      "description": "Onchain DeFi protocols that agents integrate with to execute financial operations — swaps, lending, staking, derivatives. The protocols agents interact WITH, not the infrastructure they run on.",
+      "membership_test": "Does this tool represent an onchain DeFi protocol or a direct SDK for interacting with one?",
+      "subcategories": [
+        { "id": "dex", "description": "Decentralized exchanges and swap aggregators" },
+        { "id": "lending", "description": "Lending and borrowing protocols" },
+        { "id": "liquid-staking", "description": "Liquid staking protocols" },
+        { "id": "derivatives", "description": "Perpetuals, options, and structured products" },
+        { "id": "launchpad", "description": "Token launch and bonding curve protocols" },
+        { "id": "prediction-markets", "description": "Prediction and betting markets" }
+      ],
+      "intent_signals": [
+        "swap tokens",
+        "lending protocol",
+        "borrow against collateral",
+        "liquid staking",
+        "perpetuals",
+        "DCA",
+        "limit orders",
+        "prediction market",
+        "DEX",
+        "token swap",
+        "AMM",
+        "yield protocol"
+      ],
+      "ecosystem_applicability": {
+        "solana": "dominant",
+        "base": "strong",
+        "ethereum": "strong",
+        "farcaster": "limited",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["jupiter", "raydium", "uniswap", "aave", "drift", "sanctum"],
+      "stability": "medium"
+    },
+    {
+      "id": "execution",
+      "display_name": "Execution",
+      "description": "Infrastructure for the submission, prioritization, and MEV protection of transactions — the transport layer between a signed transaction and block inclusion.",
+      "membership_test": "Does this tool's primary job involve determining HOW a signed transaction gets submitted and confirmed?",
+      "subcategories": [
+        { "id": "mev-protection", "description": "Bundle submission with MEV ordering guarantees" },
+        { "id": "tx-management", "description": "Transaction acceleration, retry logic, mempool management" }
+      ],
+      "intent_signals": [
+        "MEV protection",
+        "priority fee management",
+        "bundle submission",
+        "transaction acceleration",
+        "protect from sandwich attack",
+        "Jito bundles",
+        "Flashbots",
+        "private mempool",
+        "transaction priority"
+      ],
+      "ecosystem_applicability": {
+        "solana": "dominant",
+        "ethereum": "dominant",
+        "base": "strong",
+        "farcaster": "none",
+        "aptos": "none"
+      },
+      "example_tool_ids": ["jito-mev", "flashbots"],
+      "stability": "high"
+    },
+    {
+      "id": "agent-framework",
+      "display_name": "Agent Framework",
+      "description": "Frameworks and SDKs for building AI agents that reason, plan, and execute multi-step workflows — including web3-native onchain action execution.",
+      "membership_test": "Does this tool provide the AI reasoning/orchestration layer — tool use, LLM integration, onchain action dispatch?",
+      "subcategories": [
+        { "id": "general-ai-sdk", "description": "General-purpose AI SDK not web3-specific (Vercel AI SDK, LangChain)" },
+        { "id": "web3-native", "description": "AI agent frameworks with built-in web3/onchain action support (AgentKit, GOAT, ElizaOS)" }
+      ],
+      "intent_signals": [
+        "build an AI agent",
+        "agent framework",
+        "tool use",
+        "onchain agent actions",
+        "LLM plus web3",
+        "autonomous agent",
+        "agent SDK",
+        "AI agent for crypto",
+        "AI reasoning layer",
+        "multi-step agent"
+      ],
+      "ecosystem_applicability": {
+        "solana": "strong",
+        "base": "strong",
+        "ethereum": "strong",
+        "farcaster": "strong",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["vercel-ai-sdk", "langchain", "elizaos", "coinbase-agentkit", "goat-sdk"],
+      "stability": "medium"
+    },
+    {
+      "id": "workflow-orchestration",
+      "display_name": "Workflow Orchestration",
+      "description": "Systems for durable execution of multi-step background workflows — job queues, step functions, retry logic, and event-driven async processes.",
+      "membership_test": "Does this tool coordinate the execution of multi-step async processes with retry guarantees?",
+      "subcategories": [],
+      "intent_signals": [
+        "background jobs",
+        "step functions",
+        "workflow retry",
+        "durable execution",
+        "event-driven workflow",
+        "job queue",
+        "async workflow",
+        "task queue",
+        "cron job",
+        "scheduled task"
+      ],
+      "ecosystem_applicability": {
+        "solana": "strong",
+        "base": "strong",
+        "ethereum": "strong",
+        "farcaster": "strong",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["trigger-dev", "inngest", "temporal", "upstash-qstash"],
+      "stability": "high"
+    },
+    {
+      "id": "social-layer",
+      "display_name": "Social Layer",
+      "description": "Farcaster-native tools for social graph data, Farcaster protocol interaction, and socially-native onchain experiences. Currently Farcaster-specific.",
+      "membership_test": "Does this tool's primary purpose involve Farcaster social graph data or Farcaster protocol interaction?",
+      "subcategories": [],
+      "intent_signals": [
+        "Farcaster social graph",
+        "cast data",
+        "Farcaster miniapp",
+        "Neynar",
+        "Farcaster notifications",
+        "social AI agent",
+        "Farcaster frames",
+        "Farcaster webhooks",
+        "social feed data",
+        "Farcaster user data"
+      ],
+      "ecosystem_applicability": {
+        "farcaster": "dominant",
+        "base": "limited",
+        "ethereum": "none",
+        "solana": "none",
+        "aptos": "none"
+      },
+      "example_tool_ids": ["neynar", "farcaster-frames-sdk", "farcaster-auth-kit"],
+      "stability": "low"
+    },
+    {
+      "id": "frontend-sdk",
+      "display_name": "Frontend SDK",
+      "description": "UI component libraries and frontend interaction SDKs for building onchain app interfaces — the presentation and interaction layer over wallet and chain infrastructure.",
+      "membership_test": "Does this tool's primary output consist of React components, UI hooks, or a frontend abstraction layer for blockchain interaction?",
+      "subcategories": [
+        { "id": "component-library", "description": "Pre-built React/UI components for onchain apps" },
+        { "id": "interaction-hooks", "description": "React hooks for blockchain state and interactions" },
+        { "id": "client-library", "description": "Typed Ethereum/Solana client libraries for frontend use" },
+        { "id": "dapp-scaffold", "description": "Full-stack dApp scaffolding tools" }
+      ],
+      "intent_signals": [
+        "React components for web3",
+        "Ethereum frontend",
+        "UI for onchain app",
+        "connect wallet button",
+        "wagmi hooks",
+        "frontend SDK",
+        "onchain UI",
+        "web3 React",
+        "Solana frontend",
+        "wallet UI components"
+      ],
+      "ecosystem_applicability": {
+        "base": "dominant",
+        "ethereum": "dominant",
+        "farcaster": "strong",
+        "solana": "strong",
+        "aptos": "strong"
+      },
+      "example_tool_ids": ["onchainkit", "wagmi", "viem", "rainbowkit", "solana-kit"],
+      "stability": "high"
+    },
+    {
+      "id": "developer-tooling",
+      "display_name": "Developer Tooling",
+      "description": "Build tools, test frameworks, type generation systems, and local development environments for building onchain programs and contracts.",
+      "membership_test": "Is this tool used primarily during development (writing, testing, deploying code) rather than at runtime in a production app?",
+      "subcategories": [
+        { "id": "testing", "description": "Test frameworks and environments" },
+        { "id": "build-tools", "description": "Compilers and build systems" },
+        { "id": "type-generation", "description": "Type-safe client generation from IDLs or ABIs" },
+        { "id": "local-dev", "description": "Local blockchain environments and mainnet forks" },
+        { "id": "security-scanning", "description": "Static analysis and vulnerability scanning used in CI" }
+      ],
+      "intent_signals": [
+        "test my smart contract",
+        "local blockchain",
+        "Solana program development",
+        "Foundry",
+        "Anchor framework",
+        "generate types from ABI",
+        "hardhat",
+        "compile contract",
+        "local devnet",
+        "contract test"
+      ],
+      "ecosystem_applicability": {
+        "solana": "dominant",
+        "ethereum": "dominant",
+        "base": "dominant",
+        "farcaster": "limited",
+        "aptos": "strong"
+      },
+      "example_tool_ids": ["foundry", "anchor", "hardhat", "litesvm", "codama"],
+      "stability": "high"
+    },
+    {
+      "id": "security-tooling",
+      "display_name": "Security Tooling",
+      "description": "Tools for security auditing, vulnerability scanning, and security review workflows applied to production-bound code.",
+      "membership_test": "Is this tool's primary purpose finding security vulnerabilities in code headed toward production?",
+      "subcategories": [],
+      "intent_signals": [
+        "security audit",
+        "smart contract vulnerabilities",
+        "pre-deploy security check",
+        "audit checklist",
+        "vulnerability scanner",
+        "secure my contract",
+        "reentrancy check",
+        "static analysis"
+      ],
+      "ecosystem_applicability": {
+        "ethereum": "dominant",
+        "base": "dominant",
+        "solana": "strong",
+        "farcaster": "none",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["slither", "mythx", "trail-of-bits"],
+      "stability": "high"
+    },
+    {
+      "id": "storage",
+      "display_name": "Storage",
+      "description": "Decentralized or permanent storage protocols for off-chain data — NFT metadata, large files, content-addressed data.",
+      "membership_test": "Does this tool provide decentralized or permanent off-chain storage?",
+      "subcategories": [],
+      "intent_signals": [
+        "IPFS",
+        "decentralized storage",
+        "NFT metadata storage",
+        "permanent storage",
+        "Arweave",
+        "content-addressed storage",
+        "store files onchain",
+        "Filecoin",
+        "Pinata"
+      ],
+      "ecosystem_applicability": {
+        "solana": "strong",
+        "base": "strong",
+        "ethereum": "strong",
+        "farcaster": "limited",
+        "aptos": "limited"
+      },
+      "example_tool_ids": ["pinata", "arweave", "filecoin", "nft-storage"],
+      "stability": "high"
+    },
+    {
+      "id": "identity",
+      "display_name": "Identity",
+      "description": "Protocols and tools for onchain identity — naming, identity resolution, and authentication protocols independent of any specific wallet provider.",
+      "membership_test": "Does this tool assign or resolve an identity that persists across wallet providers and applications?",
+      "subcategories": [],
+      "intent_signals": [
+        "ENS name",
+        "Basename",
+        "onchain identity",
+        "human-readable wallet address",
+        "sign in with ethereum",
+        "agent identity",
+        "ERC-8004",
+        "identity resolution",
+        "SIWE",
+        "Farcaster identity"
+      ],
+      "ecosystem_applicability": {
+        "ethereum": "dominant",
+        "base": "dominant",
+        "farcaster": "strong",
+        "solana": "limited",
+        "aptos": "none"
+      },
+      "example_tool_ids": ["ens", "basenames", "siwe", "worldcoin"],
+      "stability": "medium"
+    },
+    {
+      "id": "context-protocol",
+      "display_name": "Context Protocol",
+      "description": "AI-readable documentation and tool exposure protocols — MCP servers, skill files, llms.txt, and agent-native documentation interfaces. The meta-layer making other categories accessible to AI coding agents.",
+      "membership_test": "Does this tool's primary purpose expose OTHER tools' capabilities to AI agents through a structured, machine-readable interface?",
+      "subcategories": [
+        { "id": "mcp-server", "description": "MCP servers that expose tool capabilities to AI agents at runtime" },
+        { "id": "skill-file", "description": "Markdown-based skill files injected into AI agent context" },
+        { "id": "llms-txt", "description": "llms.txt implementations making documentation AI-readable" }
+      ],
+      "intent_signals": [
+        "MCP server",
+        "add skills",
+        "inject ecosystem context",
+        "llms.txt",
+        "Claude skills for Base",
+        "Solana skills for Cursor",
+        "AI context for web3",
+        "agent tools",
+        "skill file",
+        "AI-readable docs"
+      ],
+      "ecosystem_applicability": {
+        "base": "dominant",
+        "solana": "dominant",
+        "ethereum": "strong",
+        "farcaster": "limited",
+        "aptos": "strong"
+      },
+      "example_tool_ids": ["base-mcp", "ethskills", "solana-foundation-skills", "sendaifun-skills"],
+      "stability": "low"
+    }
+  ]
+}

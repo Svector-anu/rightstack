@@ -1,0 +1,123 @@
+{
+  "id": "birdeye",
+  "name": "Birdeye",
+  "aliases": ["birdeye-api", "public-api.birdeye.so"],
+  "category": "market-data",
+  "subcategory": "market-analytics",
+  "description": "The dominant Solana market data API providing OHLCV, token prices, wallet portfolio P&L, and trader analytics. Primary market context layer for Solana trading agents and DeFi dashboards.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "solana",
+      "strength": "dominant",
+      "notes": "The default market data provider for Solana trading agents. Birdeye aggregates DEX trade data from Jupiter, Raydium, Orca and exposes it as structured market analytics."
+    },
+    {
+      "ecosystem": "base",
+      "strength": "limited",
+      "notes": "Birdeye has Base/EVM coverage but is not the dominant choice there. CoinGecko and DefiLlama serve EVM market data more broadly."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "limited",
+      "notes": "EVM coverage exists but the product is Solana-native. Use CoinGecko or DefiLlama for Ethereum-first market data needs."
+    },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "token-price-feeds",
+    "ohlcv-data",
+    "wallet-portfolio-pnl",
+    "trader-activity-analytics",
+    "token-metadata",
+    "defi-liquidity-stats",
+    "price-history",
+    "token-holder-analytics",
+    "trending-token-detection",
+    "multi-dex-price-aggregation"
+  ],
+  "workflow_positions": ["data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "helius",
+      "relationship": "complements",
+      "context": "Helius provides raw onchain event data (transactions, account state); Birdeye provides the derived market interpretation (what was the price during that transaction, what is the wallet's P&L). In a trading agent, both are required — Helius for triggers, Birdeye for context.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "complements",
+      "context": "Birdeye data feeds into the agent's market context window. The agent framework consumes Birdeye price/P&L data to reason about trade decisions.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "jupiter",
+      "relationship": "complements",
+      "context": "Birdeye provides price context and route evaluation; Jupiter executes the actual swap. A trading agent uses Birdeye to decide whether to trade and at what price threshold, then Jupiter to compute the optimal route.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Birdeye API calls are made within Trigger.dev job steps. Price context fetching is an observable, retriable step in the agent execution pipeline."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Birdeye is the most cited Solana market data API in trading agent repositories. Appears consistently in Solana AI agent stacks alongside Helius and Jupiter.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Listed as the primary market-data tool in the canonical solana-trading-agent workflow. No competing tool at equivalent coverage for Solana market analytics.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Birdeye provides a public REST API with documented endpoints for price, OHLCV, wallet P&L, and token analytics. API key required for production use.",
+      "source_url": "https://docs.birdeye.so",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Integrated by multiple Solana trading agent frameworks including sendaifun's Eliza plugins. Referenced in Solana trading agent tutorials and production repositories.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["birdeye-sdk", "@birdeye-so/sdk"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Use Birdeye's public API with a free-tier API key. Rate limits are acceptable for demo workloads.",
+    "mvp": "Implement response caching for price queries — Birdeye rate limits are strict and price data has acceptable staleness for most trading decisions (1-5 second cache).",
+    "production": "Model API cost against query volume. High-frequency trading agents that call Birdeye on every chain event will exhaust free tiers quickly. Cache aggressively. Consider paying for a higher API tier before scaling."
+  },
+  "alternatives": [
+    {
+      "tool_id": "helius",
+      "when_to_prefer": "When raw onchain state (transaction history, account data) is needed rather than derived market analytics. Helius reads chain state; Birdeye reads market conditions derived from that state. Use both together in trading agents — they are complementary, not alternatives.",
+      "ecosystem_context": "Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using Birdeye as the primary Solana chain-data source — Birdeye provides market analytics, not raw onchain state. Transaction history, account balances, and NFT data require Helius or another Solana RPC.",
+    "Calling Birdeye on every Helius webhook without caching — price data has acceptable staleness for most agent decisions. Uncached per-event Birdeye calls exhaust rate limits at production volume.",
+    "Treating Birdeye prices as authoritative for trade execution — Birdeye aggregates prices from DEX data with potential lag. Use Jupiter's quote API for the actual execution price at time of trade.",
+    "Using Birdeye for EVM chains as a primary data source — CoinGecko and DefiLlama have broader and more reliable EVM market data."
+  ],
+  "retrieval_tags": ["solana-market-data", "token-price", "ohlcv", "wallet-pnl", "trading-agent", "defi-analytics", "price-feed", "solana-trading"],
+  "source": {
+    "primary_url": "https://birdeye.so",
+    "docs_url": "https://docs.birdeye.so",
+    "github_url": "https://github.com/birdeye-so"
+  },
+  "updated_at": "2026-05-14"
+}

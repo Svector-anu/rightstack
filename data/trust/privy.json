@@ -1,0 +1,47 @@
+{
+  "id": "privy-trust-evaluation",
+  "subject_id": "privy",
+  "subject_type": "tool",
+  "observed_signals": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Privy is cited as the dominant wallet provider in Base consumer apps and Farcaster miniapps across multiple independent sources — ONTOLOGY.md, WORKFLOWS.md, and the corpus analysis all confirm this without coordination.",
+      "source_url": null,
+      "observed_at": "2026-05-13",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Privy + OnchainKit is the most frequently confirmed production stack pattern for Base consumer apps. Privy + Neynar is the most confirmed pattern for Farcaster miniapps. Both are cited as 'dominant' across the source corpus without qualification.",
+      "source_url": null,
+      "observed_at": "2026-05-13",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Privy is integrated by or paired with: OnchainKit (Coinbase), Pimlico, Coinbase AgentKit, Neynar, Alchemy. High integration density across other production-grade tools is a strong quality indicator.",
+      "source_url": null,
+      "observed_at": "2026-05-13",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Privy maintains separate SDKs for react (browser), server, and mobile (expo) — indicating a mature, segmented product with different use case considerations.",
+      "source_url": "https://docs.privy.io",
+      "observed_at": "2026-05-13",
+      "verifiable": true
+    }
+  ],
+  "derived_trust_state": "production-grade",
+  "trust_reasoning": "Two independent Tier 1 signals (ecosystem-native adoption confirmed across multiple sources, recurring workflow pattern confirmed in both WORKFLOWS.md and corpus analysis) are sufficient for production-grade classification. The Tier 2 integration density signal further supports this — tools that other production-grade tools depend on are themselves more likely to be production-grade.",
+  "anti_patterns_observed": [
+    "No misleading signals detected. No evidence of star inflation, conference-driven hype, or VC-only credibility without production evidence."
+  ],
+  "reviewed_at": "2026-05-13",
+  "reviewed_by": "rightstack-corpus-analysis-v1",
+  "next_review_at": "2026-11-13"
+}

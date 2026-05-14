@@ -1,0 +1,186 @@
+{
+  "id": "base-onchain-ai-agent",
+  "name": "Base Onchain AI Agent Workflow",
+  "goal": "Build an autonomous or semi-autonomous AI agent that monitors onchain and webhook events on Base, reasons about what actions to take, and executes transactions using server-side wallet infrastructure.",
+  "goal_tags": [
+    "onchain-ai-agent",
+    "autonomous-agent",
+    "base-agent",
+    "ai-agent",
+    "onchain-execution",
+    "webhook-triggered-agent",
+    "server-side-wallet",
+    "agentic-workflow",
+    "coinbase-agentkit",
+    "durable-execution"
+  ],
+  "ecosystems": ["base"],
+  "scale": ["mvp", "production"],
+  "user_types": ["advanced-builder", "ai-agent"],
+  "phases": [
+    {
+      "id": "event-trigger",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "neynar",
+          "when_to_prefer": "When the agent is triggered by Farcaster social events (mentions, casts, follows) rather than onchain events. Neynar webhooks deliver social triggers; Alchemy webhooks deliver onchain triggers. A Farcaster social AI agent with Base onchain actions uses both."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Alchemy's address activity webhooks are the canonical way to trigger Base agent logic on onchain events. Configure webhooks for: address activity (wallet transactions), token transfers, contract events. The webhook delivers event payload to your server endpoint; Trigger.dev (orchestration phase) then handles the durable execution of the agent run. Design the trigger strategy carefully — every webhook hit is a potential agent invocation and LLM API call. Use event filtering aggressively to avoid spurious triggers.",
+      "scale_overrides": {
+        "production": "Implement idempotency keys on webhook handlers — Alchemy delivers webhooks at-least-once. Duplicate agent invocations for the same event are a real failure mode. Trigger.dev's idempotency support is the cleanest solution."
+      }
+    },
+    {
+      "id": "agent-reasoning",
+      "role": "ai-reasoning",
+      "required": true,
+      "primary_tools": ["vercel-ai-sdk"],
+      "alternative_tools": [
+        {
+          "tool_id": "coinbase-agentkit",
+          "when_to_prefer": "When the agent's primary onchain actions are Base-native and pre-defined — trading, token transfers, DeFi interactions on Base. AgentKit provides a toolkit of pre-built onchain action primitives that eliminate the need to write custom tool definitions. Trade-off: AgentKit is Base-coupled and has emerging trust state; Vercel AI SDK is more portable and production-stable. Use AgentKit when web3 action abstractions are more valuable than portability."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Claude is the recommended LLM for complex agent reasoning tasks — use claude-sonnet-4-6 for most agent decisions, claude-opus-4-7 only when reasoning quality justifies the cost difference. Use structured outputs (generateObject, not generateText) for all agent decisions that lead to transactions — parsing free-text LLM responses for transaction parameters is a critical failure mode. Define tool schemas precisely: an agent tool that submits a transaction must validate all parameters before execution. Implement max-step limits in the agent loop — unbounded tool use can exhaust API quotas and budgets at machine speed.",
+      "scale_overrides": {
+        "mvp": "Start with vercel-ai-sdk directly. Only adopt AgentKit if you find yourself writing the same onchain tool definitions repeatedly and Base is confirmed as your permanent target chain.",
+        "production": "Model LLM API cost per agent invocation. At production volume, a single agent run costing $0.05 × 100k invocations/day = $5k/day. Cost must be part of the product unit economics before launch."
+      }
+    },
+    {
+      "id": "wallet-signing",
+      "role": "signing",
+      "required": true,
+      "primary_tools": ["turnkey"],
+      "alternative_tools": [
+        {
+          "tool_id": "privy",
+          "when_to_prefer": "When the agent acts ON BEHALF OF a user who has explicitly delegated authority — not for fully autonomous agents. Privy's @privy-io/server-auth allows a server to sign with a user's embedded wallet within defined policy bounds. Use for 'agent assistant' patterns where a human user initiates and approves before the agent executes. Do NOT use Privy server-auth for fully autonomous agents that execute without per-action user approval — use Turnkey instead."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Server-side wallet signing is a hard architectural requirement for autonomous agents. NEVER use browser wallets, MetaMask, or Coinbase Wallet extension for agent signing — these require user approval on every transaction and have no programmatic interface. Turnkey provides: MPC-based key storage (no raw private key in .env), policy engine for spending limits, audit log of all signing requests, sub-organization model for isolating agent wallets. Configure Turnkey policy BEFORE connecting to real funds: per-transaction value cap, per-day volume cap, contract whitelist. An unconstrained autonomous agent is a financial risk.",
+      "scale_overrides": {
+        "mvp": "Configure spending limits immediately when connecting to real funds, even at MVP scale. Never operate an autonomous agent without a spending ceiling.",
+        "production": "Use sub-organizations to isolate each agent instance. Configure independent spending limits per agent. Implement circuit breakers: if an agent triggers 10x its normal transaction volume in one hour, pause and alert."
+      }
+    },
+    {
+      "id": "gas-sponsorship",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Optional: agent transactions can be gasless via Pimlico's paymaster infrastructure. This matters when the agent executes many small transactions and gas costs would otherwise accumulate. Also enables x402 micropayment flows — agents that call x402-protected APIs can pay with USDC rather than managing ETH for gas across agent wallet(s). Add this phase when: (a) the agent is executing at high volume where gas adds up, (b) the business model requires agent actions to be gasless for accounting purposes, or (c) the agent participates in x402 payment flows for API access.",
+      "scale_overrides": {
+        "hackathon": "Skip. Standard transaction flow is sufficient.",
+        "production": "Add if agent transaction volume makes gas cost material. Model gas cost at expected invocation volume before deciding."
+      }
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["trigger-dev"],
+      "alternative_tools": [
+        {
+          "tool_id": "inngest",
+          "when_to_prefer": "When the agent workflow is simpler — linear steps with standard retry logic and no complex fan-out patterns. Inngest has a gentler learning curve and strong Next.js integration. Use Trigger.dev when production durability, step-level observability, and complex retry patterns are required."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Technically optional at MVP, practically required at production. The pattern: Alchemy webhook → Trigger.dev job triggered → Trigger.dev executes agent steps with retry logic → each step is independently resumable. Without orchestration, autonomous agent failures are opaque — there is no way to know whether the agent completed, failed silently, or is stuck mid-execution. Trigger.dev's step-level visibility transforms debugging from impossible to tractable. Configure concurrency limits: one agent invocation per wallet address at a time prevents nonce collision failures when the same wallet signs multiple transactions simultaneously.",
+      "scale_overrides": {
+        "mvp": "Add from MVP if the agent is handling real funds. Debugging 'why did my agent not execute' without execution traces is extremely difficult.",
+        "production": "Required. Set concurrency limits per wallet address. Implement dead-letter queue for failed jobs. Alert on abnormal agent invocation rates."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Autonomous authority boundaries are the most important production decision in this workflow. Define explicitly: what can the agent do without approval? What requires human confirmation? What is hard-blocked by policy? These must be encoded in Turnkey policy rules, not just application logic — application logic can have bugs, Turnkey policy is enforced at the signing layer.",
+    "Agent memory is an architectural decision that must be made early. Short-term state (current run context) vs. long-term memory (Postgres or vector DB) vs. cross-run context (what has this agent done before?) require different storage designs. State management errors cause the most production failures in autonomous agents.",
+    "Simulation/dry-run mode is non-negotiable before connecting to real funds. Build a flag that makes the agent log what it WOULD do without actually submitting transactions. Use this mode for integration testing and staging environments.",
+    "AgentKit (coinbase-agentkit) has emerging trust state as of 2026-05. Production agents that require stability should use Vercel AI SDK with custom tool definitions. AgentKit is advancing rapidly — reassess trust state every 90 days.",
+    "x402 payment flows are an emerging Base-native pattern: agents pay for API access using USDC micropayments via HTTP 402. This requires Pimlico for gas abstraction and a USDC balance in the agent wallet. Early infrastructure, but directionally important for agent-to-agent economies.",
+    "Nonce management is a real production concern for high-frequency agents. If multiple agent instances share a wallet, they will collide on nonces. Either serialize execution (Trigger.dev concurrency=1 per wallet) or maintain a nonce manager that locks and increments atomically.",
+    "Claude claude-sonnet-4-6 provides the best reasoning quality/cost ratio for most agent decisions. Only use claude-opus-4-7 for the most complex multi-step reasoning chains where quality difference is measurable."
+  ],
+  "tradeoffs": [
+    "Coinbase AgentKit provides faster time-to-first-agent-action on Base but creates stronger ecosystem coupling. Vercel AI SDK requires writing custom onchain tool definitions but is portable across chains and more production-stable.",
+    "Turnkey adds a server-side signing infrastructure dependency. If Turnkey is unavailable, the agent cannot execute. Design for degraded operation (fail-safe, not fail-open) when signing infrastructure is unreachable.",
+    "Fully autonomous (no user approval) vs. semi-autonomous (user approves batches of actions) is a product decision with significant trust implications. Fully autonomous agents ship faster but have higher blast radius when logic errors occur.",
+    "Trigger.dev adds orchestration infrastructure overhead but is the difference between 'agent probably worked' and 'I can observe exactly what the agent did at each step'. Worth it from MVP for any agent handling real value.",
+    "Gas sponsorship (Pimlico) removes ETH gas management complexity but adds paymaster budget management complexity. Choose your complexity: manage gas in each wallet, or manage paymaster budget centrally."
+  ],
+  "anti_patterns": [
+    "Using browser wallets or @privy-io/react-auth for autonomous agent signing — browser wallets require user interaction on every transaction. This is not optional for autonomous agents.",
+    "Storing raw private keys in .env for production agents — Turnkey's policy engine is the production requirement. .env private keys have no spending limits, no audit log, and no blast radius containment.",
+    "Shipping autonomous agents without spending limits — an unconstrained agent with a logic error can execute unlimited transactions at machine speed. Turnkey policy limits are not optional.",
+    "Skipping simulation/dry-run mode — first real-money execution should never be the first test of the execution logic.",
+    "Not implementing max-step limits in the agent loop — LLM tool-use loops can recurse indefinitely if not bounded.",
+    "Using AgentKit for production when an emerging trust state is not acceptable — verify AgentKit's current trust state before relying on it for production workloads. It was emerging as of 2026-05.",
+    "Not handling Alchemy webhook duplicate delivery — Alchemy delivers at-least-once. Idempotency on agent invocations prevents double-execution of trades.",
+    "Building the agent without an observable state store — agents without memory are stateless and cannot reason about what they have already done. This is fine for simple agents but becomes a correctness issue for agents that must track portfolio state, conversation history, or execution history."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "autonomous_agent",
+      "modification": "wallet-signing phase must use Turnkey (not Privy). Configure Turnkey policy with hard spending limits before any live execution. This constraint is the trigger for the entire Turnkey requirement.",
+      "affects_phase": "wallet-signing"
+    },
+    {
+      "constraint": "social_features_required",
+      "modification": "Add Neynar as primary tool in event-trigger phase. Neynar webhooks deliver Farcaster social triggers; pair with Trigger.dev for durable execution of agent responses to social events. See farcaster-social-ai-agent for the full Farcaster variant.",
+      "affects_phase": "event-trigger"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Vercel AI SDK is the primary. If AgentKit is preferred for Base-native action primitives, the AgentKit alternative is available — but verify current trust state before production adoption.",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "Promote gas-sponsorship phase to required. Add Pimlico paymaster to sponsor agent transactions. Configure spending policy before live execution.",
+      "affects_phase": "gas-sponsorship"
+    },
+    {
+      "constraint": "python_only",
+      "modification": "Replace Vercel AI SDK with LangChain or direct Anthropic SDK. Trigger.dev has no Python SDK — replace with a Python-native orchestration alternative (Temporal, Prefect, or raw async with Postgres-backed job queue).",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Use Vercel AI SDK + Turnkey + Alchemy only. Skip orchestration (Trigger.dev). Use a single hardcoded trigger instead of webhook-based triggering. Accept that agent failures will be opaque — this is acceptable for hackathon demos.",
+      "affects_phase": "orchestration"
+    }
+  ],
+  "retrieval_tags": [
+    "base-ai-agent",
+    "onchain-agent",
+    "autonomous-agent",
+    "coinbase-agentkit",
+    "vercel-ai-sdk",
+    "turnkey",
+    "alchemy-webhooks",
+    "trigger-dev",
+    "server-side-wallet",
+    "agent-execution",
+    "base",
+    "x402"
+  ],
+  "source": {
+    "derived_from": "WORKFLOWS.md workflow #6 + corpus-expansion-strategy-v1 + production-pattern analysis",
+    "last_verified": "2026-05-14"
+  },
+  "updated_at": "2026-05-14"
+}

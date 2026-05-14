@@ -1,0 +1,124 @@
+{
+  "id": "coinbase-agentkit",
+  "name": "Coinbase AgentKit",
+  "aliases": [
+    "@coinbase/agentkit",
+    "coinbase-agentkit",
+    "@coinbase/agentkit-core",
+    "@coinbase/agentkit-langchain",
+    "@coinbase/agentkit-vercel-ai-sdk"
+  ],
+  "category": "agent-framework",
+  "subcategory": "web3-native",
+  "description": "Coinbase's onchain agent toolkit providing pre-built action primitives for Base: token transfers, swaps, NFT interactions, CDP wallet management, and x402 payment flows. Accelerates Base-native agent development by abstracting onchain tool definition boilerplate.",
+  "ecosystem_fit": [
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "AgentKit is purpose-built for Base. All pre-built actions target Base/EVM. The CDP wallet integration (Coinbase Developer Platform) is Base-native."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "limited",
+      "notes": "AgentKit's EVM actions technically support Ethereum mainnet but the product is optimized for Base. EVM-agnostic agent tooling (Vercel AI SDK with custom tools) is more appropriate for pure Ethereum builds."
+    },
+    { "ecosystem": "solana", "strength": "none", "notes": "AgentKit is EVM/Base only." },
+    { "ecosystem": "farcaster", "strength": "limited", "notes": "Farcaster apps on Base can use AgentKit for onchain actions, but AgentKit adds no Farcaster-specific capabilities." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "pre-built-onchain-actions",
+    "token-transfer-primitives",
+    "defi-swap-actions",
+    "nft-minting-actions",
+    "cdp-wallet-integration",
+    "agent-tool-definitions",
+    "x402-payment-flows",
+    "base-native-agent-primitives",
+    "langchain-integration",
+    "vercel-ai-sdk-integration"
+  ],
+  "workflow_positions": ["ai-reasoning-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "complements",
+      "context": "AgentKit provides the onchain tool definitions (what the agent can do); Vercel AI SDK provides the LLM reasoning loop (how the agent decides what to do). AgentKit's @coinbase/agentkit-vercel-ai-sdk adapter integrates directly with the Vercel AI SDK tool interface.",
+      "workflow_ref": "base-onchain-ai-agent"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "AgentKit handles onchain actions; Alchemy provides the RPC and webhook infrastructure for chain state and event triggers."
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Trigger.dev provides durable execution and retry for AgentKit agent runs. AgentKit is the action layer; Trigger.dev is the orchestration layer.",
+      "workflow_ref": "base-onchain-ai-agent"
+    },
+    {
+      "tool_id": "turnkey",
+      "relationship": "complements",
+      "context": "AgentKit's default uses CDP Wallet (Coinbase Developer Platform) for key management. Turnkey can be substituted when independent MPC key management with custom policy enforcement is required."
+    }
+  ],
+  "trust_state": "emerging",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "institutional-endorsement",
+      "description": "Built by Coinbase Developer Platform team. Actively maintained and promoted as the official Coinbase tool for building onchain agents.",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "Rapid release cadence as of 2026-05. Breaking changes between minor versions have been observed. Trust state elevated from experimental to emerging based on increased adoption signals.",
+      "source_url": "https://docs.cdp.coinbase.com/agentkit/docs/welcome",
+      "verifiable": true
+    },
+    {
+      "tier": 3,
+      "type": "dependency-graph-frequency",
+      "description": "Adoption is growing but concentrated in Base hackathon and early-stage projects. Production deployments are limited compared to Vercel AI SDK. Trust state remains emerging until production adoption is more broadly confirmed.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": [
+      "@coinbase/agentkit",
+      "@coinbase/agentkit-core",
+      "@coinbase/agentkit-langchain",
+      "@coinbase/agentkit-vercel-ai-sdk",
+      "@coinbase/agentkit-openai-agents-sdk"
+    ]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-onchain-ai-agent"],
+  "scale_guidance": {
+    "hackathon": "AgentKit's pre-built action primitives dramatically accelerate hackathon development for Base-native agents. Recommended when Base is the confirmed target and shipping speed matters more than portability.",
+    "mvp": "Verify current trust state before committing to AgentKit for MVP. The action abstractions reduce boilerplate but create AgentKit version coupling. Ensure actions you depend on are stable across releases.",
+    "production": "Evaluate AgentKit's trust state at time of production deployment — it was 'emerging' as of 2026-05. Production agents that require stability should use Vercel AI SDK with custom tool definitions. Reassess every 90 days as AgentKit matures."
+  },
+  "alternatives": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "when_to_prefer": "When portability across chains matters (not Base-only), when production stability is required, or when the pre-built AgentKit action primitives don't match the required onchain actions. Vercel AI SDK requires writing custom tool definitions but is production-stable and ecosystem-agnostic.",
+      "ecosystem_context": "Base, Ethereum, Solana, general."
+    }
+  ],
+  "anti_patterns": [
+    "Using AgentKit for production when trust state is 'emerging' and production stability is required — verify current trust state before production deployment. AgentKit breaking changes have occurred between minor versions.",
+    "Using AgentKit outside Base ecosystem — the pre-built action primitives are Base/EVM specific. For Solana or multi-chain agents, the abstractions don't apply and Vercel AI SDK with custom tools is the right choice.",
+    "Conflating AgentKit (action layer) with the LLM reasoning framework — AgentKit provides WHAT the agent can do; Vercel AI SDK (or LangChain) provides HOW the agent decides. Both are needed; neither replaces the other.",
+    "Not monitoring AgentKit releases — rapid release cadence means actions and interfaces can change significantly between releases. Pin versions explicitly and monitor changelogs."
+  ],
+  "retrieval_tags": ["coinbase-agentkit", "base-agent", "onchain-agent", "agent-primitives", "cdp-wallet", "x402", "web3-agent-framework", "base-native-agent"],
+  "source": {
+    "primary_url": "https://docs.cdp.coinbase.com/agentkit/docs/welcome",
+    "docs_url": "https://docs.cdp.coinbase.com/agentkit",
+    "github_url": "https://github.com/coinbase/agentkit"
+  },
+  "updated_at": "2026-05-14"
+}

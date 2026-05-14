@@ -1,0 +1,98 @@
+{
+  "id": "helius",
+  "name": "Helius",
+  "aliases": ["helius-sdk", "@helius-dev/helius-sdk"],
+  "category": "chain-data",
+  "subcategory": "rpc+indexing+streaming-webhooks",
+  "description": "Dominant Solana RPC, indexing, and data infrastructure provider. Offers enhanced transaction APIs, DAS (Digital Asset Standard) API for NFTs/tokens, webhook streaming for real-time onchain events, and high-reliability RPC endpoints.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "The default indexing and RPC choice for production Solana applications. Appears in the majority of production Solana repos." },
+    { "ecosystem": "base", "strength": "none" },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "rpc-endpoints",
+    "das-api",
+    "enhanced-transactions-api",
+    "webhook-streaming",
+    "nft-api",
+    "compressed-nft-support",
+    "real-time-event-monitoring",
+    "transaction-history",
+    "address-lookup"
+  ],
+  "workflow_positions": ["data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "jito-mev",
+      "relationship": "often-used-with",
+      "context": "Helius for data indexing and event triggers, Jito for execution. The canonical Solana trading agent data+execution stack.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "turnkey",
+      "relationship": "often-used-with",
+      "context": "Helius for onchain data, Turnkey for server-side wallet signing in autonomous agent stacks.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "birdeye",
+      "relationship": "complements",
+      "context": "Helius for transaction data and event webhooks; Birdeye for market data (price, OHLCV, P&L). Used together in trading agents that need both data types."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Helius appears in the majority of production Solana repositories as the primary RPC and indexing provider. Cited in Solana Foundation official resources.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Helius + Jito is the most frequently observed Solana trading agent pattern in the corpus. The pairing recurs across unrelated community skills (sendaifun, QuickNode).",
+      "verifiable": true,
+      "source_url": "https://github.com/sendaifun/skills/tree/72ef2aa814cca4662341bfcdc01cdc288e9bb502/skills/helius"
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Helius maintains a dedicated skill in the sendaifun community hub, indicating strong developer tooling investment.",
+      "verifiable": true,
+      "source_url": "https://github.com/sendaifun/skills/tree/72ef2aa814cca4662341bfcdc01cdc288e9bb502/skills/helius"
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["helius-sdk", "@helius-dev/helius-sdk"]
+  },
+  "skill_refs": ["helius-skill-sendaifun"],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Public Helius API key is sufficient. Use free tier.",
+    "mvp": "Upgrade to paid tier — rate limits on free tier will cause failures under any real load.",
+    "production": "Plan Helius rate limit tier before launch. Webhook reliability is critical for event-driven agents — test failure modes."
+  },
+  "alternatives": [
+    {
+      "tool_id": "quicknode",
+      "when_to_prefer": "When multi-chain RPC support is needed (not Solana-only). QuickNode also supports Solana but Helius is the Solana-native choice.",
+      "ecosystem_context": "Multi-chain."
+    }
+  ],
+  "anti_patterns": [
+    "Using public Solana RPCs instead of Helius at production scale — public RPCs have strict rate limits that will fail under agent workloads.",
+    "Using Helius for Ethereum or Base data — Helius is Solana-only. Use Alchemy or QuickNode for EVM chains.",
+    "Not planning for Helius webhook reliability in production — agents that depend on webhooks for triggers need retry logic."
+  ],
+  "retrieval_tags": ["solana-rpc", "das-api", "webhook", "nft-indexing", "real-time-data", "solana-data"],
+  "source": {
+    "primary_url": "https://helius.dev",
+    "docs_url": "https://docs.helius.dev",
+    "github_url": "https://github.com/helius-labs/helius-sdk"
+  },
+  "updated_at": "2026-05-13"
+}

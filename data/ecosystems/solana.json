@@ -1,0 +1,31 @@
+{
+  "id": "solana",
+  "name": "Solana",
+  "type": "l1",
+  "chain_ids": null,
+  "skill_install": "npx skills add https://github.com/solana-foundation/solana-dev-skill",
+  "docs_ai_access": {
+    "llms_txt": null,
+    "llms_full_txt": null,
+    "mcp_server": null,
+    "mcp_install_command": null,
+    "resources_for_agents": "https://solana.com/SKILL.md"
+  },
+  "official_skill_count": 10,
+  "community_skill_count": 36,
+  "community_hub": "sendaifun/skills",
+  "dominant_workflows": ["solana-trading-agent"],
+  "sdk_migration": {
+    "active": true,
+    "from_package": "@solana/web3.js",
+    "to_package": "@solana/kit",
+    "migration_skill_ref": "solana-kit-migration-skill",
+    "notes": "The Solana Foundation and Anza are actively migrating the ecosystem from @solana/web3.js (v1.x) to @solana/kit (the new zero-dependency SDK). Any community skill or tutorial referencing @solana/web3.js without a migration note should be treated as potentially outdated. The migration skill 'solana-kit-migration-skill' exists to guide this transition."
+  },
+  "philosophy": "Protocol-specific and performance-first. Skills and tools map 1:1 to protocols with no unification abstraction layer. Every design decision optimizes for transaction throughput and cost.",
+  "agent_assumptions": "Agents interface directly with protocols. No abstraction layer is assumed between agent and DEX or indexing infrastructure. Agent tooling is protocol-specific, not chain-generic.",
+  "trust_state": "production-grade",
+  "orchestration_maturity": "low",
+  "security_maturity": "medium",
+  "updated_at": "2026-05-13"
+}

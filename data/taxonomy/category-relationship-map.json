@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "2.0.0",
+  "generated_from": "docs/ONTOLOGY-V2.md",
+  "updated_at": "2026-05-13",
+  "relationship_types": {
+    "layered-on-top-of": "Source category sits architecturally above target. Source requires target to function.",
+    "feeds-into": "Source category produces data or context that target category consumes.",
+    "executes-on": "Source category agents/tools perform operations on target category protocols.",
+    "submitted-via": "Source category produces transactions that target category submits to the network.",
+    "wraps": "Source category provides a UI or SDK abstraction over target category functionality.",
+    "contextualizes": "Source category exposes target category's capabilities to AI agents.",
+    "signs-for": "Source category creates signed payloads that target category submits.",
+    "schedules": "Source category manages execution scheduling and retry for target category work.",
+    "delegates-signing-to": "Source category determines WHAT transaction to create; target category performs the cryptographic signing. The reasoning layer delegates key authority to the wallet layer."
+  },
+  "relationships": [
+    {
+      "source": "account-abstraction",
+      "target": "wallet-infrastructure",
+      "type": "layered-on-top-of",
+      "description": "ERC-4337 infrastructure (bundlers, paymasters) sits architecturally above wallet infrastructure. Account abstraction adds programmable rules and gas sponsorship to the underlying keypair managed by a wallet.",
+      "workflow_context": "In a gasless onboarding flow: Privy (wallet-infrastructure) creates the embedded wallet; Pimlico (account-abstraction) sponsors the first transaction gas. AA requires a wallet to exist first.",
+      "example_workflow": "embedded-wallet-onboarding"
+    },
+    {
+      "source": "chain-data",
+      "target": "agent-framework",
+      "type": "feeds-into",
+      "description": "Chain data infrastructure provides the onchain state signals that agent reasoning layers consume to make decisions. Without chain data, agents have no environmental awareness.",
+      "workflow_context": "In a Solana trading agent: Helius (chain-data) streams onchain events via webhooks; the Vercel AI SDK agent (agent-framework) receives those events and decides what action to take.",
+      "example_workflow": "solana-trading-agent"
+    },
+    {
+      "source": "market-data",
+      "target": "agent-framework",
+      "type": "feeds-into",
+      "description": "Market data providers supply price signals, OHLCV, and portfolio context that trading agents use for decision-making.",
+      "workflow_context": "In a trading agent: Birdeye (market-data) provides price and wallet P&L context; the agent framework processes that data alongside chain events to reason about trade decisions.",
+      "example_workflow": "solana-trading-agent"
+    },
+    {
+      "source": "social-layer",
+      "target": "agent-framework",
+      "type": "feeds-into",
+      "description": "Farcaster social graph data feeds into agent reasoning for social-context-aware actions — follow graphs, cast content, notification triggers.",
+      "workflow_context": "In a Farcaster AI agent: Neynar (social-layer) provides cast data and social graph; the agent framework processes that content and decides what onchain action to trigger.",
+      "example_workflow": "farcaster-consumer-onboarding"
+    },
+    {
+      "source": "agent-framework",
+      "target": "defi-protocol",
+      "type": "executes-on",
+      "description": "AI agents use agent frameworks to reason about and dispatch transactions to DeFi protocols. The agent framework decides WHAT to do; the DeFi protocol defines the available operations.",
+      "workflow_context": "In a trading agent: the agent framework determines a swap is warranted; it calls Jupiter (defi-protocol) to compute the optimal route and construct the transaction.",
+      "example_workflow": "solana-trading-agent"
+    },
+    {
+      "source": "agent-framework",
+      "target": "chain-data",
+      "type": "executes-on",
+      "description": "Agents query chain-data tools directly to read account state, verify transaction outcomes, and confirm execution results.",
+      "workflow_context": "After submitting a trade, the agent framework reads Helius (chain-data) to confirm the transaction landed and update internal state."
+    },
+    {
+      "source": "defi-protocol",
+      "target": "execution",
+      "type": "submitted-via",
+      "description": "Transactions constructed by DeFi protocol SDKs (e.g., Jupiter swap routes) are submitted to the network via execution infrastructure (e.g., Jito bundles). The protocol computes what to do; execution determines how to submit it with MEV protection.",
+      "workflow_context": "Jupiter (defi-protocol) computes the optimal swap route and outputs a transaction. Jito (execution) wraps that transaction in a bundle and submits it with priority landing guarantees.",
+      "example_workflow": "solana-trading-agent"
+    },
+    {
+      "source": "wallet-infrastructure",
+      "target": "execution",
+      "type": "signs-for",
+      "description": "Wallet infrastructure signs transactions; execution infrastructure submits signed transactions to the network. These are adjacent pipeline stages — signing is wallet's job, submission is execution's job.",
+      "workflow_context": "In an autonomous trading agent: Turnkey (wallet-infrastructure/server-side) signs the Jupiter swap transaction; Jito (execution) submits the signed transaction as a bundle."
+    },
+    {
+      "source": "frontend-sdk",
+      "target": "wallet-infrastructure",
+      "type": "wraps",
+      "description": "Frontend SDKs provide UI components and hooks that wrap wallet infrastructure. The frontend SDK renders wallet interactions; the wallet infrastructure manages the keys.",
+      "workflow_context": "OnchainKit (frontend-sdk) renders the wallet UI and transaction components. Privy (wallet-infrastructure) manages the actual embedded wallet and signing. OnchainKit wraps Privy — it does not replace it.",
+      "example_workflow": "base-consumer-app"
+    },
+    {
+      "source": "frontend-sdk",
+      "target": "chain-data",
+      "type": "wraps",
+      "description": "Frontend SDK hooks (wagmi, etc.) abstract over chain-data RPC calls, making them accessible as React state. The underlying data source is still an RPC provider.",
+      "workflow_context": "wagmi (frontend-sdk) provides useBalance, useTransaction hooks. Under the hood, these hooks call an Alchemy or QuickNode (chain-data) RPC endpoint."
+    },
+    {
+      "source": "workflow-orchestration",
+      "target": "agent-framework",
+      "type": "schedules",
+      "description": "Workflow orchestration systems manage the lifecycle of agent runs — triggering execution, handling retries, surfacing step-by-step logs. The orchestration layer doesn't reason; it manages when and how the agent reasons.",
+      "workflow_context": "In a production trading agent: Trigger.dev (workflow-orchestration) receives a Helius webhook, triggers the agent run, and manages retry if the agent step fails. The Vercel AI SDK agent (agent-framework) is what actually reasons within each step.",
+      "example_workflow": "solana-trading-agent"
+    },
+    {
+      "source": "context-protocol",
+      "target": "wallet-infrastructure",
+      "type": "contextualizes",
+      "description": "Context protocol implementations (MCP servers, skill files) expose wallet infrastructure tools' capabilities and APIs to AI coding agents, enabling agents to recommend and integrate them correctly.",
+      "example_tool": "base-mcp"
+    },
+    {
+      "source": "context-protocol",
+      "target": "chain-data",
+      "type": "contextualizes",
+      "description": "Context protocols expose chain-data tool documentation to AI agents — Helius skill files, Base MCP's RPC context — enabling accurate code generation for blockchain data access.",
+      "example_tool": "base-mcp"
+    },
+    {
+      "source": "context-protocol",
+      "target": "defi-protocol",
+      "type": "contextualizes",
+      "description": "DeFi protocol skill files (Jupiter official skill, ETHSkills DeFi coverage) give AI agents accurate API knowledge for integrating DeFi protocols.",
+      "example_tool": "ethskills"
+    },
+    {
+      "source": "context-protocol",
+      "target": "agent-framework",
+      "type": "contextualizes",
+      "description": "Skill files for agent frameworks (sendaifun skills, ETHSkills orchestration patterns) teach AI agents how to build other AI agents correctly — the meta-use case.",
+      "example_tool": "sendaifun-skills"
+    },
+    {
+      "source": "social-layer",
+      "target": "wallet-infrastructure",
+      "type": "feeds-into",
+      "description": "Farcaster social auth (FID verification, custody address) feeds into wallet layer when building Farcaster apps — the social identity is the entry point for wallet association.",
+      "workflow_context": "In a Farcaster miniapp: Neynar (social-layer) provides the FID and verified Ethereum address; Privy (wallet-infrastructure) creates or retrieves the embedded wallet for that identity.",
+      "example_workflow": "farcaster-consumer-onboarding"
+    },
+    {
+      "source": "identity",
+      "target": "wallet-infrastructure",
+      "type": "layered-on-top-of",
+      "description": "Onchain identity protocols (ENS, Basenames, SIWE) resolve human-readable names and session proofs that map to the underlying wallet addresses managed by wallet infrastructure.",
+      "workflow_context": "SIWE (identity) provides an auth session token. Privy (wallet-infrastructure) or reown (wallet-infrastructure) manages the wallet that signed the SIWE message."
+    },
+    {
+      "source": "account-abstraction",
+      "target": "defi-protocol",
+      "type": "executes-on",
+      "description": "Smart account wallets execute DeFi protocol operations with programmable rules — batched transactions, session keys that limit DeFi actions, automated protocol interactions without per-transaction user approval.",
+      "workflow_context": "In a gasless DeFi app: a ZeroDev smart account (account-abstraction) executes a Uniswap swap (defi-protocol) in a single batched UserOperation with gas sponsored by a paymaster."
+    },
+    {
+      "source": "agent-framework",
+      "target": "wallet-infrastructure",
+      "type": "delegates-signing-to",
+      "description": "AI agent frameworks decide what transaction to construct and execute; wallet infrastructure performs the actual cryptographic signing. The agent owns the reasoning; the wallet owns the key. This is the fundamental separation of concerns in autonomous agent stacks — agent-framework must never directly hold or access private keys.",
+      "workflow_context": "In an autonomous trading agent: Vercel AI SDK (agent-framework) determines a swap is warranted and constructs the transaction parameters; Turnkey (wallet-infrastructure/server-side) signs the constructed transaction. The agent cannot sign without the wallet layer.",
+      "example_workflow": "base-onchain-ai-agent"
+    },
+    {
+      "source": "chain-data",
+      "target": "workflow-orchestration",
+      "type": "feeds-into",
+      "description": "Chain data webhooks (Alchemy, Helius) deliver onchain event triggers that activate workflow orchestration jobs. The event is the signal; the orchestrator durably executes the agent response to that signal. This relationship is the architectural backbone of all event-driven agent workflows.",
+      "workflow_context": "In a Base AI agent: Alchemy (chain-data) delivers an address activity webhook to a Trigger.dev endpoint; Trigger.dev (workflow-orchestration) receives the event and starts a durable agent job that handles retries, step logging, and failure recovery.",
+      "example_workflow": "base-onchain-ai-agent"
+    },
+    {
+      "source": "account-abstraction",
+      "target": "chain-data",
+      "type": "executes-on",
+      "description": "Account abstraction bundlers read chain state (nonce, account deployment status, UserOp simulation results) before submitting UserOperations to the mempool. Bundlers are consumers of chain-data RPC APIs, not just abstract infrastructure.",
+      "workflow_context": "In a gasless onboarding flow: Pimlico (account-abstraction) calls Alchemy (chain-data) RPC endpoints to check smart account deployment status, simulate the UserOperation for gas estimation, and submit the UserOp to the Base mempool.",
+      "example_workflow": "embedded-wallet-onboarding"
+    }
+  ],
+  "workflow_chains": [
+    {
+      "id": "solana-trading-agent-chain",
+      "workflow_ref": "solana-trading-agent",
+      "description": "The canonical Solana trading agent data → reasoning → execution pipeline",
+      "chain": [
+        { "category": "chain-data", "role": "event trigger and onchain state" },
+        { "category": "market-data", "role": "price and market context" },
+        { "category": "agent-framework", "role": "trade reasoning and decision" },
+        { "category": "wallet-infrastructure", "role": "transaction signing (server-side)" },
+        { "category": "defi-protocol", "role": "swap route computation" },
+        { "category": "execution", "role": "MEV-protected bundle submission" },
+        { "category": "workflow-orchestration", "role": "durable step execution and retry" }
+      ]
+    },
+    {
+      "id": "farcaster-consumer-onboarding-chain",
+      "workflow_ref": "farcaster-consumer-onboarding",
+      "description": "The canonical Farcaster miniapp onboarding and interaction stack",
+      "chain": [
+        { "category": "social-layer", "role": "Farcaster identity and social context" },
+        { "category": "wallet-infrastructure", "role": "embedded wallet creation for Farcaster user" },
+        { "category": "account-abstraction", "role": "gasless first transactions" },
+        { "category": "frontend-sdk", "role": "Frame UI and onchain interaction components" },
+        { "category": "chain-data", "role": "onchain state reads (balances, NFTs)" }
+      ]
+    },
+    {
+      "id": "base-consumer-app-chain",
+      "description": "Base consumer app wallet and interaction stack",
+      "chain": [
+        { "category": "wallet-infrastructure", "role": "user wallet creation (embedded)" },
+        { "category": "frontend-sdk", "role": "wallet UI and transaction components" },
+        { "category": "account-abstraction", "role": "gasless sponsored transactions" },
+        { "category": "chain-data", "role": "onchain state reads via RPC" },
+        { "category": "identity", "role": "Basename resolution for wallet display" }
+      ]
+    },
+    {
+      "id": "embedded-wallet-onboarding-chain",
+      "workflow_ref": "embedded-wallet-onboarding",
+      "description": "The canonical zero-friction consumer onboarding pipeline: social/email login → embedded wallet → gasless first action",
+      "chain": [
+        { "category": "wallet-infrastructure", "role": "embedded wallet creation via social/email login" },
+        { "category": "account-abstraction", "role": "gas sponsorship for first transaction" },
+        { "category": "chain-data", "role": "onchain state reads via RPC" },
+        { "category": "frontend-sdk", "role": "wallet UI and transaction components" }
+      ]
+    },
+    {
+      "id": "base-onchain-ai-agent-chain",
+      "workflow_ref": "base-onchain-ai-agent",
+      "description": "The canonical autonomous Base AI agent pipeline: webhook event → durable orchestration → LLM reasoning → server-side signing",
+      "chain": [
+        { "category": "chain-data", "role": "onchain event trigger (address activity webhooks)" },
+        { "category": "workflow-orchestration", "role": "durable job execution and retry" },
+        { "category": "agent-framework", "role": "LLM reasoning and transaction construction" },
+        { "category": "wallet-infrastructure", "role": "server-side cryptographic signing" },
+        { "category": "account-abstraction", "role": "optional gas sponsorship for agent transactions" }
+      ]
+    }
+  ]
+}

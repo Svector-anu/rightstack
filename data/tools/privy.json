@@ -1,0 +1,117 @@
+{
+  "id": "privy",
+  "name": "Privy",
+  "aliases": ["@privy-io/react-auth", "@privy-io/server-auth", "@privy-io/expo"],
+  "category": "wallet-infrastructure",
+  "subcategory": "embedded",
+  "description": "Embedded wallet infrastructure for onboarding non-crypto-native users via email, social login, or passkeys — without requiring users to understand wallets. Also provides server-side wallet management for AI agents.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "dominant", "notes": "Default wallet choice for Base consumer apps and Base AI agent stacks." },
+    { "ecosystem": "farcaster", "strength": "dominant", "notes": "Dominant wallet provider in Farcaster miniapps. Has a dedicated miniapp mode." },
+    { "ecosystem": "ethereum", "strength": "strong" },
+    { "ecosystem": "solana", "strength": "limited", "notes": "Supports Solana wallet addresses but ecosystem adoption is minimal — Solana builders primarily use other options." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "embedded-wallet-creation",
+    "email-login",
+    "social-login",
+    "passkey-support",
+    "external-wallet-connection",
+    "server-side-wallet-management",
+    "session-management",
+    "custody-abstraction",
+    "progressive-wallet-onboarding"
+  ],
+  "workflow_positions": ["wallet-layer", "auth-layer", "signing-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "onchainkit",
+      "relationship": "complements",
+      "context": "Privy handles wallet creation; OnchainKit provides the Base-native UI components and transaction primitives.",
+      "workflow_ref": "base-consumer-app"
+    },
+    {
+      "tool_id": "pimlico",
+      "relationship": "complements",
+      "context": "Privy for wallet creation, Pimlico for gasless first transactions. The canonical embedded-wallet-onboarding stack.",
+      "workflow_ref": "embedded-wallet-onboarding"
+    },
+    {
+      "tool_id": "neynar",
+      "relationship": "often-used-with",
+      "context": "Neynar for Farcaster social graph data, Privy for wallet layer in Farcaster miniapps.",
+      "workflow_ref": "farcaster-consumer-onboarding"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Alchemy as the RPC layer when Privy handles wallet management."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Dominant wallet provider across Base and Farcaster ecosystems based on recurring appearance in production workflow patterns.",
+      "verifiable": false
+    },
+    {
+      "tier": 1,
+      "type": "recurring-workflow-pattern",
+      "description": "Privy + OnchainKit and Privy + Neynar are the two canonical Farcaster/Base production stacks confirmed across multiple sources.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "integration-density",
+      "description": "Integrated by OnchainKit, Pimlico, AgentKit, and Neynar — high integration density across trusted tools.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@privy-io/react-auth", "@privy-io/server-auth", "@privy-io/expo"]
+  },
+  "skill_refs": [],
+  "workflow_refs": [
+    "base-consumer-app",
+    "farcaster-consumer-onboarding",
+    "embedded-wallet-onboarding",
+    "onchain-ai-agent-base",
+    "social-ai-agent-farcaster"
+  ],
+  "scale_guidance": {
+    "hackathon": "Use @privy-io/react-auth — fastest setup, minimal config.",
+    "mvp": "Same as hackathon. Server-side auth optional at MVP scale.",
+    "production": "Use @privy-io/server-auth for any server-side or agent-controlled wallet operations. Do not use browser-only SDK for autonomous agents."
+  },
+  "alternatives": [
+    {
+      "tool_id": "dynamic",
+      "when_to_prefer": "When more complex auth flow customization or enterprise SSO integration is required.",
+      "ecosystem_context": "Available on Base and Ethereum."
+    },
+    {
+      "tool_id": "turnkey",
+      "when_to_prefer": "When the agent is fully autonomous with no user interaction. Turnkey is designed for programmatic, server-side wallet management without embedded UX.",
+      "ecosystem_context": "Solana and Ethereum/Base."
+    },
+    {
+      "tool_id": "reown",
+      "when_to_prefer": "When the primary use case is connecting an EXISTING external wallet (e.g., MetaMask, Phantom) rather than creating a new embedded wallet.",
+      "ecosystem_context": "Ethereum, Base, multi-chain."
+    }
+  ],
+  "anti_patterns": [
+    "Using @privy-io/react-auth (browser SDK) in server-side or autonomous agent contexts. Use @privy-io/server-auth instead.",
+    "Relying on Privy as the sole identity layer without a backup auth method for production apps.",
+    "Not planning for Privy key export flows — users may want to migrate to self-custody."
+  ],
+  "retrieval_tags": ["gasless", "consumer-onboarding", "non-crypto-native", "invisible-wallet", "social-login", "miniapp"],
+  "source": {
+    "primary_url": "https://privy.io",
+    "docs_url": "https://docs.privy.io"
+  },
+  "updated_at": "2026-05-13"
+}

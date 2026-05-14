@@ -1,0 +1,187 @@
+{
+  "id": "embedded-wallet-onboarding",
+  "name": "Embedded Wallet Onboarding Workflow",
+  "goal": "Onboard users with no existing wallet into a web3 app using social/email login, giving them a wallet and enabling their first onchain action without requiring ETH or crypto knowledge.",
+  "goal_tags": [
+    "embedded-wallet",
+    "consumer-onboarding",
+    "gasless-onboarding",
+    "no-crypto-required",
+    "email-login",
+    "social-login",
+    "first-transaction",
+    "wallet-creation",
+    "zero-friction-onboarding",
+    "erc-4337"
+  ],
+  "ecosystems": ["base", "ethereum"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet-creation",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["privy"],
+      "alternative_tools": [
+        {
+          "tool_id": "dynamic",
+          "when_to_prefer": "When the app must support BOTH new users (no wallet) AND existing wallet holders (MetaMask, Coinbase Wallet) in a single unified flow. Dynamic handles the hybrid_wallet constraint — Privy is embedded-only and Reown is external-connection-only. Dynamic is the only option that resolves both in one SDK."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "This is the most critical conversion gate in the entire onboarding flow. Email and social login (Google, Apple, Twitter) have dramatically higher conversion than asking users to install MetaMask. Privy's embedded wallet abstracts the keypair entirely — users never see a seed phrase during onboarding. Important: Use Privy's progressive disclosure model — let users go deeper into self-custody later, but do not surface key management complexity during initial onboarding."
+    },
+    {
+      "id": "smart-account",
+      "role": "signing",
+      "required": false,
+      "primary_tools": [],
+      "alternative_tools": [
+        {
+          "tool_id": "zerodev",
+          "when_to_prefer": "When the onboarding flow requires session keys (agent acting on user's behalf), batched first-time actions (approve + deposit in one tx), or smart account rules (daily spending limits, whitelisted contracts). Add ZeroDev when the product requires programmable account behavior, not just gas sponsorship."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Smart account layer is NOT required for basic gasless onboarding. Pimlico alone (bundler + paymaster) is sufficient for sponsoring a first transaction from a standard EOA. Only add ZeroDev Kernel when you need programmable rules, session keys, or batched transactions. Adding smart account infrastructure without a specific product reason increases complexity and error surface.",
+      "scale_overrides": {
+        "hackathon": "Skip. Basic gasless with Pimlico is sufficient for demos.",
+        "production": "Add if the product requires session keys for recurring agent-like actions or if one-click batched transactions are a product feature."
+      }
+    },
+    {
+      "id": "gas-sponsorship",
+      "role": "payment",
+      "required": true,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [
+        {
+          "tool_id": "zerodev",
+          "when_to_prefer": "When ZeroDev is already handling the smart account phase. ZeroDev bundles smart account + paymaster + bundler — if you're using ZeroDev Kernel, you get bundler/paymaster with it and don't need separate Pimlico integration."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Gasless first transaction is the single highest-leverage UX improvement in consumer crypto onboarding. Users who do not need ETH to complete their first action convert at significantly higher rates. Set Pimlico gas policy rules before launch: per-user daily limit (e.g., $1/user/day), per-action maximum (e.g., $0.10/action), contract allowlist (only sponsor interactions with your own contracts). Unlimited sponsorship is a budget vulnerability. Model gas cost per user at your expected volume before launch.",
+      "scale_overrides": {
+        "hackathon": "Use Pimlico free tier. Sponsor all transactions — no policy needed for demo scale.",
+        "production": "Define explicit spending policy: per-user daily cap, per-action max, contract whitelist. Monitor gas costs in Pimlico dashboard from day one. Budget gas sponsorship as a user acquisition cost line item."
+      }
+    },
+    {
+      "id": "chain",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When multi-chain RPC is needed beyond Base/Ethereum, or already in QuickNode stack."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Alchemy is the reference RPC for Base and the most reliable choice for consumer apps where availability directly affects user experience. Use Alchemy's enhanced APIs for wallet balance reads and transaction status — the standard JSON-RPC is sufficient but enhanced APIs reduce polling complexity. Never use public RPCs in production — rate limits will degrade onboarding at any meaningful user volume."
+    },
+    {
+      "id": "ui-components",
+      "role": "ui",
+      "required": false,
+      "primary_tools": ["onchainkit"],
+      "alternative_tools": [
+        {
+          "tool_id": "wagmi",
+          "when_to_prefer": "When OnchainKit's visual components are too opinionated for the design system. wagmi provides the underlying hooks without enforced UI. Use wagmi for full design control at the cost of more implementation work."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "OnchainKit's wallet and transaction components dramatically accelerate base consumer app development. The identity components (Basenames display, avatar resolution) are particularly valuable for building social proof into onboarding flows. Optional phase — the wallet creation, gas sponsorship, and chain data layers work without any specific UI library."
+    },
+    {
+      "id": "social-context",
+      "role": "social-layer",
+      "required": false,
+      "primary_tools": ["neynar"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Add this phase when the onboarding flow is within a Farcaster miniapp context. Neynar provides the Farcaster user's FID and verified custody address — this pre-populates the wallet identity and allows the app to personalize onboarding based on the user's social graph. In Farcaster miniapps, Neynar + Privy-in-miniapp-mode is the canonical embedded wallet onboarding pattern. Important: use Privy's miniapp-specific configuration (not the standard react-auth SDK) when building inside Farcaster Frames — the standard SDK has UX issues in the embedded frame context.",
+      "scale_overrides": {
+        "hackathon": "Use Neynar free tier. Standard API key sufficient.",
+        "production": "Plan Neynar tier by DAU. Social context enrichment makes onboarding more personal but adds per-request cost."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Email + social login onboards 3-5x more users than wallet-connect patterns in consumer apps. The wallet is invisible — that is the point.",
+    "Gas sponsorship for the first user action is non-negotiable for true zero-friction onboarding. Users will abandon if they must acquire ETH before using the app.",
+    "Privy wallet security: Privy uses MPC-based key management. Users can progressively export to self-custody wallets later. Do not advertise this as custodial — Privy is non-custodial MPC.",
+    "Model paymaster costs before launch: sponsored gas at $0.05-0.10/action for 10k users/day = $500-1000/day. Build into unit economics from day one, not as an afterthought.",
+    "Privy key export flows must be planned even if not launched on day one — regulatory and product considerations mean users should be able to recover their key.",
+    "The hybrid wallet scenario (some users have MetaMask, some don't) is underestimated in planning. Dynamic resolves this cleanly without building two separate onboarding paths.",
+    "Mobile testing is non-negotiable — the majority of consumer crypto users are on mobile. Privy's embedded wallet has mobile-specific considerations for biometric/passkey flows."
+  ],
+  "tradeoffs": [
+    "Privy creates vendor dependency for embedded wallet infrastructure — user migration path off Privy is complex if needed later.",
+    "Gasless UX requires ongoing gas budget commitment — turning off sponsorship post-launch is a destructive UX change.",
+    "Email login is simpler than social login but social login converts better for the crypto-curious user segment.",
+    "Smart account (ZeroDev) adds meaningful complexity to the signing flow — edge cases in account deployment and UserOp failure modes require significant error handling investment.",
+    "Pimlico paymaster SLA is critical for production — if the paymaster is down, gasless actions fail. Plan a fallback UX (prompt user to get gas) rather than a hard failure."
+  ],
+  "anti_patterns": [
+    "Asking users to 'connect a wallet' as the first action in a consumer app — users without MetaMask will drop off immediately.",
+    "Skipping gas sponsorship and requiring users to acquire ETH before their first action — this is the single biggest conversion killer in consumer crypto.",
+    "Using Privy @privy-io/react-auth inside a Farcaster Frame without miniapp-specific configuration — UX breaks in the embedded context.",
+    "Launching without per-user gas spending limits — an attacker or spam user can drain the paymaster budget in minutes.",
+    "Building separate onboarding flows for users with/without wallets instead of using Dynamic (hybrid wallet) — two flows double maintenance burden and create edge cases when users switch.",
+    "Not implementing progressive wallet disclosure — surfacing seed phrases or private keys during initial onboarding causes user abandonment.",
+    "Conflating smart account (ZeroDev) with bundler/paymaster (Pimlico) — they are separate infrastructure. Pimlico is bundler+paymaster only. ZeroDev is smart account logic. Using one does not give you the other."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "hybrid_wallet",
+      "modification": "Replace Privy with Dynamic in the wallet-creation phase. Dynamic handles both embedded wallet creation (for users without wallets) and external wallet connection (for users with MetaMask/Coinbase Wallet) in a single SDK and single onboarding flow.",
+      "affects_phase": "wallet-creation"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "Promote gas-sponsorship phase to required (it already is). Configure Pimlico policy with per-user daily cap before any live traffic.",
+      "affects_phase": "gas-sponsorship"
+    },
+    {
+      "constraint": "social_features_required",
+      "modification": "Add social-context phase. Configure Privy in miniapp mode. Use Neynar FID for user identification and social graph personalization.",
+      "affects_phase": "social-context"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Use Privy + Pimlico only. Skip smart-account and social-context phases. Skip OnchainKit if design is custom. Minimal viable onboarding: email login → wallet created → first tx sponsored.",
+      "affects_phase": "smart-account"
+    },
+    {
+      "constraint": "autonomous_agent",
+      "modification": "Replace Privy with Turnkey in the wallet-creation phase. Privy is user-facing; autonomous agents require Turnkey for programmatic server-side key management. See base-onchain-ai-agent workflow.",
+      "affects_phase": "wallet-creation"
+    }
+  ],
+  "retrieval_tags": [
+    "embedded-wallet",
+    "gasless-onboarding",
+    "consumer-onboarding",
+    "no-crypto-required",
+    "email-login",
+    "social-login",
+    "privy",
+    "pimlico",
+    "erc-4337",
+    "onboarding",
+    "wallet-creation",
+    "first-transaction"
+  ],
+  "source": {
+    "derived_from": "WORKFLOWS.md workflow #4 + corpus-expansion-strategy-v1 + production-pattern analysis",
+    "last_verified": "2026-05-14"
+  },
+  "updated_at": "2026-05-14"
+}
