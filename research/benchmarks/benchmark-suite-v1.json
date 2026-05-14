@@ -1,0 +1,2006 @@
+{
+  "$schema": "https://rightstack.dev/schemas/benchmark-suite.json",
+  "version": "1.0",
+  "generated": "2026-05-14",
+  "total_queries": 50,
+  "categories": {
+    "beginner": "Q001-Q008",
+    "advanced": "Q009-Q015",
+    "ambiguous": "Q016-Q021",
+    "conflicting_constraints": "Q022-Q026",
+    "ecosystem_comparison": "Q027-Q031",
+    "migration_risk": "Q032-Q036",
+    "ai_agent": "Q037-Q042",
+    "farcaster_native": "Q043-Q046",
+    "base_consumer": "Q047-Q050"
+  },
+  "golden_queries": ["Q001", "Q010", "Q013", "Q016", "Q022", "Q025", "Q027", "Q032", "Q038", "Q044"],
+  "queries": [
+
+    {
+      "id": "Q001",
+      "golden": true,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "build a consumer web3 app on Base with email login",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "no_existing_wallet": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.70,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "ui-components", "primary": "onchainkit", "role": "ui" },
+          { "phase": "chain", "primary": "alchemy-rpc", "role": "data-indexing" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["dynamic"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "anti_patterns_forbidden": [
+          "use public RPCs",
+          "require MetaMask",
+          "build your own wallet management"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app workflow returned",
+          "privy in wallet-setup phase OR dynamic as primary with note",
+          "alchemy-rpc in chain phase",
+          "no Solana-only tool in output",
+          "confidence >= 0.60"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned but onchainkit phase missing"
+        ],
+        "fail": [
+          "any Solana-only tool in output",
+          "wrong ecosystem workflow returned",
+          "privy not in wallet-setup (not even as alt)",
+          "abandoned tool in output"
+        ]
+      },
+      "notes": "Core P0 query. The simplest representative case. If this fails, the pipeline has a fundamental bug."
+    },
+
+    {
+      "id": "Q002",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "add a crypto wallet to my Next.js app",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "ui-components", "primary": "onchainkit", "role": "ui" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["dynamic", "reown"] },
+        "expected_exclusions": ["helius", "jito-mev", "birdeye", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "anti_patterns_forbidden": ["use public RPCs in production"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app OR embedded-wallet-onboarding returned",
+          "privy OR dynamic in wallet-setup",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "correct tools but confidence below 0.55 due to ecosystem ambiguity"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "abandoned tool in output"
+        ]
+      },
+      "notes": "Next.js implies EVM (Base/Ethereum). Ecosystem should be inferred as base or ethereum."
+    },
+
+    {
+      "id": "Q003",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "let users log in with their Farcaster account",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "auth", "primary": "farcaster-auth-kit", "role": "auth" },
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" }
+        ],
+        "acceptable_alternatives": { "auth": ["neynar"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "anti_patterns_forbidden": ["use Auth Kit inside a Farcaster Frame"]
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding workflow returned",
+          "farcaster-auth-kit surfaced (primary or alt) in auth phase",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned with farcaster-auth-kit in alternatives"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "no identity/auth tool returned at all"
+        ]
+      },
+      "notes": "SIWF = Sign In With Farcaster. farcaster-auth-kit is the primary tool for this. Should surface anti-pattern about not using it inside Frames."
+    },
+
+    {
+      "id": "Q004",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "I want to build a Farcaster Frame",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "frame-rendering", "primary": "farcaster-frames-sdk", "role": "social-layer" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "jito-mev", "birdeye", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "jito-mev", "birdeye", "jupiter"],
+        "anti_patterns_forbidden": [
+          "using @privy-io/react-auth inside Frame without miniapp config",
+          "not calling sdk.actions.ready()"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding workflow returned",
+          "farcaster-frames-sdk in output",
+          "migration warning: @farcaster/frames-client → @farcaster/frame-sdk surfaced"
+        ],
+        "partial_pass": [
+          "farcaster-frames-sdk present but no migration warning"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "farcaster-frames-sdk missing entirely"
+        ]
+      },
+      "notes": "Active v1→v2 migration makes this a migration-risk query too. sdk_migration.status on farcaster-frames-sdk must be surfaced."
+    },
+
+    {
+      "id": "Q005",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "add gasless transactions to my Base app",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "gasless_required": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "gasless-actions", "primary": "pimlico", "role": "payment" }
+        ],
+        "acceptable_alternatives": { "gasless-actions": [] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "not setting per-user spending limits",
+          "Using Pimlico for Solana"
+        ],
+        "constraint_notes_required": ["gasless-actions phase promoted to required"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "pimlico in gasless-actions phase",
+          "constraint note: gasless_required modifier applied",
+          "spending limits anti-pattern surfaced"
+        ],
+        "partial_pass": [
+          "pimlico present but constraint note missing"
+        ],
+        "fail": [
+          "pimlico absent",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "gasless_required constraint must activate the gasless-actions phase promotion."
+    },
+
+    {
+      "id": "Q006",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "I want to build something on Solana",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.50,
+        "phases": [
+          { "phase": "chain-data", "primary": "helius", "role": "data-indexing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["alchemy-rpc", "pimlico", "onchainkit", "wagmi"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["alchemy-rpc", "pimlico", "onchainkit", "wagmi"],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "solana-trading-agent returned (closest Solana workflow)",
+          "helius in chain-data phase",
+          "no EVM tools (alchemy-rpc, pimlico) in output"
+        ],
+        "partial_pass": [
+          "correct ecosystem, workflow mismatch (no better Solana workflow yet)"
+        ],
+        "fail": [
+          "EVM tool (alchemy-rpc, pimlico, wagmi) in output",
+          "Base consumer workflow returned"
+        ]
+      },
+      "notes": "Very underspecified. Should detect Solana ecosystem and return solana-trading-agent as closest match. Confidence will be low — that's acceptable."
+    },
+
+    {
+      "id": "Q007",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "make transactions cheaper for my users on Base",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "gasless_required": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "gasless-actions", "primary": "pimlico", "role": "payment" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": ["unlimited paymaster policy"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "pimlico surfaced",
+          "gas sponsorship framed as the solution"
+        ],
+        "partial_pass": [
+          "correct intent but gasless framing missing"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "pimlico absent"
+        ]
+      },
+      "notes": "'Cheaper transactions' = gasless in the consumer app context. Intent extraction must map this to gasless_required."
+    },
+
+    {
+      "id": "Q008",
+      "golden": false,
+      "category": "beginner",
+      "difficulty": "easy",
+      "query": "how do I let users connect their MetaMask wallet to my app",
+      "ecosystem": "ethereum",
+      "scale": "mvp",
+      "constraints": { "has_existing_wallet": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.50,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "reown", "role": "wallet-setup" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["privy", "dynamic"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "using embedded wallet for existing wallet users"
+        ],
+        "constraint_notes_required": ["has_existing_wallet → reown preferred"]
+      },
+      "evaluation": {
+        "pass": [
+          "reown surfaced (primary or alt in wallet-setup)",
+          "constraint note: has_existing_wallet triggers reown preference",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "privy returned as primary without reown as preferred alt"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "no wallet tool returned"
+        ]
+      },
+      "notes": "has_existing_wallet constraint must trigger the reown preference via constraint_modifiers."
+    },
+
+    {
+      "id": "Q009",
+      "golden": false,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "production Base consumer app with ERC-4337 session keys, gasless UX, and email onboarding",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": { "gasless_required": true, "no_existing_wallet": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.75,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "gasless-actions", "primary": "pimlico", "role": "payment" },
+          { "phase": "chain", "primary": "alchemy-rpc", "role": "data-indexing" }
+        ],
+        "acceptable_alternatives": { "gasless-actions": [] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "not setting per-user spending limits",
+          "unlimited paymaster policy",
+          "using public RPCs"
+        ],
+        "scale_notes_required": ["production: model gas sponsorship costs and set spending limits"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "pimlico in payment phase, promoted required",
+          "privy in wallet-setup",
+          "production scale notes present",
+          "spending limits anti-pattern surfaced"
+        ],
+        "partial_pass": [
+          "correct tools but no production-specific guidance"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "pimlico absent",
+          "emerging tool recommended without flagging"
+        ]
+      },
+      "notes": "Production scale query. trust_weight elevated. Zerodev will appear as alt without ToolRecord — should be noted as MISSING_RECORD."
+    },
+
+    {
+      "id": "Q010",
+      "golden": true,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "autonomous Solana AI trading agent with MEV protection and durable background execution",
+      "ecosystem": "solana",
+      "scale": "production",
+      "constraints": { "autonomous_agent": true, "mev_sensitive": true },
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.75,
+        "phases": [
+          { "phase": "chain-data", "primary": "helius", "role": "data-indexing" },
+          { "phase": "market-data", "primary": "birdeye", "role": "data-indexing" },
+          { "phase": "ai-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" },
+          { "phase": "dex-execution", "primary": "jupiter", "role": "execution" },
+          { "phase": "mev-protection", "primary": "jito-mev", "role": "execution" },
+          { "phase": "orchestration", "primary": "trigger-dev", "role": "orchestration" }
+        ],
+        "acceptable_alternatives": { "ai-reasoning": ["coinbase-agentkit"] },
+        "expected_exclusions": ["alchemy-rpc", "pimlico", "onchainkit", "wagmi", "privy"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["alchemy-rpc", "pimlico", "onchainkit", "wagmi"],
+        "anti_patterns_forbidden": [
+          "Using Pimlico for Solana",
+          "using browser wallet for autonomous agent"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "solana-trading-agent returned",
+          "helius in chain-data",
+          "birdeye in market-data",
+          "jito-mev surfaced for mev_sensitive",
+          "turnkey in signing (not privy browser)",
+          "no EVM tools",
+          "trigger-dev in orchestration"
+        ],
+        "partial_pass": [
+          "all phases correct but mev constraint note missing"
+        ],
+        "fail": [
+          "EVM tool (alchemy-rpc, pimlico) in output",
+          "privy browser SDK recommended for signing",
+          "helius absent"
+        ]
+      },
+      "notes": "Full 7-phase Solana workflow. All phases must be present. EVM exclusions are critical. MEV constraint must activate jito-mev."
+    },
+
+    {
+      "id": "Q011",
+      "golden": false,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "Farcaster miniapp with onchain transactions, social graph data, and embedded wallet",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "no_existing_wallet": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.70,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" },
+          { "phase": "frame-rendering", "primary": "farcaster-frames-sdk", "role": "social-layer" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "using @privy-io/react-auth inside Frame without miniapp config"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding returned",
+          "privy in wallet-setup",
+          "neynar in social-data",
+          "farcaster-frames-sdk present",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "farcaster workflow but one of neynar/farcaster-frames-sdk missing"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "base-consumer-app returned without farcaster context"
+        ]
+      },
+      "notes": "Three Farcaster-specific tools must all appear: privy (miniapp mode), neynar (social), farcaster-frames-sdk (frame context)."
+    },
+
+    {
+      "id": "Q012",
+      "golden": false,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "Base AI agent triggered by onchain events, with server-side wallet signing and retry orchestration",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": { "autonomous_agent": true, "ai_reasoning_required": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.75,
+        "phases": [
+          { "phase": "event-trigger", "primary": "alchemy-rpc", "role": "data-indexing" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" },
+          { "phase": "orchestration", "primary": "trigger-dev", "role": "orchestration" }
+        ],
+        "acceptable_alternatives": { "agent-reasoning": ["coinbase-agentkit"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev", "jupiter"],
+        "trust_expectations": { "emerging_flagged": ["coinbase-agentkit"] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "using @privy-io/react-auth for autonomous agents",
+          "running agent without spending limits"
+        ],
+        "constraint_notes_required": ["autonomous_agent → turnkey not privy"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-onchain-ai-agent returned",
+          "alchemy-rpc in event-trigger",
+          "turnkey in wallet-signing",
+          "trigger-dev in orchestration",
+          "coinbase-agentkit emerging flag if present",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "correct tools but trigger-dev marked optional without recommendation note"
+        ],
+        "fail": [
+          "privy browser SDK for signing",
+          "Solana tool in output",
+          "turnkey absent"
+        ]
+      },
+      "notes": "autonomous_agent constraint must route to turnkey. coinbase-agentkit as alt must surface with EMERGING flag."
+    },
+
+    {
+      "id": "Q013",
+      "golden": true,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "production-scale Base app with Coinbase's smart wallet for passkey-based auth",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": {},
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["coinbase-smart-wallet"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "Using coinbase-smart-wallet for autonomous agents"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "coinbase-smart-wallet surfaced (primary or alt)",
+          "anti-pattern: not for autonomous agents surfaced",
+          "production scale notes present"
+        ],
+        "partial_pass": [
+          "privy primary but coinbase-smart-wallet mentioned in comparison context"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "coinbase-smart-wallet recommended for autonomous agent use"
+        ]
+      },
+      "notes": "coinbase-smart-wallet requires user approval per transaction — must NOT be recommended for autonomous agents."
+    },
+
+    {
+      "id": "Q014",
+      "golden": false,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "multi-step AI agent that processes Farcaster social signals and executes Base transactions",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "ai_reasoning_required": true, "autonomous_agent": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "emerging_flagged": ["coinbase-agentkit"] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "using privy react-auth for autonomous agent"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "neynar surfaced for social data",
+          "vercel-ai-sdk for reasoning",
+          "turnkey for signing",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "farcaster-consumer-onboarding returned but agent tools present"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "privy browser SDK for signing autonomous agent"
+        ]
+      },
+      "notes": "Cross-workflow: farcaster social signals + Base onchain agent. Best current match is base-onchain-ai-agent. farcaster-social-ai-agent (Wave 4) will improve this."
+    },
+
+    {
+      "id": "Q015",
+      "golden": false,
+      "category": "advanced",
+      "difficulty": "hard",
+      "query": "high-frequency Solana DeFi bot with low latency execution and portfolio tracking",
+      "ecosystem": "solana",
+      "scale": "production",
+      "constraints": { "mev_sensitive": true, "high_frequency_execution": true },
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.75,
+        "phases": [
+          { "phase": "chain-data", "primary": "helius", "role": "data-indexing" },
+          { "phase": "market-data", "primary": "birdeye", "role": "data-indexing" },
+          { "phase": "dex-execution", "primary": "jupiter", "role": "execution" },
+          { "phase": "mev-protection", "primary": "jito-mev", "role": "execution" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["alchemy-rpc", "pimlico", "onchainkit"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["alchemy-rpc", "pimlico", "onchainkit"],
+        "anti_patterns_forbidden": [
+          "using Birdeye as primary chain-data source",
+          "using Alchemy for Solana RPC"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "solana-trading-agent returned",
+          "jito-mev present (mev_sensitive)",
+          "helius for RPC (not alchemy-rpc)",
+          "no EVM tools"
+        ],
+        "partial_pass": [
+          "correct ecosystem, jito-mev present, one EVM alt accidentally included"
+        ],
+        "fail": [
+          "alchemy-rpc in output",
+          "pimlico in output",
+          "EVM workflow returned"
+        ]
+      },
+      "notes": "Birdeye anti-pattern: must NOT be used as chain-data (it's market analytics). Alchemy ecosystem exclusion: critical for Solana."
+    },
+
+    {
+      "id": "Q016",
+      "golden": true,
+      "category": "ambiguous",
+      "difficulty": "medium",
+      "query": "build a web3 app",
+      "ecosystem": null,
+      "scale": null,
+      "constraints": {},
+      "expected": {
+        "workflow": null,
+        "workflow_confidence_min": 0,
+        "ambiguity_flags_required": ["primary_ecosystem"],
+        "confidence_max": 0.65,
+        "acceptable_outcomes": ["any valid workflow with confidence caveat", "ambiguity noted explicitly in output"],
+        "expected_exclusions": [],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": [],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "ambiguity flag present in output",
+          "confidence < 0.65",
+          "output does NOT silently return a confident recommendation without caveat",
+          "some result returned (no silent failure)"
+        ],
+        "partial_pass": [
+          "result returned without explicit ambiguity flag but confidence shown as low"
+        ],
+        "fail": [
+          "no result returned (silent failure)",
+          "confident recommendation with no ambiguity caveat",
+          "abandoned tool in output"
+        ]
+      },
+      "notes": "Underspecified. The pipeline must surface ambiguity, not silently assume an ecosystem. Result quality is secondary to ambiguity handling."
+    },
+
+    {
+      "id": "Q017",
+      "golden": false,
+      "category": "ambiguous",
+      "difficulty": "medium",
+      "query": "add AI to my blockchain app",
+      "ecosystem": null,
+      "scale": null,
+      "constraints": { "ai_reasoning_required": true },
+      "expected": {
+        "workflow": null,
+        "workflow_confidence_min": 0,
+        "ambiguity_flags_required": ["primary_ecosystem"],
+        "confidence_max": 0.65,
+        "acceptable_outcomes": ["vercel-ai-sdk surfaced regardless of ecosystem"],
+        "expected_exclusions": [],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": [],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "vercel-ai-sdk appears in output",
+          "ambiguity flag for ecosystem",
+          "some result returned"
+        ],
+        "partial_pass": [
+          "output shows AI tools but no ecosystem context"
+        ],
+        "fail": [
+          "no result",
+          "coinbase-agentkit as primary without emerging flag"
+        ]
+      },
+      "notes": "vercel-ai-sdk is the ecosystem-agnostic AI tool. Should appear even without ecosystem context."
+    },
+
+    {
+      "id": "Q018",
+      "golden": false,
+      "category": "ambiguous",
+      "difficulty": "medium",
+      "query": "I need session keys for my app",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.50,
+        "phases": [
+          { "phase": "gasless-actions", "primary": "pimlico", "role": "payment" }
+        ],
+        "acceptable_alternatives": { "gasless-actions": [] },
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye"],
+        "anti_patterns_forbidden": [],
+        "missing_record_expected": ["zerodev referenced as alt without ToolRecord"]
+      },
+      "evaluation": {
+        "pass": [
+          "account-abstraction category tools surfaced",
+          "pimlico or zerodev mentioned",
+          "MISSING_RECORD for zerodev noted if referenced"
+        ],
+        "partial_pass": [
+          "pimlico surfaced but session key context not explicit"
+        ],
+        "fail": [
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Session keys = ERC-4337 AA pattern. Zerodev is the primary session key tool but has no ToolRecord yet (Wave 4 gap)."
+    },
+
+    {
+      "id": "Q019",
+      "golden": false,
+      "category": "ambiguous",
+      "difficulty": "medium",
+      "query": "I want to build a social crypto app",
+      "ecosystem": null,
+      "scale": "mvp",
+      "constraints": { "social_features_required": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.45,
+        "phases": [
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": [],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": [],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding returned OR Farcaster ecosystem suggested",
+          "neynar surfaced",
+          "some caveat about Farcaster assumption"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned but social layer tools present"
+        ],
+        "fail": [
+          "no social layer tools",
+          "Solana tools appear without social context"
+        ]
+      },
+      "notes": "social_features_required with no ecosystem → Farcaster is the natural inference. Low confidence expected."
+    },
+
+    {
+      "id": "Q020",
+      "golden": false,
+      "category": "ambiguous",
+      "difficulty": "medium",
+      "query": "I need a trading bot",
+      "ecosystem": null,
+      "scale": null,
+      "constraints": {},
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.40,
+        "ambiguity_flags_required": ["primary_ecosystem"],
+        "acceptable_outcomes": ["any trading workflow with ecosystem caveat"],
+        "expected_exclusions": [],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": [],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "trading-related workflow returned (solana-trading-agent most likely)",
+          "ambiguity flag present",
+          "some result"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned with no trading context"
+        ],
+        "fail": [
+          "no result",
+          "abandoned tool in output"
+        ]
+      },
+      "notes": "Trading bot without ecosystem. Solana is the dominant trading chain in the corpus. Low confidence expected."
+    },
+
+    {
+      "id": "Q021",
+      "golden": false,
+      "category": "ambiguous",
+      "difficulty": "hard",
+      "query": "multi-chain DeFi app that works on both Ethereum and Solana",
+      "ecosystem": "ethereum",
+      "scale": "mvp",
+      "constraints": { "cross_chain": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.40,
+        "phases": [],
+        "acceptable_alternatives": {},
+        "expected_exclusions": [],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": [],
+        "anti_patterns_forbidden": [],
+        "cross_chain_note_required": true
+      },
+      "evaluation": {
+        "pass": [
+          "cross_chain constraint surfaced",
+          "both Ethereum and Solana tools mentioned",
+          "workflow mismatch noted (no multi-chain workflow in corpus)"
+        ],
+        "partial_pass": [
+          "one ecosystem's tools present, other missing"
+        ],
+        "fail": [
+          "confident single-ecosystem recommendation without cross-chain note",
+          "ecosystem violation on either side"
+        ]
+      },
+      "notes": "No multi-chain workflow exists in corpus. The system should note this gap rather than silently return a single-ecosystem result."
+    },
+
+    {
+      "id": "Q022",
+      "golden": true,
+      "category": "conflicting_constraints",
+      "difficulty": "hard",
+      "query": "Base app that works for both users who have MetaMask and brand new users with no wallet",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "has_existing_wallet": true, "no_existing_wallet": true, "hybrid_wallet": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["dynamic"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [],
+        "constraint_notes_required": ["hybrid_wallet → Dynamic preferred for unified flow"]
+      },
+      "evaluation": {
+        "pass": [
+          "hybrid_wallet constraint resolved (not treated as contradiction)",
+          "dynamic surfaced as preferred alt for hybrid_wallet",
+          "constraint note: hybrid_wallet modifier applied",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "privy returned without dynamic alt or hybrid_wallet note"
+        ],
+        "fail": [
+          "ambiguity_flag for contradiction between has_existing_wallet and no_existing_wallet WITHOUT hybrid_wallet resolution",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "hybrid_wallet constraint was added specifically for this pattern. The pipeline must not treat has_existing_wallet + no_existing_wallet as a contradiction — hybrid_wallet resolves it."
+    },
+
+    {
+      "id": "Q023",
+      "golden": false,
+      "category": "conflicting_constraints",
+      "difficulty": "hard",
+      "query": "autonomous Base agent but each transaction must be approved by the user",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "autonomous_agent": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": { "wallet-signing": ["privy"] },
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye"],
+        "anti_patterns_forbidden": [],
+        "ambiguity_note_required": "autonomous_agent + per-transaction approval is a semi-autonomous pattern"
+      },
+      "evaluation": {
+        "pass": [
+          "base-onchain-ai-agent returned",
+          "privy server-auth surfaced as alt for user-approval pattern",
+          "note about semi-autonomous vs fully autonomous distinction"
+        ],
+        "partial_pass": [
+          "correct workflow but autonomous/approval tension not surfaced"
+        ],
+        "fail": [
+          "privy browser SDK recommended for autonomous signing",
+          "Solana tools in output"
+        ]
+      },
+      "notes": "autonomous_agent + user approval = Privy server-auth (semi-autonomous pattern). The workflow note about this distinction should surface."
+    },
+
+    {
+      "id": "Q024",
+      "golden": false,
+      "category": "conflicting_constraints",
+      "difficulty": "hard",
+      "query": "gasless Solana app with account abstraction",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": { "gasless_required": true },
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.50,
+        "phases": [],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["pimlico", "alchemy-rpc", "onchainkit"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["pimlico", "alchemy-rpc", "onchainkit"],
+        "anti_patterns_forbidden": ["Using Pimlico for Solana"],
+        "constraint_conflict_note_required": "ERC-4337 / pimlico does not apply to Solana"
+      },
+      "evaluation": {
+        "pass": [
+          "pimlico NOT in output",
+          "note that ERC-4337 does not apply to Solana",
+          "Solana-native gasless approach noted (or gap acknowledged)"
+        ],
+        "partial_pass": [
+          "Solana workflow returned, pimlico absent, no explicit gasless note"
+        ],
+        "fail": [
+          "pimlico in output for Solana query",
+          "ERC-4337 recommended for Solana"
+        ]
+      },
+      "notes": "This is a constraint-ecosystem conflict. ERC-4337 (Pimlico) is EVM-only. The system must not recommend it for Solana, and should ideally note the architectural mismatch."
+    },
+
+    {
+      "id": "Q025",
+      "golden": true,
+      "category": "conflicting_constraints",
+      "difficulty": "hard",
+      "query": "hackathon demo on Base that also needs to be production-ready security-wise",
+      "ecosystem": "base",
+      "scale": "hackathon",
+      "constraints": { "hackathon_timeline": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [],
+        "scale_notes_required": ["hackathon: gasless optional, skip complex AA"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "hackathon scale modifier applied",
+          "scale override: gasless-actions optional for hackathon",
+          "trust still production-grade (no trust downgrade for hackathon)"
+        ],
+        "partial_pass": [
+          "correct tools but no scale-specific guidance"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "experimental tool recommended because hackathon"
+        ]
+      },
+      "notes": "Hackathon scale modifies weight but should NOT lower trust bar. Trust remains production-grade even for demos."
+    },
+
+    {
+      "id": "Q026",
+      "golden": false,
+      "category": "conflicting_constraints",
+      "difficulty": "hard",
+      "query": "Python AI agent on Solana that needs to trade in real-time",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": { "python_only": true, "autonomous_agent": true, "ai_reasoning_required": true },
+      "expected": {
+        "workflow": "solana-trading-agent",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "ai-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" }
+        ],
+        "acceptable_alternatives": { "ai-reasoning": [] },
+        "expected_exclusions": ["alchemy-rpc", "pimlico", "onchainkit"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["alchemy-rpc", "pimlico", "onchainkit"],
+        "anti_patterns_forbidden": [],
+        "constraint_notes_required": ["python_only: vercel-ai-sdk is TypeScript; langchain (MISSING) is the Python alt"]
+      },
+      "evaluation": {
+        "pass": [
+          "solana-trading-agent returned",
+          "python_only constraint noted",
+          "langchain referenced as Python alternative (even if MISSING_RECORD)",
+          "no EVM tools"
+        ],
+        "partial_pass": [
+          "correct ecosystem, python constraint noted but no alternative surfaced"
+        ],
+        "fail": [
+          "EVM tool in output",
+          "python_only constraint silently ignored"
+        ]
+      },
+      "notes": "langchain is a P2 ToolRecord (not built yet). System should note the constraint and reference langchain even as a MISSING_RECORD gap."
+    },
+
+    {
+      "id": "Q027",
+      "golden": true,
+      "category": "ecosystem_comparison",
+      "difficulty": "medium",
+      "query": "should I use Privy or Dynamic for my Base consumer app?",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "compare",
+        "tools": ["privy", "dynamic"],
+        "comparison_dimensions": ["ecosystem_fit", "subcategory", "capabilities"],
+        "decision_guide_required": true,
+        "privy_wins_when": ["all users are new to crypto", "Farcaster miniapp context", "simplest setup"],
+        "dynamic_wins_when": ["hybrid wallet flow needed", "enterprise SSO", "multi-chain support"],
+        "trust_expectations": { "both_production_grade": true },
+        "expected_exclusions": []
+      },
+      "evaluation": {
+        "pass": [
+          "both tools shown",
+          "subcategory difference noted (embedded vs hybrid)",
+          "decision guide with when_to_prefer for each",
+          "Base ecosystem_fit shown for both"
+        ],
+        "partial_pass": [
+          "both tools shown but no decision guide"
+        ],
+        "fail": [
+          "one tool missing",
+          "incorrect ecosystem_fit data"
+        ]
+      },
+      "notes": "Use `rightstack compare privy dynamic`. The comparison must be grounded in the ToolRecord data, not generic opinions."
+    },
+
+    {
+      "id": "Q028",
+      "golden": false,
+      "category": "ecosystem_comparison",
+      "difficulty": "medium",
+      "query": "Turnkey vs Privy for an autonomous Base agent",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": { "autonomous_agent": true },
+      "expected": {
+        "command": "compare",
+        "tools": ["turnkey", "privy"],
+        "decision_guide_required": true,
+        "turnkey_wins_when": ["fully autonomous, no user interaction", "programmatic signing", "MPC key management needed"],
+        "privy_wins_when": ["user-delegated authority", "semi-autonomous", "server-auth within policy bounds"],
+        "trust_expectations": { "both_production_grade": true },
+        "expected_exclusions": []
+      },
+      "evaluation": {
+        "pass": [
+          "both tools shown",
+          "autonomous_agent context in decision guide",
+          "turnkey preferred for fully autonomous",
+          "privy-server-auth for user-delegated"
+        ],
+        "partial_pass": [
+          "both shown but autonomous context missing"
+        ],
+        "fail": [
+          "privy browser SDK recommended for autonomous"
+        ]
+      },
+      "notes": "The comparison must surface the subcategory distinction: turnkey=server-side, privy=embedded (but also has server-auth)."
+    },
+
+    {
+      "id": "Q029",
+      "golden": false,
+      "category": "ecosystem_comparison",
+      "difficulty": "medium",
+      "query": "Helius vs Alchemy for Solana development",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "compare",
+        "tools": ["helius", "alchemy-rpc"],
+        "decision_guide_required": true,
+        "helius_wins_when": ["Solana-specific data (webhooks, DAS API, token metadata)", "primary Solana development"],
+        "alchemy_wins_when": ["EVM chains (Base, Ethereum)", "never for Solana"],
+        "ecosystem_note_required": "alchemy-rpc has no Solana support"
+      },
+      "evaluation": {
+        "pass": [
+          "both tools shown",
+          "alchemy-rpc Solana=none or not-applicable",
+          "helius Solana=dominant shown",
+          "ecosystem mismatch for alchemy-rpc noted"
+        ],
+        "partial_pass": [
+          "helius shown as correct but alchemy ecosystem context missing"
+        ],
+        "fail": [
+          "alchemy-rpc recommended for Solana",
+          "helius absent from comparison"
+        ]
+      },
+      "notes": "This comparison must surface that alchemy-rpc has no Solana support. The comparison command shows ecosystem_fit data which makes this visible."
+    },
+
+    {
+      "id": "Q030",
+      "golden": false,
+      "category": "ecosystem_comparison",
+      "difficulty": "medium",
+      "query": "Vercel AI SDK vs LangChain for my Solana trading agent",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": { "ai_reasoning_required": true },
+      "expected": {
+        "command": "compare",
+        "tools": ["vercel-ai-sdk", "langchain"],
+        "expected_behavior": "langchain MISSING_RECORD — system must handle gracefully",
+        "vercel_wins_when": ["TypeScript/JavaScript agents", "production stability", "Solana trading agents"],
+        "langchain_wins_when": ["Python only requirement"],
+        "missing_record_note_required": "langchain is in workflows as alt but has no ToolRecord"
+      },
+      "evaluation": {
+        "pass": [
+          "vercel-ai-sdk shown with full data",
+          "langchain noted as missing ToolRecord",
+          "graceful degradation (no crash on missing tool)"
+        ],
+        "partial_pass": [
+          "vercel-ai-sdk shown, langchain silently absent"
+        ],
+        "fail": [
+          "runtime error on missing tool",
+          "langchain invented data"
+        ]
+      },
+      "notes": "langchain has no ToolRecord yet. The compare command must handle MISSING_RECORD gracefully — show what it can, note the gap."
+    },
+
+    {
+      "id": "Q031",
+      "golden": false,
+      "category": "ecosystem_comparison",
+      "difficulty": "medium",
+      "query": "Trigger.dev vs Inngest for my Base AI agent orchestration",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "compare",
+        "tools": ["trigger-dev", "inngest"],
+        "expected_behavior": "inngest MISSING_RECORD — must handle gracefully",
+        "trigger_wins_when": ["production durability", "complex retry patterns", "step-level observability"],
+        "inngest_wins_when": ["simpler linear workflows", "Next.js apps", "lower learning curve"],
+        "missing_record_note_required": "inngest is Wave 4 ToolRecord — not yet built"
+      },
+      "evaluation": {
+        "pass": [
+          "trigger-dev shown with full data",
+          "inngest noted as missing ToolRecord with Wave 4 reference",
+          "no crash"
+        ],
+        "partial_pass": [
+          "trigger-dev shown, inngest silently absent"
+        ],
+        "fail": [
+          "runtime error",
+          "inngest data invented"
+        ]
+      },
+      "notes": "inngest is a Wave 4 ToolRecord. Known gap. System must handle gracefully."
+    },
+
+    {
+      "id": "Q032",
+      "golden": true,
+      "category": "migration_risk",
+      "difficulty": "medium",
+      "query": "my app uses @walletconnect/web3modal, is it still maintained?",
+      "ecosystem": "ethereum",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "inspect or recommend",
+        "tools": ["reown"],
+        "migration_notes_required": ["@walletconnect/web3modal deprecated → Reown (reown)"],
+        "expected_exclusions": [],
+        "trust_expectations": { "reown_production_grade": true },
+        "anti_patterns_forbidden": ["recommending @walletconnect/web3modal as current"]
+      },
+      "evaluation": {
+        "pass": [
+          "reown surfaced as the migration target",
+          "migration warning: @walletconnect/web3modal → reown",
+          "@walletconnect/web3modal not recommended as primary going forward"
+        ],
+        "partial_pass": [
+          "reown mentioned without explicit migration context"
+        ],
+        "fail": [
+          "@walletconnect/web3modal recommended as current and maintained",
+          "no migration note"
+        ]
+      },
+      "notes": "reown.aliases includes @walletconnect/web3modal. The inspect or recommend command should surface the migration. This tests SDK migration field handling."
+    },
+
+    {
+      "id": "Q033",
+      "golden": false,
+      "category": "migration_risk",
+      "difficulty": "medium",
+      "query": "my Solana app uses @solana/web3.js, should I upgrade?",
+      "ecosystem": "solana",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "recommend",
+        "workflow": "solana-trading-agent",
+        "migration_notes_required": ["@solana/web3.js is in active migration to @solana/kit"],
+        "expected_exclusions": ["alchemy-rpc", "pimlico"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["alchemy-rpc", "pimlico"]
+      },
+      "evaluation": {
+        "pass": [
+          "solana-trading-agent returned",
+          "Solana SDK migration risk noted (from SESSION_STATE.md data or helius record)",
+          "no EVM tools"
+        ],
+        "partial_pass": [
+          "Solana workflow returned, no migration note"
+        ],
+        "fail": [
+          "EVM tool in output",
+          "migration risk not mentioned"
+        ]
+      },
+      "notes": "The @solana/web3.js → @solana/kit migration is HIGH risk per SESSION_STATE.md. The pipeline should surface this via helius or vercel-ai-sdk tool records if they encode it."
+    },
+
+    {
+      "id": "Q034",
+      "golden": false,
+      "category": "migration_risk",
+      "difficulty": "medium",
+      "query": "my app uses wagmi v1, is that a problem?",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "inspect",
+        "tools": ["wagmi"],
+        "migration_notes_required": ["wagmi v1 → v2 migration complete, new projects use v2"],
+        "expected_exclusions": [],
+        "trust_expectations": { "wagmi_production_grade": true }
+      },
+      "evaluation": {
+        "pass": [
+          "wagmi inspected",
+          "sdk_migration status shown",
+          "v1 → v2 migration noted as LOW risk (migration complete)"
+        ],
+        "partial_pass": [
+          "wagmi shown without migration context"
+        ],
+        "fail": [
+          "wagmi v1 recommended as current best practice"
+        ]
+      },
+      "notes": "wagmi sdk_migration status is 'migrating-to' v2. The inspect command must surface this."
+    },
+
+    {
+      "id": "Q035",
+      "golden": false,
+      "category": "migration_risk",
+      "difficulty": "medium",
+      "query": "I'm building with @farcaster/frames-client, is there a newer approach?",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "command": "inspect or recommend",
+        "tools": ["farcaster-frames-sdk"],
+        "migration_notes_required": ["@farcaster/frames-client → @farcaster/frame-sdk (v2 MiniApps)"],
+        "expected_exclusions": ["helius", "jito-mev"],
+        "trust_expectations": { "farcaster_frames_sdk_production_grade": true }
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-frames-sdk surfaced",
+          "migration warning: from @farcaster/frames-client shown",
+          "v1 Frames vs v2 MiniApps distinction noted"
+        ],
+        "partial_pass": [
+          "farcaster-frames-sdk shown, no migration context"
+        ],
+        "fail": [
+          "@farcaster/frames-client recommended as current",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "farcaster-frames-sdk.sdk_migration.status=migrating-from. The architectural difference (v1 Frames vs v2 MiniApps) should be surfaced."
+    },
+
+    {
+      "id": "Q036",
+      "golden": false,
+      "category": "migration_risk",
+      "difficulty": "hard",
+      "query": "is Coinbase AgentKit production-ready for my autonomous trading agent?",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": { "autonomous_agent": true },
+      "expected": {
+        "command": "inspect or recommend",
+        "tools": ["coinbase-agentkit"],
+        "trust_notes_required": ["coinbase-agentkit trust_state=emerging — not production-ready"],
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": { "coinbase_agentkit_emerging": true }
+      },
+      "evaluation": {
+        "pass": [
+          "coinbase-agentkit trust_state=emerging surfaced",
+          "production scale warning: emerging trust not sufficient for production",
+          "vercel-ai-sdk suggested as production-stable alternative"
+        ],
+        "partial_pass": [
+          "emerging flag shown but no production context warning"
+        ],
+        "fail": [
+          "coinbase-agentkit recommended as production-ready",
+          "emerging flag absent"
+        ]
+      },
+      "notes": "Trust state correctness is critical here. coinbase-agentkit is EMERGING. At production scale, trust_weight is elevated — emerging tools should be flagged more strongly."
+    },
+
+    {
+      "id": "Q037",
+      "golden": false,
+      "category": "ai_agent",
+      "difficulty": "hard",
+      "query": "autonomous agent that watches Base transactions and executes follow-up trades",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "autonomous_agent": true, "ai_reasoning_required": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.70,
+        "phases": [
+          { "phase": "event-trigger", "primary": "alchemy-rpc", "role": "data-indexing" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": { "agent-reasoning": ["coinbase-agentkit"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "emerging_flagged": ["coinbase-agentkit"] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "using @privy-io/react-auth for autonomous agent",
+          "running agent without spending ceiling"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "base-onchain-ai-agent returned",
+          "alchemy-rpc for event watching",
+          "turnkey for signing (not privy browser)",
+          "spending limits anti-pattern surfaced"
+        ],
+        "partial_pass": [
+          "correct tools, orchestration phase absent"
+        ],
+        "fail": [
+          "privy browser SDK for signing",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Key test: autonomous_agent constraint must route away from privy browser SDK."
+    },
+
+    {
+      "id": "Q038",
+      "golden": true,
+      "category": "ai_agent",
+      "difficulty": "hard",
+      "query": "Farcaster social AI agent that reads casts and replies autonomously",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "ai_reasoning_required": true, "autonomous_agent": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.50,
+        "expected_gap": "farcaster-social-ai-agent WorkflowRecord not built (Wave 4)",
+        "phases": [
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [],
+        "gap_note_required": "farcaster-social-ai-agent workflow is Wave 4 — PARTIAL is acceptable"
+      },
+      "evaluation": {
+        "pass": [
+          "neynar for social data",
+          "vercel-ai-sdk for reasoning",
+          "turnkey for signing",
+          "no Solana tools",
+          "PARTIAL acceptable given Wave 4 gap"
+        ],
+        "partial_pass": [
+          "farcaster-consumer-onboarding returned with agent tools present"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "privy browser for autonomous signing"
+        ]
+      },
+      "notes": "This is a known Wave 4 gap. PARTIAL is the expected result. Key test: does the pipeline return useful tools even without the exact workflow?"
+    },
+
+    {
+      "id": "Q039",
+      "golden": false,
+      "category": "ai_agent",
+      "difficulty": "hard",
+      "query": "Base agent that needs to call paid APIs using x402 micropayments",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "autonomous_agent": true, "ai_reasoning_required": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "gas-sponsorship", "primary": "pimlico", "role": "payment" },
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "base-onchain-ai-agent returned",
+          "pimlico gas-sponsorship phase noted for x402 context",
+          "turnkey for agent signing"
+        ],
+        "partial_pass": [
+          "correct tools but x402 context not explicitly connected"
+        ],
+        "fail": [
+          "Solana tool in output"
+        ]
+      },
+      "notes": "x402 micropayment pattern is mentioned in base-onchain-ai-agent pimlico phase notes. System should surface this connection."
+    },
+
+    {
+      "id": "Q040",
+      "golden": false,
+      "category": "ai_agent",
+      "difficulty": "medium",
+      "query": "I need durable background jobs for my AI agent that don't die on server restart",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "ai_reasoning_required": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "orchestration", "primary": "trigger-dev", "role": "orchestration" }
+        ],
+        "acceptable_alternatives": { "orchestration": ["inngest"] },
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye"],
+        "anti_patterns_forbidden": [],
+        "inngest_missing_record_note": "inngest is Wave 4"
+      },
+      "evaluation": {
+        "pass": [
+          "trigger-dev surfaced for orchestration",
+          "durable execution context in notes",
+          "inngest as alt (even if MISSING_RECORD noted)"
+        ],
+        "partial_pass": [
+          "trigger-dev present but orchestration context thin"
+        ],
+        "fail": [
+          "no orchestration tool surfaced",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Durable execution = orchestration layer. trigger-dev is the primary. inngest is the MISSING_RECORD alt."
+    },
+
+    {
+      "id": "Q041",
+      "golden": false,
+      "category": "ai_agent",
+      "difficulty": "medium",
+      "query": "agent that manages multiple user wallets server-side with spending limits",
+      "ecosystem": "base",
+      "scale": "production",
+      "constraints": { "autonomous_agent": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "wallet-signing", "primary": "turnkey", "role": "signing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye"],
+        "anti_patterns_forbidden": ["unconstrained autonomous agent"],
+        "turnkey_features_required": ["policy-engine", "sub-organization-model", "spending-limit-policies"]
+      },
+      "evaluation": {
+        "pass": [
+          "turnkey for server-side wallet management",
+          "spending limits capability surfaced",
+          "policy engine / sub-organization model mentioned"
+        ],
+        "partial_pass": [
+          "turnkey present but spending limit context absent"
+        ],
+        "fail": [
+          "privy browser SDK for multi-wallet management",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Turnkey's sub-organization model and policy engine are the right answer. The inspect or recommend output should surface these capabilities."
+    },
+
+    {
+      "id": "Q042",
+      "golden": false,
+      "category": "ai_agent",
+      "difficulty": "hard",
+      "query": "LLM-powered agent that reads Farcaster data and takes actions on Base with Coinbase AgentKit",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "ai_reasoning_required": true, "autonomous_agent": true },
+      "expected": {
+        "workflow": "base-onchain-ai-agent",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" }
+        ],
+        "acceptable_alternatives": { "agent-reasoning": ["coinbase-agentkit"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "emerging_flagged": ["coinbase-agentkit"] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "base-onchain-ai-agent returned",
+          "coinbase-agentkit surfaced as alt with EMERGING flag",
+          "neynar for Farcaster data",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "coinbase-agentkit present but no emerging flag"
+        ],
+        "fail": [
+          "coinbase-agentkit as primary without emerging flag",
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Critical: coinbase-agentkit MUST be flagged as EMERGING when it appears, regardless of the query."
+    },
+
+    {
+      "id": "Q043",
+      "golden": false,
+      "category": "farcaster_native",
+      "difficulty": "medium",
+      "query": "Farcaster miniapp that lets users mint an NFT with one tap",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "no_existing_wallet": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "frame-rendering", "primary": "farcaster-frames-sdk", "role": "social-layer" },
+          { "phase": "chain-data", "primary": "alchemy-rpc", "role": "data-indexing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "not calling sdk.actions.ready() in frame context"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding returned",
+          "farcaster-frames-sdk present",
+          "privy for embedded wallet",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "correct ecosystem, farcaster-frames-sdk absent"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "no Farcaster-specific tools"
+        ]
+      },
+      "notes": "Farcaster miniapp + onchain action. All three Farcaster tools should appear."
+    },
+
+    {
+      "id": "Q044",
+      "golden": true,
+      "category": "farcaster_native",
+      "difficulty": "medium",
+      "query": "Farcaster social app with Basenames identity and wallet",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-consumer-onboarding returned",
+          "privy in wallet-setup",
+          "neynar in social-data",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "correct tools but onchainkit instead of farcaster-frames-sdk for UI"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "no Farcaster-native social tool"
+        ]
+      },
+      "notes": "Basenames identity is surfaced via onchainkit (Base-native identity resolution). Should appear in UI or chain phase."
+    },
+
+    {
+      "id": "Q045",
+      "golden": false,
+      "category": "farcaster_native",
+      "difficulty": "hard",
+      "query": "Farcaster social AI agent that posts casts based on onchain activity",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": { "social_features_required": true, "ai_reasoning_required": true, "autonomous_agent": true },
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.45,
+        "expected_gap": "farcaster-social-ai-agent not built — Wave 4 gap",
+        "phases": [
+          { "phase": "social-data", "primary": "neynar", "role": "social-layer" },
+          { "phase": "agent-reasoning", "primary": "vercel-ai-sdk", "role": "ai-reasoning" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": {},
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [],
+        "gap_note_required": "PARTIAL acceptable — farcaster-social-ai-agent is Wave 4"
+      },
+      "evaluation": {
+        "pass": [
+          "neynar for social data",
+          "vercel-ai-sdk for reasoning",
+          "no Solana tools",
+          "PARTIAL acceptable"
+        ],
+        "partial_pass": [
+          "correct tools, workflow mismatch"
+        ],
+        "fail": [
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Known Wave 4 gap. PARTIAL expected and acceptable."
+    },
+
+    {
+      "id": "Q046",
+      "golden": false,
+      "category": "farcaster_native",
+      "difficulty": "medium",
+      "query": "add Farcaster auth to my existing web app without a Frame context",
+      "ecosystem": "farcaster",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "farcaster-consumer-onboarding",
+        "workflow_confidence_min": 0.55,
+        "phases": [
+          { "phase": "auth", "primary": "farcaster-auth-kit", "role": "auth" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye"],
+        "anti_patterns_forbidden": [
+          "using Auth Kit inside a Farcaster Frame — use Frames SDK context instead"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "farcaster-auth-kit surfaced",
+          "anti-pattern about Frame vs web app context surfaced",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "farcaster-consumer-onboarding returned but farcaster-auth-kit absent"
+        ],
+        "fail": [
+          "no identity tool for Farcaster auth"
+        ]
+      },
+      "notes": "farcaster-auth-kit anti-pattern: do not use inside Frames. This query (standalone web app) is the CORRECT use case."
+    },
+
+    {
+      "id": "Q047",
+      "golden": false,
+      "category": "base_consumer",
+      "difficulty": "medium",
+      "query": "Base consumer app with Coinbase Smart Wallet for gasless first transaction",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "gasless_required": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "gasless-actions", "primary": "pimlico", "role": "payment" }
+        ],
+        "acceptable_alternatives": { "wallet-setup": ["coinbase-smart-wallet"] },
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "Using coinbase-smart-wallet for autonomous agents"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "coinbase-smart-wallet surfaced (primary or alt)",
+          "pimlico for gasless",
+          "anti-pattern: not for autonomous agents noted"
+        ],
+        "partial_pass": [
+          "pimlico present but coinbase-smart-wallet not mentioned"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "coinbase-smart-wallet for autonomous agent use"
+        ]
+      },
+      "notes": "coinbase-smart-wallet uses Coinbase's paymaster for Base gas — this is the Base-native gasless path. Should surface as alt alongside pimlico."
+    },
+
+    {
+      "id": "Q048",
+      "golden": false,
+      "category": "base_consumer",
+      "difficulty": "easy",
+      "query": "onboarding flow for users who have never used crypto before, on Base",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": { "no_existing_wallet": true },
+      "expected": {
+        "workflow": "embedded-wallet-onboarding",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "wallet-creation", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "gas-sponsorship", "primary": "pimlico", "role": "payment" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [
+          "requiring MetaMask for new users",
+          "showing seed phrases to new users"
+        ]
+      },
+      "evaluation": {
+        "pass": [
+          "embedded-wallet-onboarding OR base-consumer-app returned",
+          "privy in wallet phase",
+          "no_existing_wallet constraint reflected",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned without embedded wallet emphasis"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "MetaMask recommended for new users"
+        ]
+      },
+      "notes": "Non-crypto users need embedded wallet, not external wallet connection. no_existing_wallet must route to privy/embedded path."
+    },
+
+    {
+      "id": "Q049",
+      "golden": false,
+      "category": "base_consumer",
+      "difficulty": "medium",
+      "query": "Base app with onchain identity, Basenames support, and social features",
+      "ecosystem": "base",
+      "scale": "mvp",
+      "constraints": {},
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.60,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "ui-components", "primary": "onchainkit", "role": "ui" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": []
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "onchainkit surfaced (handles Basenames/identity resolution)",
+          "no Solana tools"
+        ],
+        "partial_pass": [
+          "base-consumer-app returned, onchainkit absent"
+        ],
+        "fail": [
+          "Solana tool in output"
+        ]
+      },
+      "notes": "Basenames is a Base-native identity system. onchainkit has Basenames integration. Should surface via UI phase."
+    },
+
+    {
+      "id": "Q050",
+      "golden": false,
+      "category": "base_consumer",
+      "difficulty": "easy",
+      "query": "simplest possible Base hackathon app stack",
+      "ecosystem": "base",
+      "scale": "hackathon",
+      "constraints": { "hackathon_timeline": true },
+      "expected": {
+        "workflow": "base-consumer-app",
+        "workflow_confidence_min": 0.65,
+        "phases": [
+          { "phase": "wallet-setup", "primary": "privy", "role": "wallet-setup" },
+          { "phase": "ui-components", "primary": "onchainkit", "role": "ui" },
+          { "phase": "chain", "primary": "alchemy-rpc", "role": "data-indexing" }
+        ],
+        "acceptable_alternatives": {},
+        "expected_exclusions": ["helius", "birdeye", "jito-mev"],
+        "trust_expectations": { "all_production_grade": true, "emerging_flagged": [] },
+        "ecosystem_violations_forbidden": ["helius", "birdeye", "jito-mev"],
+        "anti_patterns_forbidden": [],
+        "scale_notes_required": ["hackathon: skip gasless unless core to demo"]
+      },
+      "evaluation": {
+        "pass": [
+          "base-consumer-app returned",
+          "hackathon scale modifier applied",
+          "gasless phase marked optional/skippable",
+          "no Solana tools",
+          "privy + onchainkit + alchemy-rpc as the minimal stack"
+        ],
+        "partial_pass": [
+          "correct tools but no hackathon scale guidance"
+        ],
+        "fail": [
+          "Solana tool in output",
+          "complex AA recommended without caveat"
+        ]
+      },
+      "notes": "Hackathon: favor simplicity. Scale modifier should reduce required phases to the minimum viable 3-tool stack."
+    }
+
+  ]
+}

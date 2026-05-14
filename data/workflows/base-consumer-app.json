@@ -1,8 +1,12 @@
+
+
+
+
 {
   "id": "base-consumer-app",
   "name": "Base Consumer App Workflow",
   "goal": "Build a consumer-facing web3 application on Base with embedded wallet, onchain actions, and optional gasless transactions.",
-  "goal_tags": ["base-app", "consumer-app", "embedded-wallet", "onchain-actions", "erc-4337", "gasless", "social-login"],
+  "goal_tags": ["base-app", "consumer-app", "embedded-wallet", "onchain-actions", "erc-4337", "gasless", "social-login", "wallet-infrastructure", "email-login", "new-users"],
   "ecosystems": ["base", "ethereum"],
   "scale": ["hackathon", "mvp", "production"],
   "user_types": ["vibe-coder", "advanced-builder"],
@@ -100,6 +104,16 @@
     "Hardcoding a specific wallet address without Privy policy controls — no spending limits means no blast radius containment."
   ],
   "constraint_modifiers": [
+    {
+      "constraint": "no_existing_wallet",
+      "modification": "Privy is the primary recommendation — this workflow is optimized for onboarding users with no existing wallet via email, social login, or passkeys.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "hybrid_wallet",
+      "modification": "Use Dynamic instead of Privy for the wallet phase. Dynamic handles both embedded wallet creation for new users AND external wallet connection (MetaMask, Coinbase Wallet) in a single SDK.",
+      "affects_phase": "wallet"
+    },
     {
       "constraint": "has_existing_wallet",
       "modification": "Replace Privy with Reown (external wallet connection only) or upgrade to Dynamic (hybrid embedded + external).",
