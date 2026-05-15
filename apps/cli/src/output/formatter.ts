@@ -122,7 +122,17 @@ function printPhase(phase: PhaseExplanation, num: number): void {
       const trust = alt.tool ? ` [${trustColor(alt.tool.tool.trust_state)}]` : '';
       console.log(`      ${chalk.gray('→')} ${name}${trust}`);
       console.log(`        ${chalk.gray('when:')} ${alt.whenToPrefer}`);
+      const mig = alt.tool?.tool.sdk_migration;
+      if (mig && (mig.from_package || mig.to_package)) {
+        const migLabel = mig.status !== 'stable' ? chalk.yellow('⚠  Migration:') : chalk.cyan('ℹ  Migration:');
+        const migLine = `${mig.from_package ?? '?'} → ${mig.to_package ?? 'current'}`;
+        console.log(`        ${migLabel} ${migLine}`);
+      }
     }
+  }
+
+  if (phase.phaseNotes) {
+    console.log(`\n    ${chalk.cyan('ℹ  Phase notes:')} ${phase.phaseNotes}`);
   }
 
   if (phase.antiPatterns.length > 0) {
@@ -273,13 +283,16 @@ export function printInspect(tool: ToolRecord): void {
     if (tool.scale_guidance.production) console.log(`  ${chalk.gray('production')} ${tool.scale_guidance.production}`);
   }
 
-  if (tool.sdk_migration && tool.sdk_migration.status !== 'stable') {
-    console.log(`\n  ${chalk.bold.yellow('Migration Warning:')}`);
+  if (tool.sdk_migration && (tool.sdk_migration.from_package || tool.sdk_migration.notes)) {
+    const migrationHeader = tool.sdk_migration.status !== 'stable'
+      ? chalk.bold.yellow('Migration Warning:')
+      : chalk.bold.white('Migration Info:');
+    console.log(`\n  ${migrationHeader}`);
     console.log(`  Status: ${tool.sdk_migration.status}`);
-    if (tool.sdk_migration.notes) console.log(`  ${tool.sdk_migration.notes}`);
     if (tool.sdk_migration.from_package && tool.sdk_migration.to_package) {
       console.log(`  ${tool.sdk_migration.from_package} → ${tool.sdk_migration.to_package}`);
     }
+    if (tool.sdk_migration.notes) console.log(`  ${tool.sdk_migration.notes}`);
   }
 
   console.log('');

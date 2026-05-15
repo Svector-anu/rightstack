@@ -12,6 +12,7 @@ export interface PhaseExplanation {
   alternatives: Array<{ id: string; tool: ScoredTool | null; whenToPrefer: string }>;
   constraintNotes: string[];
   scaleNote: string | null;
+  phaseNotes: string | null;
   narrative: string;
   antiPatterns: string[];
   migrationWarnings: string[];
@@ -81,6 +82,7 @@ function buildPhaseExplanation(
     })),
     constraintNotes: assembled.constraintNotes,
     scaleNote: assembled.scaleNote,
+    phaseNotes: assembled.phase.phase_notes ?? null,
     narrative,
     antiPatterns,
     migrationWarnings,
