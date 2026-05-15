@@ -1,0 +1,148 @@
+{
+  "id": "farcaster-social-ai-agent",
+  "name": "Farcaster Social AI Agent Workflow",
+  "goal": "Build an autonomous AI agent that reads Farcaster casts, reasons about social context, posts automated replies or casts, and optionally executes onchain actions in response to social events.",
+  "goal_tags": [
+    "farcaster-social-ai-agent",
+    "social-ai-agent",
+    "farcaster-bot",
+    "autonomous-agent",
+    "ai-agent",
+    "cast-automation",
+    "social-layer",
+    "onchain-execution",
+    "farcaster-native",
+    "agent-framework"
+  ],
+  "ecosystems": ["farcaster"],
+  "scale": ["mvp", "production"],
+  "user_types": ["advanced-builder", "ai-agent"],
+  "phases": [
+    {
+      "id": "social-data",
+      "role": "social-layer",
+      "required": true,
+      "primary_tools": ["neynar"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Neynar is the only production-grade Farcaster data provider. Use Neynar webhooks to trigger the agent on cast events — mentions, replies, follows, reactions. Configure webhook filters aggressively: subscribing to all casts without filtering will invoke your agent on every cast on Farcaster, which will exhaust LLM budgets immediately. Filter by channel, mention, or specific FID at the webhook subscription level. Neynar also provides the write API for posting cast replies — the agent reads via webhook and writes via Neynar's castAdd API."
+    },
+    {
+      "id": "agent-reasoning",
+      "role": "ai-reasoning",
+      "required": true,
+      "primary_tools": ["vercel-ai-sdk"],
+      "alternative_tools": [
+        {
+          "tool_id": "langchain",
+          "when_to_prefer": "When complex multi-step reasoning chains, conversation memory management, or RAG over Farcaster cast history is required. LangChain handles richer agent memory patterns. Also preferred for Python-native teams."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "The agent reasoning layer processes cast content, applies context (channel topic, author history, recent thread), and generates a response. Use claude-sonnet-4-6 for most social reasoning decisions. Use structured outputs when the agent must decide between possible actions (reply, ignore, follow, execute onchain transaction). Build a content filter before passing cast text to the LLM — cast content is user-generated and untrusted. Implement rate limiting at the agent level: an agent that replies to every mention can quickly appear as spam and get the FID banned. Design the reply frequency policy before wiring up live webhooks.",
+      "scale_overrides": {
+        "mvp": "Start with simple react-to-mention logic before building full conversational agent loops. Verify tone and content quality manually before scaling up webhook volume.",
+        "production": "Model LLM cost per agent invocation. Social agents can receive high event volumes. Per-cast reasoning cost must be acceptable at the expected mention/cast volume."
+      }
+    },
+    {
+      "id": "wallet-signing",
+      "role": "signing",
+      "required": false,
+      "primary_tools": ["turnkey"],
+      "alternative_tools": [
+        {
+          "tool_id": "privy",
+          "when_to_prefer": "When the agent acts on behalf of a specific Farcaster user who has pre-authorized the agent — not for a fully autonomous bot that signs independently. Privy's @privy-io/server-auth allows server-side signing within a user's wallet context. Use for semi-autonomous patterns where user approval exists; use Turnkey for fully autonomous agents with their own wallet."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Only required if the agent executes onchain transactions (e.g., tipping a cast author, minting an NFT, sending tokens). A cast-only agent that reads and replies does NOT need this phase. When adding onchain actions: never use browser wallets or MetaMask for autonomous signing. Turnkey provides server-side MPC key management with policy controls. Configure spending limits before connecting to real funds — a Farcaster agent can be triggered by high cast volumes and could rapidly exhaust a wallet without rate limiting and spending caps.",
+      "scale_overrides": {
+        "mvp": "If the agent is cast-only (no transactions), skip this phase entirely. Add only when the product explicitly requires onchain actions.",
+        "production": "Configure per-transaction and per-day spending caps in Turnkey policy. Implement event-driven circuit breakers — if the agent triggers 10x normal transaction volume, pause and alert before continuing."
+      }
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["trigger-dev"],
+      "alternative_tools": [
+        {
+          "tool_id": "inngest",
+          "when_to_prefer": "For simpler Farcaster agent workflows with linear steps and standard retry logic. Inngest has strong Next.js integration and lower overhead than Trigger.dev. Use Trigger.dev for complex fan-out patterns or when step-level observability is critical."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Orchestration adds durability to the Neynar webhook → agent reasoning → cast reply pipeline. Without it, a failed agent run (LLM timeout, network error, Neynar write failure) is opaque. With Trigger.dev: webhook triggers a job, each step (fetch context, reason, post reply) is independently retryable, and execution history is visible. Particularly valuable for agents that post cast replies — duplicate posts from retry logic are a serious UX problem. Trigger.dev idempotency keys prevent double-posting. Add from MVP if the agent is facing real users.",
+      "scale_overrides": {
+        "production": "Required. Set per-FID concurrency limits — multiple simultaneous invocations for the same Farcaster event can cause duplicate replies. Configure dead-letter queue for permanently failed jobs."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Content policy is the most important production decision. Define explicitly: what topics will the agent discuss? What content will it refuse? What behavior gets the FID banned? Farcaster moderators can mute or ban FIDs that spam, post misleading content, or behave adversarially. Build the content policy into the system prompt and verify it before public launch.",
+    "Rate limiting at every layer: Neynar has webhook delivery rate limits, the LLM has token rate limits, and Farcaster has cast posting rate limits. A production agent must respect all three. Build rate limiters before wiring up live webhook volumes.",
+    "Cast reply quality degrades rapidly when the agent is processing too much input without context management. Design the context window carefully: include the original cast, thread history (bounded), channel description, and author FID context. Unbounded thread history will hit context limits and produce lower quality responses.",
+    "Neynar's castAdd API requires a valid signer UUID. The signer is created once and must be stored persistently — it is not regeneratable. Losing the signer UUID breaks the agent's ability to post. Store it in a secrets manager, not in an environment variable that could be rotated accidentally.",
+    "Agent persona design is as important as technical implementation. Agents that feel robotic or generic get muted or blocked. Build the persona into the system prompt with specific tone, topics it engages on, and topics it declines. Test persona quality on real Farcaster threads before launch."
+  ],
+  "tradeoffs": [
+    "Neynar webhook filtering is the first lever for cost control — every unfiltered cast event is a potential LLM invocation. Over-filtering misses engagement; under-filtering burns budget.",
+    "Cast-only agents (no onchain actions) are significantly simpler — they skip wallet-signing entirely. Adding onchain capabilities multiplies complexity significantly. Build the social layer first; add onchain actions only when the product requires it.",
+    "Fully autonomous vs. human-in-the-loop: fully autonomous agents post faster but have higher risk of posting inappropriate content. Semi-autonomous (human reviews draft replies) is slower but safer for initial deployment.",
+    "Trigger.dev adds orchestration overhead but is the difference between 'the agent probably replied' and 'I can confirm exactly what the agent posted and when, with full retry history'."
+  ],
+  "anti_patterns": [
+    "Subscribing to all Farcaster casts without webhook filtering — this invokes the agent on every cast on the network and will exhaust LLM budget immediately.",
+    "Using browser wallets or MetaMask for autonomous cast-triggered transactions — browser wallets require user approval on every action. Autonomous agents need Turnkey or equivalent server-side signing.",
+    "Storing the Neynar signer UUID in an environment variable without backup — the signer is not regeneratable. Loss means the agent can no longer post casts.",
+    "Not implementing reply deduplication — retried webhook deliveries without idempotency cause duplicate cast replies, which appear spammy and can get the FID muted.",
+    "Building the agent without a content policy system prompt — untested social agents frequently produce off-tone, aggressive, or policy-violating content on edge-case inputs.",
+    "Not rate-limiting agent reply frequency per FID — agents that reply to every mention at full speed appear as spam and risk FID banning."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "autonomous_agent",
+      "modification": "If the agent executes onchain actions: wallet-signing phase is required and must use Turnkey. Configure spending limits before live execution. If the agent is cast-only: wallet-signing phase is optional and can be skipped.",
+      "affects_phase": "wallet-signing"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Vercel AI SDK with claude-sonnet-4-6 is the recommended reasoning stack. Use structured outputs for action decisions. Add LangChain when conversation memory or RAG over cast history is needed.",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Skip orchestration phase. Use Neynar webhook → direct API endpoint → Vercel AI SDK → Neynar castAdd as the minimal stack. Accept that failures will be opaque — acceptable for hackathon demos.",
+      "affects_phase": "orchestration"
+    },
+    {
+      "constraint": "python_only",
+      "modification": "Replace Vercel AI SDK with LangChain (Python) or direct Anthropic SDK. Replace Trigger.dev with a Python-native orchestration alternative (Temporal, Prefect, or Celery).",
+      "affects_phase": "agent-reasoning"
+    }
+  ],
+  "retrieval_tags": [
+    "farcaster-agent",
+    "social-ai-agent",
+    "farcaster-bot",
+    "neynar",
+    "cast-automation",
+    "autonomous-farcaster",
+    "vercel-ai-sdk",
+    "turnkey",
+    "trigger-dev",
+    "social-layer",
+    "farcaster-native"
+  ],
+  "source": {
+    "derived_from": "Wave 4C — benchmark gap Q038/Q045. Pattern: base-onchain-ai-agent + farcaster-consumer-onboarding social-data phase. Verified against Farcaster ecosystem production patterns.",
+    "last_verified": "2026-05-15"
+  },
+  "updated_at": "2026-05-15"
+}

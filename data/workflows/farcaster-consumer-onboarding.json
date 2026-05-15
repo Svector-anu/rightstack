@@ -118,6 +118,16 @@
   ],
   "constraint_modifiers": [
     {
+      "constraint": "social_features_required",
+      "modification": "Neynar is the primary social data layer. Configure webhook subscriptions for cast events, follows, and reactions. Neynar abstracts direct Hub complexity for consumer app scale.",
+      "affects_phase": "social-data"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Use Neynar + Frames SDK + Privy as the minimal stack. Skip OnchainKit, Pimlico, and siwf-auth for the hackathon build. OnchainKit and gasless can be added post-demo.",
+      "affects_phase": "frame-rendering"
+    },
+    {
       "constraint": "ai_features_required",
       "modification": "Add Vercel AI SDK + Claude to the ai-reasoning phase between social-data and frame-rendering.",
       "affects_phase": "ai-reasoning"
