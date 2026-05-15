@@ -53,8 +53,9 @@ Rules:
 - confidence: 0.90+ if ecosystem + goal clear; 0.75-0.89 if goal clear but ecosystem uncertain; <0.75 if ambiguous`;
 
 const ECOSYSTEM_PATTERNS: Array<[RegExp, EcosystemName]> = [
-  [/\b(base|coinbase|onchainkit|basenames)\b/i, 'base'],
+  // farcaster before base: mixed-signal queries like "Farcaster app with Basenames" correctly detect farcaster
   [/\b(farcaster|frame|cast|neynar|warpcast|miniapp|mini.?app)\b/i, 'farcaster'],
+  [/\b(base|coinbase|onchainkit|basenames)\b/i, 'base'],
   [/\b(solana|sol\b|jupiter|jito|helius|spl.?token|phantom)\b/i, 'solana'],
   [/\b(ethereum|eth\b|mainnet|evm(?! base)|wagmi|viem)\b/i, 'ethereum'],
   // next.js/nextjs is a strong EVM/Base signal — no pure Solana or Farcaster-native app uses Next.js as the identifier

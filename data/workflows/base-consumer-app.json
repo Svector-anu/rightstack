@@ -6,7 +6,7 @@
   "id": "base-consumer-app",
   "name": "Base Consumer App Workflow",
   "goal": "Build a consumer-facing web3 application on Base with embedded wallet, onchain actions, and optional gasless transactions.",
-  "goal_tags": ["base-app", "consumer-app", "embedded-wallet", "onchain-actions", "erc-4337", "gasless", "social-login", "wallet-infrastructure", "email-login", "new-users"],
+  "goal_tags": ["base-app", "consumer-app", "embedded-wallet", "onchain-actions", "erc-4337", "gasless", "social-login", "wallet-infrastructure", "email-login", "new-users", "identity", "onchain-identity"],
   "ecosystems": ["base", "ethereum"],
   "scale": ["hackathon", "mvp", "production"],
   "user_types": ["vibe-coder", "advanced-builder"],
@@ -137,6 +137,11 @@
       "constraint": "ai_reasoning_required",
       "modification": "Add Vercel AI SDK as an ai-reasoning phase. Pair with Trigger.dev if durable background execution is needed.",
       "affects_phase": "ai-reasoning"
+    },
+    {
+      "constraint": "social_features_required",
+      "modification": "OnchainKit handles Basenames identity resolution for Base-native social features. Neynar is required only if integrating Farcaster social data — if Farcaster is the primary social network, consider the farcaster-consumer-onboarding or farcaster-social-ai-agent workflows instead.",
+      "affects_phase": "ui-components"
     }
   ],
   "retrieval_tags": ["base-app", "consumer-onboarding", "embedded-wallet", "gasless", "onchainkit", "privy", "alchemy", "erc-4337"],
