@@ -58,7 +58,12 @@
       "role": "signing",
       "required": true,
       "primary_tools": ["turnkey"],
-      "alternative_tools": [],
+      "alternative_tools": [
+        {
+          "tool_id": "solana-kit",
+          "when_to_prefer": "When upgrading from @solana/web3.js — @solana/kit is the official successor SDK and is required for modern Solana transaction construction. Pair with Turnkey for server-side key management. Note: @solana/web3.js v1 is maintenance-only; new Solana apps should use @solana/kit."
+        }
+      ],
       "skill_refs": [],
       "phase_notes": "Server-side wallet signing is a hard requirement for autonomous agents. NEVER use browser wallets or user-facing wallets for agent signing. Turnkey provides programmatic key management for server-side use. This is not optional."
     },

@@ -1,0 +1,72 @@
+{
+  "id": "solana-kit",
+  "name": "@solana/kit",
+  "aliases": ["@solana/kit", "solana-kit", "@solana/web3.js v2"],
+  "category": "developer-tooling",
+  "subcategory": "solana-sdk",
+  "description": "The modern Solana TypeScript SDK, successor to @solana/web3.js. Provides tree-shakeable, modular APIs for building, signing, and sending Solana transactions. Designed for modern JavaScript runtimes with improved TypeScript types and reduced bundle size. The active Solana SDK for new projects.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "The modern replacement for @solana/web3.js. All new Solana TypeScript development should use @solana/kit." },
+    { "ecosystem": "base", "strength": "none" },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "ethereum", "strength": "none" }
+  ],
+  "capabilities": [
+    "transaction-building",
+    "instruction-composition",
+    "account-deserialization",
+    "rpc-client",
+    "signature-verification",
+    "keypair-management",
+    "codegen-from-idl"
+  ],
+  "workflow_positions": ["signing", "execution", "developer-tooling"],
+  "common_pairings": ["helius", "turnkey", "jupiter", "vercel-ai-sdk"],
+  "trust_state": "production-grade",
+  "trust_evidence": {
+    "notes": "Official Solana Labs SDK. The active migration target from @solana/web3.js. Used in all new Solana Foundation and Solana Labs TypeScript examples.",
+    "repo": "https://github.com/anza-xyz/kit",
+    "verified_in_production": true
+  },
+  "sdk_migration": {
+    "status": "successor",
+    "from_package": "@solana/web3.js@^1",
+    "to_package": "@solana/kit",
+    "to_tool_id": "solana-kit",
+    "notes": "@solana/web3.js v1 is in maintenance mode — security patches only, no new features. @solana/kit is the official successor. Migration is HIGH risk: the API surface is entirely different (no direct method equivalents). Key changes: no more Connection class (replaced with Rpc client factory), Transaction replaced with transaction builder pattern, PublicKey replaced with Address type, Keypair replaced with CryptoKeyPair. New code should start with @solana/kit. Existing @solana/web3.js codebases require significant refactoring — plan 1-2 weeks for a non-trivial app. The Solana Foundation does not plan a compatibility shim."
+  },
+  "package_identifiers": ["@solana/kit"],
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Start new Solana hackathon projects with @solana/kit. The initial learning curve is steeper than @solana/web3.js, but the patterns are cleaner. Use Solana Foundation examples as references — they all use @solana/kit now.",
+    "mvp": "@solana/kit is the right choice for new Solana apps. The tree-shaking and TypeScript improvements are worth the migration cost for any greenfield project.",
+    "production": "Existing production apps on @solana/web3.js should plan a migration sprint. The risk is high but the long-term technical debt of staying on @solana/web3.js (no new features, potential security gaps) is worse than a planned migration."
+  },
+  "alternatives": [
+    {
+      "tool_id": "helius",
+      "when_to_prefer": "Helius provides a higher-level SDK for common Solana operations (token metadata, transaction helpers, webhook subscriptions). Use Helius alongside @solana/kit — Helius for data and events, @solana/kit for transaction construction."
+    }
+  ],
+  "anti_patterns": [
+    "Starting new Solana TypeScript projects with @solana/web3.js@^1 — it is in maintenance mode. New projects should use @solana/kit.",
+    "Mixing @solana/web3.js and @solana/kit types in the same codebase — the types are incompatible. Complete the migration to @solana/kit before relying on it in production.",
+    "Assuming @solana/kit is a drop-in replacement — it is not. The entire API surface changed. Budget proper migration time."
+  ],
+  "retrieval_tags": [
+    "solana-sdk",
+    "solana-kit",
+    "web3js-migration",
+    "solana-typescript",
+    "solana-transactions",
+    "sdk-upgrade",
+    "solana-web3",
+    "solana-v2"
+  ],
+  "source": {
+    "primary_url": "https://github.com/anza-xyz/kit",
+    "docs_url": "https://solana-kit.com"
+  },
+  "updated_at": "2026-05-15"
+}
