@@ -66,12 +66,12 @@ const SCALE_PATTERNS: Array<[RegExp, ScaleTarget]> = [
 
 const CATEGORY_KEYWORDS: Array<[RegExp, ToolCategory]> = [
   [/\b(wallet|login|auth|sign.?in|onboard|passkey|email.login|social.login)\b/i, 'wallet-infrastructure'],
-  [/\b(account.abstraction|smart.account|aa\b|erc.?4337|session.key|gasless|paymaster|bundler)\b/i, 'account-abstraction'],
+  [/\b(account.abstraction|smart.account|aa\b|erc.?4337|session.?keys?|gasless|paymaster|bundler)\b/i, 'account-abstraction'],
   [/\b(rpc|node|chain.data|events|webhook|indexing|alchemy|quicknode|helius)\b/i, 'chain-data'],
   [/\b(market.data|price|ohlcv|birdeye|coingecko|price.feed)\b/i, 'market-data'],
   [/\b(defi|swap|dex|liquidity|amm|lending|jupiter|uniswap)\b/i, 'defi-protocol'],
-  [/\b(execution|trade|transaction|mev|jito|submit)\b/i, 'execution'],
-  [/\b(ai.?agent|llm|language.model|reasoning|claude|gpt|vercel.?ai|langchain|agentkit)\b/i, 'agent-framework'],
+  [/\b(execution|trade|mev|jito|submit)\b/i, 'execution'],
+  [/\bai\b|\b(ai.?agent|llm|language.model|reasoning|claude|gpt|vercel.?ai|langchain|agentkit)\b/i, 'agent-framework'],
   [/\b(orchestrat|workflow|background.job|trigger|inngest|queue)\b/i, 'workflow-orchestration'],
   [/\b(farcaster|social|frame|cast|neynar|hub)\b/i, 'social-layer'],
   [/\b(ui|components|wagmi|viem|onchainkit|react.hooks|frontend)\b/i, 'frontend-sdk'],
@@ -115,7 +115,7 @@ function keywordExtract(query: string): QueryIntent {
     cross_chain: /cross.chain|multi.chain/.test(q) ? true : null,
     hackathon_timeline: /hackathon|demo/.test(q) ? true : null,
     social_features_required: /farcaster|social|cast\b|frame\b/.test(q) ? true : null,
-    ai_reasoning_required: /ai.?agent|llm|reasoning|claude|gpt/.test(q) ? true : null,
+    ai_reasoning_required: /\bai\b|ai.?agent|llm|reasoning|claude|gpt/.test(q) ? true : null,
     hybrid_wallet: hybridWallet,
   };
 
@@ -131,7 +131,9 @@ function keywordExtract(query: string): QueryIntent {
     workflow_match_confidence: null,
     constraints,
     ambiguity_flags: primaryEcosystem === null
-      ? [{ field: 'primary_ecosystem', issue: 'Ecosystem not detected from query', resolution_options: ['base', 'solana', 'ethereum', 'farcaster'] }]
+      ? [constraints.social_features_required
+          ? { field: 'primary_ecosystem', issue: 'Social features detected — did you mean Farcaster?', resolution_options: ['farcaster', 'base', 'solana', 'ethereum'] }
+          : { field: 'primary_ecosystem', issue: 'Ecosystem not detected from query', resolution_options: ['base', 'solana', 'ethereum', 'farcaster'] }]
       : [],
     confidence: primaryEcosystem !== null ? 0.65 : 0.45,
     repo_context: null,

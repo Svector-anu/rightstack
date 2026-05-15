@@ -2,7 +2,7 @@
   "id": "farcaster-consumer-onboarding",
   "name": "Farcaster Consumer Onboarding Workflow",
   "goal": "Build a Farcaster-native miniapp with social login, embedded wallet, and onchain actions on Base.",
-  "goal_tags": ["farcaster-miniapp", "social-login", "embedded-wallet", "miniapp", "consumer-onboarding", "farcaster-frames"],
+  "goal_tags": ["farcaster-miniapp", "social-login", "embedded-wallet", "miniapp", "consumer-onboarding", "farcaster-frames", "siwf", "sign-in-with-farcaster", "farcaster-auth"],
   "ecosystems": ["farcaster", "base"],
   "scale": ["hackathon", "mvp", "production"],
   "user_types": ["vibe-coder", "advanced-builder"],
@@ -84,6 +84,15 @@
       "scale_overrides": {
         "production": "Model gas sponsorship costs before launch. Implement per-user spending limits."
       }
+    },
+    {
+      "id": "siwf-auth",
+      "role": "identity",
+      "required": false,
+      "primary_tools": ["farcaster-auth-kit"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Sign In With Farcaster (SIWF) for non-miniapp web apps that want Farcaster identity. Use farcaster-auth-kit when adding Farcaster authentication to an existing web app outside of a Frame/miniapp context — e.g., a standalone web app that wants to authenticate users via their Farcaster identity without building a full miniapp."
     }
   ],
   "prerequisite_workflows": [],
@@ -119,7 +128,7 @@
       "affects_phase": "social-data"
     }
   ],
-  "retrieval_tags": ["farcaster", "miniapp", "frames", "social-crypto", "consumer-app", "neynar", "embedded-wallet"],
+  "retrieval_tags": ["farcaster", "miniapp", "frames", "social-crypto", "consumer-app", "neynar", "embedded-wallet", "siwf", "farcaster-auth-kit", "sign-in-with-farcaster"],
   "source": {
     "derived_from": "WORKFLOWS.md workflow #2 + corpus-analysis-v1",
     "last_verified": "2026-05-13"

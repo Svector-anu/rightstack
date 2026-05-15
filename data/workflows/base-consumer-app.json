@@ -24,6 +24,10 @@
         {
           "tool_id": "reown",
           "when_to_prefer": "When the target audience is primarily existing wallet holders. Reown connects external wallets — does not create embedded wallets for new users."
+        },
+        {
+          "tool_id": "coinbase-smart-wallet",
+          "when_to_prefer": "When building on Base and target users already have the Coinbase app — Coinbase Smart Wallet provides passkey-based gasless transactions with zero-configuration smart account abstraction. Native to Base; cannot be used for general EVM chains."
         }
       ],
       "skill_refs": [],
