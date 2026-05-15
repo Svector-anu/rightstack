@@ -1,0 +1,115 @@
+{
+  "id": "langchain",
+  "name": "LangChain",
+  "aliases": ["langchain", "@langchain/core", "@langchain/anthropic", "@langchain/openai", "langchain-community"],
+  "category": "agent-framework",
+  "subcategory": "multi-framework",
+  "description": "Multi-model agent and chain framework for building complex LLM-powered applications. Provides composable building blocks for chains, memory, retrieval-augmented generation, tool use, and multi-step reasoning. The dominant choice for Python-first teams and RAG pipelines requiring vector store integration.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "strong", "notes": "Used in Base AI agent workflows where complex reasoning chains, memory, or RAG pipelines are needed beyond Vercel AI SDK capabilities." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Works across EVM chains for AI agent integration patterns." },
+    { "ecosystem": "solana", "strength": "strong", "notes": "Used in Solana trading agent workflows as an alternative to Vercel AI SDK for Python-native teams or complex multi-step reasoning." },
+    { "ecosystem": "farcaster", "strength": "limited", "notes": "Less ecosystem-specific tooling for Farcaster. Vercel AI SDK or direct Claude API is typically preferred for Farcaster agent patterns." },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "agent-reasoning",
+    "chain-of-thought",
+    "memory-management",
+    "tool-use",
+    "rag-pipelines",
+    "vector-store-integration",
+    "multi-step-planning",
+    "python-sdk",
+    "javascript-sdk",
+    "lcel-chains",
+    "langsmith-observability",
+    "multi-model-support",
+    "structured-outputs"
+  ],
+  "workflow_positions": ["ai-reasoning-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "alternative-to",
+      "context": "LangChain and Vercel AI SDK serve the same AI reasoning role. LangChain is preferred when complex chains, Python, or RAG pipelines are required. Vercel AI SDK is preferred for TypeScript-first apps with streaming UX requirements."
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "often-used-with",
+      "context": "Trigger.dev orchestrates the outer job lifecycle; LangChain handles the LLM reasoning within each durable step.",
+      "workflow_ref": "solana-trading-agent"
+    },
+    {
+      "tool_id": "turnkey",
+      "relationship": "often-used-with",
+      "context": "LangChain handles agent reasoning; Turnkey handles server-side transaction signing for the resulting decisions in autonomous agent flows.",
+      "workflow_ref": "solana-trading-agent"
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "active-maintenance",
+      "description": "LangChain v0.3 (JavaScript/TypeScript) and v0.3 (Python) are actively maintained with stable API surfaces. LangChain is among the most widely adopted LLM frameworks.",
+      "source_url": "https://js.langchain.com/docs",
+      "verifiable": true
+    },
+    {
+      "tier": 1,
+      "type": "ecosystem-adoption",
+      "description": "Dominant AI agent framework in the Python ecosystem. Widely used in production RAG pipelines, document-processing agents, and multi-step reasoning systems.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Comprehensive documentation for JavaScript and Python SDKs. LangSmith provides production observability for LangChain agents.",
+      "source_url": "https://python.langchain.com/docs",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["langchain", "@langchain/core", "@langchain/anthropic", "@langchain/openai", "@langchain/community"],
+    "pypi": ["langchain", "langchain-core", "langchain-anthropic", "langchain-openai", "langchain-community"]
+  },
+  "sdk_migration": {
+    "from": "langchain@^0.1 — legacy monolith SDK with unstable API surface",
+    "to": "langchain@^0.3 + @langchain/core + provider packages — modular architecture with stable LCEL API",
+    "detection_signal": "import { ChatOpenAI } from 'langchain/chat_models/openai' — legacy import path",
+    "migration_guide": "https://js.langchain.com/docs/how_to/migrate_agent"
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent", "base-onchain-ai-agent"],
+  "scale_guidance": {
+    "hackathon": "Use Vercel AI SDK for hackathons — faster setup. LangChain's setup overhead is not worth it for quick demos.",
+    "mvp": "Prefer LangChain when RAG pipelines or complex multi-step chains are a core product requirement, not just an AI add-on.",
+    "production": "Use LangSmith for production observability. Implement structured outputs for all agent decision extraction — do not parse free-text LLM responses. Pin LangChain version carefully; breaking changes across minor versions are common."
+  },
+  "alternatives": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "when_to_prefer": "For TypeScript-first teams without RAG pipeline requirements. Vercel AI SDK has simpler setup, better streaming UX, and stronger React integration. Use it when AI is an add-on, not the core complexity.",
+      "ecosystem_context": "TypeScript/JavaScript, all chains."
+    },
+    {
+      "tool_id": "coinbase-agentkit",
+      "when_to_prefer": "When building specifically for Base and want web3-native onchain actions with the LangChain integration. AgentKit provides a LangChain toolkit for Base onchain operations.",
+      "ecosystem_context": "Base only."
+    }
+  ],
+  "anti_patterns": [
+    "Using LangChain for simple single-call LLM integrations — direct API or Vercel AI SDK is far simpler without the abstraction cost.",
+    "Using langchain@^0.1 in new projects — the v0.1 API is unstable and poorly typed. New projects must use langchain@^0.3 + @langchain/core.",
+    "Skipping LangSmith in production — debugging complex chains without observability is extremely difficult; tracing is not optional for production agents.",
+    "Mixing Python LangChain patterns with the JavaScript SDK — the two SDKs have diverged; documentation from the Python ecosystem often does not apply to the JS SDK."
+  ],
+  "retrieval_tags": ["llm-framework", "ai-agent", "rag", "chain-of-thought", "tool-use", "memory", "langsmith", "python-ai", "vector-store"],
+  "source": {
+    "primary_url": "https://langchain.com",
+    "docs_url": "https://js.langchain.com/docs",
+    "github_url": "https://github.com/langchain-ai/langchainjs"
+  },
+  "updated_at": "2026-05-15"
+}

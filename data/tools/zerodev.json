@@ -1,0 +1,112 @@
+{
+  "id": "zerodev",
+  "name": "ZeroDev",
+  "aliases": ["@zerodev/sdk", "@zerodev/permissions", "zerodev-kernel", "@zerodev/wallet-client"],
+  "category": "account-abstraction",
+  "subcategory": "smart-account",
+  "description": "Modular smart account platform built on the Kernel smart account standard. Provides session keys, permissions plugins, and programmable transaction policies on top of ERC-4337. The preferred AA choice when session keys or advanced smart account programmability is needed beyond standard gas sponsorship.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "strong", "notes": "Production-grade AA on Base. Preferred when session keys or per-action permission policies are needed in Base consumer apps." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Full Kernel smart account support on Ethereum mainnet. Core tool in the ethereum-aa-native-app workflow." },
+    { "ecosystem": "farcaster", "strength": "limited", "notes": "AA infrastructure can be used for gasless Farcaster miniapp actions, but Pimlico is typically sufficient without session key complexity." },
+    { "ecosystem": "solana", "strength": "none", "notes": "ERC-4337 is EVM-only. ZeroDev does not apply to Solana." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "session-keys",
+    "smart-account-deployment",
+    "kernel-smart-account",
+    "paymaster",
+    "bundler",
+    "permissions-module",
+    "signature-policies",
+    "erc-4337",
+    "gas-sponsorship",
+    "batch-transactions",
+    "account-plugins"
+  ],
+  "workflow_positions": ["payment-layer", "smart-account-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "pimlico",
+      "relationship": "complements",
+      "context": "ZeroDev provides the Kernel smart account with session key logic; Pimlico provides the bundler and paymaster infrastructure that submits ZeroDev UserOperations. Often used together in the same stack.",
+      "workflow_ref": "ethereum-aa-native-app"
+    },
+    {
+      "tool_id": "privy",
+      "relationship": "layered-on-top-of",
+      "context": "Privy creates the embedded wallet (EOA/signer); ZeroDev deploys a Kernel smart account on top of that signer, enabling session keys and programmable policies.",
+      "workflow_ref": "embedded-wallet-onboarding"
+    },
+    {
+      "tool_id": "dynamic",
+      "relationship": "layered-on-top-of",
+      "context": "Dynamic manages the wallet/signer layer; ZeroDev adds smart account capabilities (session keys, batching, gas sponsorship) on top of that signer.",
+      "workflow_ref": "ethereum-aa-native-app"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "ZeroDev bundler reads nonce, simulates UserOperations, and submits to the mempool via Alchemy or Pimlico RPC endpoints."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "ZeroDev Kernel is one of the two dominant ERC-4337 smart account implementations alongside Safe. Session key support is production-proven across multiple consumer apps.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "active-maintenance",
+      "description": "ZeroDev SDK v5 is actively maintained. The permissionless.js SDK (maintained by Pimlico) provides compatibility layer for Kernel accounts.",
+      "source_url": "https://docs.zerodev.app",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Comprehensive documentation for Kernel smart account, session keys, and permissions plugins.",
+      "source_url": "https://docs.zerodev.app",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@zerodev/sdk", "@zerodev/permissions", "@zerodev/wallet-client", "@zerodev/ecdsa-validator"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-consumer-app", "embedded-wallet-onboarding", "ethereum-aa-native-app"],
+  "scale_guidance": {
+    "hackathon": "Use Pimlico directly for gas sponsorship at hackathon scale. ZeroDev session keys add complexity that isn't needed for demos.",
+    "mvp": "Add ZeroDev when session keys are a core UX requirement — pre-approved recurring transaction flows, delegated signing for AI agents, or per-action spending policies.",
+    "production": "Session key expiry policies are non-negotiable in production — infinite session keys are a security vulnerability. Set short TTLs and implement key rotation. Monitor bundler submission failures."
+  },
+  "alternatives": [
+    {
+      "tool_id": "pimlico",
+      "when_to_prefer": "When only gas sponsorship is needed without session key or smart account plugin requirements. Pimlico is simpler for paymaster-only use cases and has stronger Base-specific integrations.",
+      "ecosystem_context": "Base, Ethereum."
+    },
+    {
+      "tool_id": "alchemy-account-kit",
+      "when_to_prefer": "When already fully in the Alchemy ecosystem and prefer single-vendor infrastructure for RPC + AA without session key complexity.",
+      "ecosystem_context": "Base, Ethereum."
+    }
+  ],
+  "anti_patterns": [
+    "Using ZeroDev Kernel for simple gas sponsorship without session keys — Pimlico is simpler and sufficient for paymaster-only use cases.",
+    "Session keys without expiry policies — session keys that never expire are a permanent signing authority. Always set TTL and permission scopes.",
+    "Conflating ZeroDev (smart account + bundler) with Pimlico (bundler + paymaster only) — they serve overlapping but distinct roles; understand which layer you're replacing.",
+    "Deploying Kernel accounts without testing counterfactual address determinism — smart account address depends on the factory and salt; incorrect assumptions cause fund loss."
+  ],
+  "retrieval_tags": ["session-keys", "smart-account", "erc-4337", "account-abstraction", "kernel", "permissions", "gasless", "bundler", "paymaster"],
+  "source": {
+    "primary_url": "https://zerodev.app",
+    "docs_url": "https://docs.zerodev.app",
+    "github_url": "https://github.com/zerodevapp/sdk"
+  },
+  "updated_at": "2026-05-15"
+}

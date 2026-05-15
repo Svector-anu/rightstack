@@ -1,0 +1,102 @@
+{
+  "id": "inngest",
+  "name": "Inngest",
+  "aliases": ["inngest/inngest", "@inngest/next", "inngest-sdk"],
+  "category": "workflow-orchestration",
+  "subcategory": "event-driven-jobs",
+  "description": "Event-driven background job and workflow SDK for TypeScript-first teams. Runs as serverless functions triggered by events or schedules, with built-in retry logic and execution history. The simpler alternative to Trigger.dev for teams that need durable background execution without self-hosting infrastructure.",
+  "ecosystem_fit": [
+    { "ecosystem": "base", "strength": "strong", "notes": "Used in Base AI agent workflows for event-driven background job execution triggered by Alchemy webhooks." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Works with Ethereum event pipelines via Alchemy or QuickNode webhooks." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Neynar webhooks can trigger Inngest functions for Farcaster agent workflows." },
+    { "ecosystem": "solana", "strength": "limited", "notes": "Can be used with Helius webhooks but Trigger.dev has stronger Solana agent adoption." },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "background-jobs",
+    "event-driven-workflows",
+    "cron-scheduling",
+    "retry-logic",
+    "step-execution",
+    "typescript-native",
+    "vercel-integration",
+    "serverless-compatible",
+    "webhook-fanout",
+    "concurrency-control",
+    "execution-history"
+  ],
+  "workflow_positions": ["orchestration-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "often-used-with",
+      "context": "Inngest manages the job lifecycle (trigger, retry, logging); Vercel AI SDK handles the LLM reasoning within each Inngest step.",
+      "workflow_ref": "base-onchain-ai-agent"
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "often-used-with",
+      "context": "Alchemy address-activity webhooks trigger Inngest functions for EVM event-driven agent workflows on Base and Ethereum."
+    },
+    {
+      "tool_id": "neynar",
+      "relationship": "often-used-with",
+      "context": "Neynar webhooks fire Inngest functions when Farcaster events occur, enabling durable social agent response workflows."
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "alternative-to",
+      "context": "Inngest and Trigger.dev serve the same orchestration role. Inngest is simpler to onboard; Trigger.dev provides more powerful durable execution for complex long-running agents."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "active-maintenance",
+      "description": "Inngest v3 is actively maintained with frequent releases. Well-documented Next.js and Node.js integrations.",
+      "source_url": "https://www.inngest.com/docs",
+      "verifiable": true
+    },
+    {
+      "tier": 2,
+      "type": "ecosystem-adoption",
+      "description": "Widely used in TypeScript-first application teams for background job orchestration. Cited as an alternative to Trigger.dev in Solana and Base agent workflow discussions.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["inngest", "@inngest/next", "@inngest/ai"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["base-onchain-ai-agent", "solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Skip orchestration at hackathon scale. Inngest is worth adding from MVP onward for any app with background jobs.",
+    "mvp": "Inngest's free tier and Next.js integration make it the lowest-friction way to add background job execution. Add it as soon as you have agent workflows that need retry logic.",
+    "production": "Configure concurrency limits before scaling. Inngest's execution history is essential for debugging agent failures in production. Plan for Inngest cloud pricing at high job volumes."
+  },
+  "alternatives": [
+    {
+      "tool_id": "trigger-dev",
+      "when_to_prefer": "When you need durable execution with fine-grained step visibility, complex long-running workflows, or strong Solana agent adoption patterns. Trigger.dev has more powerful retry and observability for complex agents.",
+      "ecosystem_context": "All chains — especially Solana where Trigger.dev adoption is stronger."
+    },
+    {
+      "tool_id": "temporal",
+      "when_to_prefer": "When workflows require very long-running durability (hours to days) with strong consistency guarantees. Temporal has significantly higher operational complexity.",
+      "ecosystem_context": "All chains."
+    }
+  ],
+  "anti_patterns": [
+    "Using Inngest for very long-running workflows (>10 min steps) — Trigger.dev's durable execution model handles these better.",
+    "Skipping concurrency limits — Inngest functions without concurrency controls will spin up unbounded parallel executions under high webhook load.",
+    "Running Inngest in production without execution history review — the execution logs are the primary debugging tool; ignoring them means agent failures go undetected."
+  ],
+  "retrieval_tags": ["background-jobs", "event-driven", "workflow-orchestration", "webhooks", "retry-logic", "agent-orchestration", "typescript", "serverless"],
+  "source": {
+    "primary_url": "https://www.inngest.com",
+    "docs_url": "https://www.inngest.com/docs",
+    "github_url": "https://github.com/inngest/inngest"
+  },
+  "updated_at": "2026-05-15"
+}

@@ -44,6 +44,10 @@
         {
           "tool_id": "coinbase-agentkit",
           "when_to_prefer": "When the agent's primary onchain actions are Base-native and pre-defined — trading, token transfers, DeFi interactions on Base. AgentKit provides a toolkit of pre-built onchain action primitives that eliminate the need to write custom tool definitions. Trade-off: AgentKit is Base-coupled and has emerging trust state; Vercel AI SDK is more portable and production-stable. Use AgentKit when web3 action abstractions are more valuable than portability."
+        },
+        {
+          "tool_id": "langchain",
+          "when_to_prefer": "When the agent requires complex multi-step reasoning chains, memory management, or RAG pipelines. LangChain's chain composition model handles richer agent logic than Vercel AI SDK's simpler tool-use loop. Also preferred for Python-first teams — LangChain has a stronger Python ecosystem than Vercel AI SDK."
         }
       ],
       "skill_refs": [],
