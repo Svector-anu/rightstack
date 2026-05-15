@@ -41,7 +41,11 @@ function scoreWorkflow(workflow: WorkflowRecord, intent: QueryIntent): WorkflowM
 }
 
 function ecosystemScore(workflow: WorkflowRecord, intent: QueryIntent): number {
-  if (!intent.primary_ecosystem) return 0.5;
+  if (!intent.primary_ecosystem) {
+    // When ecosystem is unspecified, Solana is the dominant chain for execution/trading queries
+    if (intent.intent_categories.includes('execution') && workflow.ecosystems.includes('solana')) return 0.65;
+    return 0.5;
+  }
   if (workflow.ecosystems.includes(intent.primary_ecosystem)) return 1.0;
   // Partial credit: base and ethereum are closely related
   if (intent.primary_ecosystem === 'base' && workflow.ecosystems.includes('ethereum')) return 0.4;

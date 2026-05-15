@@ -57,6 +57,8 @@ const ECOSYSTEM_PATTERNS: Array<[RegExp, EcosystemName]> = [
   [/\b(farcaster|frame|cast|neynar|warpcast|miniapp|mini.?app)\b/i, 'farcaster'],
   [/\b(solana|sol\b|jupiter|jito|helius|spl.?token|phantom)\b/i, 'solana'],
   [/\b(ethereum|eth\b|mainnet|evm(?! base)|wagmi|viem)\b/i, 'ethereum'],
+  // next.js/nextjs is a strong EVM/Base signal — no pure Solana or Farcaster-native app uses Next.js as the identifier
+  [/\bnext\.?js\b/i, 'base'],
 ];
 
 const SCALE_PATTERNS: Array<[RegExp, ScaleTarget]> = [
@@ -70,7 +72,7 @@ const CATEGORY_KEYWORDS: Array<[RegExp, ToolCategory]> = [
   [/\b(rpc|node|chain.data|events|webhook|indexing|alchemy|quicknode|helius)\b/i, 'chain-data'],
   [/\b(market.data|price|ohlcv|birdeye|coingecko|price.feed)\b/i, 'market-data'],
   [/\b(defi|swap|dex|liquidity|amm|lending|jupiter|uniswap)\b/i, 'defi-protocol'],
-  [/\b(execution|trade|mev|jito|submit)\b/i, 'execution'],
+  [/\b(execution|trad(e|ing)|mev|jito|submit)\b/i, 'execution'],
   [/\bai\b|\b(ai.?agent|llm|language.model|reasoning|claude|gpt|vercel.?ai|langchain|agentkit)\b/i, 'agent-framework'],
   [/\b(orchestrat|workflow|background.job|trigger|inngest|queue)\b/i, 'workflow-orchestration'],
   [/\b(farcaster|social|frame|cast|neynar|hub)\b/i, 'social-layer'],
@@ -119,6 +121,25 @@ function keywordExtract(query: string): QueryIntent {
     hybrid_wallet: hybridWallet,
   };
 
+  const ambiguityFlags: QueryIntent['ambiguity_flags'] = [];
+
+  if (primaryEcosystem === null) {
+    ambiguityFlags.push(
+      constraints.social_features_required
+        ? { field: 'primary_ecosystem', issue: 'Social features detected — did you mean Farcaster?', resolution_options: ['farcaster', 'base', 'solana', 'ethereum'] }
+        : { field: 'primary_ecosystem', issue: 'Ecosystem not detected from query', resolution_options: ['base', 'solana', 'ethereum', 'farcaster'] }
+    );
+  }
+
+  // ERC-4337 (account abstraction / gasless) is EVM-only — not applicable on Solana
+  if (primaryEcosystem === 'solana' && constraints.gasless_required) {
+    ambiguityFlags.push({
+      field: 'gasless_required',
+      issue: 'ERC-4337 account abstraction is EVM-only and does not apply to Solana. Solana uses native fee payer delegation (e.g., Helius or custom programs) for gasless UX.',
+      resolution_options: ['use-solana-fee-delegation', 'switch-to-base-or-ethereum'],
+    });
+  }
+
   return {
     raw_query: query,
     build_goal: query,
@@ -130,11 +151,7 @@ function keywordExtract(query: string): QueryIntent {
     workflow_match: null,
     workflow_match_confidence: null,
     constraints,
-    ambiguity_flags: primaryEcosystem === null
-      ? [constraints.social_features_required
-          ? { field: 'primary_ecosystem', issue: 'Social features detected — did you mean Farcaster?', resolution_options: ['farcaster', 'base', 'solana', 'ethereum'] }
-          : { field: 'primary_ecosystem', issue: 'Ecosystem not detected from query', resolution_options: ['base', 'solana', 'ethereum', 'farcaster'] }]
-      : [],
+    ambiguity_flags: ambiguityFlags,
     confidence: primaryEcosystem !== null ? 0.65 : 0.45,
     repo_context: null,
   };

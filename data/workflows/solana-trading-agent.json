@@ -136,6 +136,11 @@
   ],
   "constraint_modifiers": [
     {
+      "constraint": "autonomous_agent",
+      "modification": "Server-side signing (Turnkey) is required. Never use browser wallets. Enforce spending limits and rate limiting.",
+      "affects_phase": "signing"
+    },
+    {
       "constraint": "python_only",
       "modification": "Replace Vercel AI SDK with LangChain or direct Claude API. Replace Node.js orchestration with Python-native tools.",
       "affects_phase": "agent-reasoning"
