@@ -1,0 +1,383 @@
+{
+  "$schema": "https://rightstack.dev/schemas/benchmark-metrics.json",
+  "version": "1.0",
+  "run_date": "2026-05-15",
+  "suite_version": "benchmark-suite-v1.json",
+  "cli_version": "post-wave-4b",
+  "extractor": "keyword-fallback (deterministic)",
+
+  "overall": {
+    "total_queries": 50,
+    "pass": 39,
+    "partial": 11,
+    "fail": 0,
+    "pass_rate": 0.78,
+    "partial_rate": 0.22,
+    "fail_rate": 0.00
+  },
+
+  "golden_queries": {
+    "total": 10,
+    "pass": 8,
+    "partial": 2,
+    "fail": 0,
+    "pass_rate": 0.80,
+    "partial_ids": ["Q038", "Q044"],
+    "notes": "Q038 PARTIAL is expected/documented (farcaster-social-ai-agent Wave 4C gap). Q044 is a ranking anomaly (embedded-wallet-onboarding over farcaster-consumer-onboarding)."
+  },
+
+  "by_category": {
+    "beginner": {
+      "total": 8,
+      "pass": 7,
+      "partial": 1,
+      "fail": 0,
+      "pass_rate": 0.875,
+      "partial_ids": ["Q002"]
+    },
+    "advanced": {
+      "total": 7,
+      "pass": 7,
+      "partial": 0,
+      "fail": 0,
+      "pass_rate": 1.00
+    },
+    "ambiguous": {
+      "total": 6,
+      "pass": 4,
+      "partial": 2,
+      "fail": 0,
+      "pass_rate": 0.667,
+      "partial_ids": ["Q020", "Q021"]
+    },
+    "conflicting_constraints": {
+      "total": 5,
+      "pass": 4,
+      "partial": 1,
+      "fail": 0,
+      "pass_rate": 0.80,
+      "partial_ids": ["Q024"]
+    },
+    "ecosystem_comparison": {
+      "total": 5,
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "pass_rate": 1.00,
+      "notes": "Wave 4B pre-empted FAIL→PASS for Q030 (langchain) and Q031 (inngest)"
+    },
+    "migration_risk": {
+      "total": 5,
+      "pass": 3,
+      "partial": 2,
+      "fail": 0,
+      "pass_rate": 0.60,
+      "partial_ids": ["Q033", "Q034"]
+    },
+    "ai_agent": {
+      "total": 6,
+      "pass": 4,
+      "partial": 2,
+      "fail": 0,
+      "pass_rate": 0.667,
+      "partial_ids": ["Q038", "Q039"]
+    },
+    "farcaster_native": {
+      "total": 4,
+      "pass": 2,
+      "partial": 2,
+      "fail": 0,
+      "pass_rate": 0.50,
+      "partial_ids": ["Q044", "Q045"]
+    },
+    "base_consumer": {
+      "total": 4,
+      "pass": 3,
+      "partial": 1,
+      "fail": 0,
+      "pass_rate": 0.75,
+      "partial_ids": ["Q049"]
+    }
+  },
+
+  "ecosystem_routing": {
+    "base": {
+      "expected": 19,
+      "correct": 18,
+      "incorrect": 1,
+      "accuracy": 0.947,
+      "incorrect_ids": ["Q002"]
+    },
+    "farcaster": {
+      "expected": 10,
+      "correct": 9,
+      "incorrect": 1,
+      "accuracy": 0.90,
+      "incorrect_ids": ["Q044"]
+    },
+    "solana": {
+      "expected": 10,
+      "correct": 10,
+      "incorrect": 0,
+      "accuracy": 1.00
+    },
+    "ethereum": {
+      "expected": 1,
+      "correct": 1,
+      "incorrect": 0,
+      "accuracy": 1.00
+    },
+    "unspecified_handled": {
+      "expected_ambiguous": 10,
+      "ambiguity_flag_raised": 10,
+      "accuracy": 1.00
+    }
+  },
+
+  "workflow_selection_accuracy": {
+    "base_consumer_app": {
+      "queries_expected": 19,
+      "queries_returned": 20,
+      "correct": 17,
+      "notes": "Q049 and Q044 returned embedded-wallet-onboarding instead"
+    },
+    "farcaster_consumer_onboarding": {
+      "queries_expected": 11,
+      "queries_returned": 10,
+      "correct": 9,
+      "notes": "Q044 returned embedded-wallet-onboarding"
+    },
+    "solana_trading_agent": {
+      "queries_expected": 10,
+      "queries_returned": 10,
+      "correct": 10
+    },
+    "base_onchain_ai_agent": {
+      "queries_expected": 7,
+      "queries_returned": 9,
+      "correct": 7,
+      "notes": "Q020 (trading bot) and Q038 (Farcaster bot) pulled into this workflow"
+    },
+    "embedded_wallet_onboarding": {
+      "queries_expected": 2,
+      "queries_returned": 3,
+      "correct": 2,
+      "notes": "Q044 incorrectly routed here; Q049 incorrectly routed here"
+    }
+  },
+
+  "trust_invariant_compliance": {
+    "total_checks": 50,
+    "violations": 0,
+    "compliance_rate": 1.00,
+    "checks": {
+      "emerging_tools_flagged": true,
+      "coinbase_agentkit_emerging_on_all_appearances": true,
+      "no_private_key_env_recommendations": true,
+      "no_browser_wallet_for_autonomous_agents": true,
+      "no_pimlico_in_solana_workflows": true,
+      "no_alchemy_in_solana_workflows": true,
+      "no_helius_in_evm_workflows": true
+    }
+  },
+
+  "missing_record_count": {
+    "total_missing_records_in_output": 1,
+    "records": [
+      {
+        "tool_id": "alchemy-account-kit",
+        "referenced_in": "base-consumer-app.gasless-actions.alternative_tools",
+        "status": "no ToolRecord",
+        "affects_queries": ["Q005", "Q007", "Q009"]
+      }
+    ],
+    "notes": "langchain and inngest MISSING_RECORD issues resolved by Wave 4B. zerodev MISSING_RECORD resolved by Wave 4B."
+  },
+
+  "deprecated_sdk_leakage": {
+    "total": 0,
+    "notes": "No deprecated SDKs (wagmi v1, langchain v0.1, @walletconnect/* as primary) were recommended in any output."
+  },
+
+  "constraint_activation_accuracy": {
+    "gasless_required": {
+      "queries_with_constraint": 5,
+      "correctly_activated": 5,
+      "accuracy": 1.00
+    },
+    "autonomous_agent": {
+      "queries_with_constraint": 8,
+      "correctly_activated": 8,
+      "accuracy": 1.00,
+      "notes": "Turnkey correctly preferred over Privy browser SDK in all autonomous agent queries"
+    },
+    "no_existing_wallet": {
+      "queries_with_constraint": 5,
+      "correctly_activated": 5,
+      "accuracy": 1.00
+    },
+    "hybrid_wallet": {
+      "queries_with_constraint": 1,
+      "correctly_activated": 1,
+      "accuracy": 1.00,
+      "notes": "Q022: Dynamic explicitly recommended for hybrid wallet case"
+    },
+    "social_features_required": {
+      "queries_with_constraint": 6,
+      "correctly_activated": 6,
+      "accuracy": 1.00
+    },
+    "ai_reasoning_required": {
+      "queries_with_constraint": 8,
+      "correctly_activated": 8,
+      "accuracy": 1.00
+    },
+    "python_only": {
+      "queries_with_constraint": 1,
+      "correctly_activated": 1,
+      "accuracy": 1.00,
+      "notes": "Q026: LangChain surfaced as Python alternative with constraint note"
+    },
+    "hackathon_timeline": {
+      "queries_with_constraint": 2,
+      "correctly_activated": 2,
+      "accuracy": 1.00,
+      "notes": "Q025, Q050: scale=hackathon correctly detected"
+    },
+    "cross_chain": {
+      "queries_with_constraint": 1,
+      "correctly_activated": 0,
+      "accuracy": 0.00,
+      "notes": "Q021: cross_chain constraint not detected by extractor; no multi-chain note surfaced"
+    }
+  },
+
+  "ambiguity_handling": {
+    "queries_expected_to_raise_ambiguity": 10,
+    "queries_that_raised_ambiguity": 10,
+    "accuracy": 1.00,
+    "farcaster_suggestion_accuracy": {
+      "social_queries_without_ecosystem": 1,
+      "farcaster_suggested": 1,
+      "accuracy": 1.00
+    }
+  },
+
+  "confidence_distribution": {
+    "0.65": 36,
+    "0.45": 14,
+    "notes": "0.65 = ecosystem detected; 0.45 = ecosystem undetected with ambiguity flag"
+  },
+
+  "scale_detection_accuracy": {
+    "hackathon_detected": 2,
+    "mvp_detected": 39,
+    "production_detected": 9,
+    "notes": "Scale correctly detected from query text in all cases"
+  },
+
+  "ranking_stability": {
+    "false_positive_workflows": 2,
+    "details": [
+      {
+        "query_id": "Q044",
+        "expected_workflow": "farcaster-consumer-onboarding",
+        "returned_workflow": "embedded-wallet-onboarding",
+        "cause": "Basenames identity signals score as base ecosystem, overriding farcaster signals"
+      },
+      {
+        "query_id": "Q049",
+        "expected_workflow": "base-consumer-app",
+        "returned_workflow": "embedded-wallet-onboarding",
+        "cause": "identity+social signals score embedded-wallet-onboarding higher than base-consumer-app"
+      }
+    ]
+  },
+
+  "wave_4_impact_summary": {
+    "wave_4a_queries_fixed": ["Q013", "Q017", "Q018", "Q019", "Q046", "Q047"],
+    "wave_4b_queries_fixed": ["Q026", "Q030", "Q031", "Q040"],
+    "total_queries_improved": 10,
+    "fail_to_pass": ["Q030", "Q031"],
+    "partial_to_pass": ["Q013", "Q017", "Q018", "Q019", "Q026", "Q040", "Q046", "Q047"]
+  },
+
+  "top_10_fixes": [
+    {
+      "priority": 1,
+      "fix": "Add farcaster-social-ai-agent WorkflowRecord",
+      "closes_partial": ["Q038", "Q045"],
+      "effort": "high",
+      "impact": "2 PARTIAL → PASS"
+    },
+    {
+      "priority": 2,
+      "fix": "Fix embedded-wallet-onboarding over-scoring for identity+social queries",
+      "closes_partial": ["Q044", "Q049"],
+      "effort": "medium",
+      "impact": "2 PARTIAL → PASS including 1 golden query"
+    },
+    {
+      "priority": 3,
+      "fix": "Add next.js/nextjs → EVM/base ecosystem detection",
+      "closes_partial": ["Q002"],
+      "effort": "low",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 4,
+      "fix": "Fix trade regex: trade\\b → trad(e|ing)\\b",
+      "closes_partial": ["Q020"],
+      "effort": "low",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 5,
+      "fix": "Surface sdk_migration anti-patterns for alternative tools in recommend output",
+      "closes_partial": ["Q034"],
+      "effort": "medium",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 6,
+      "fix": "Add @solana/kit ToolRecord with sdk_migration from @solana/web3.js",
+      "closes_partial": ["Q033"],
+      "effort": "high",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 7,
+      "fix": "Surface ERC-4337 inapplicability note for Solana + gasless_required queries",
+      "closes_partial": ["Q024"],
+      "effort": "low",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 8,
+      "fix": "Surface phase_notes in recommend formatter output",
+      "closes_partial": ["Q039"],
+      "effort": "medium",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 9,
+      "fix": "Add cross-chain gap detection and surfacing",
+      "closes_partial": ["Q021"],
+      "effort": "medium",
+      "impact": "1 PARTIAL → PASS"
+    },
+    {
+      "priority": 10,
+      "fix": "Add ethereum-aa-native-app WorkflowRecord",
+      "closes_partial": [],
+      "effort": "high",
+      "impact": "Unblocks future ethereum AA queries; no current PARTIAL closed"
+    }
+  ],
+
+  "projected_pass_rate_after_fixes": {
+    "after_top_3_fixes": "44/50 = 88%",
+    "after_top_5_fixes": "46/50 = 92%",
+    "after_all_10_fixes": "50/50 = 100% (assuming wave 4C WorkflowRecords built)"
+  }
+}
