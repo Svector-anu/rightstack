@@ -3,6 +3,13 @@ import { recommend } from './commands/recommend';
 import { compare } from './commands/compare';
 import { workflow } from './commands/workflow';
 import { inspect } from './commands/inspect';
+import {
+  benchmarkRun,
+  benchmarkCompare,
+  benchmarkInspect,
+  benchmarkInvariants,
+  benchmarkList,
+} from './commands/benchmark';
 
 const program = new Command();
 
@@ -38,6 +45,58 @@ program
   .description('Inspect a tool record in detail')
   .action((id: string) => {
     inspect(id);
+  });
+
+const bench = program
+  .command('benchmark')
+  .description('Benchmark and validation tools');
+
+bench
+  .command('run')
+  .description('Run the full benchmark suite against the live pipeline')
+  .option('--queries <ids>', 'Comma-separated query IDs to run (e.g. Q001,Q010)')
+  .option('--no-save', 'Do not save snapshot after run')
+  .option('--name <name>', 'Snapshot name override')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { queries?: string; save?: boolean; name?: string; json?: boolean }) => {
+    await benchmarkRun(opts);
+  });
+
+bench
+  .command('compare')
+  .description('Diff two benchmark snapshots')
+  .option('--baseline <name>', 'Baseline snapshot name or path')
+  .option('--current <name>', 'Current snapshot name or path')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { baseline?: string; current?: string; json?: boolean }) => {
+    await benchmarkCompare(opts);
+  });
+
+bench
+  .command('inspect')
+  .description('Inspect a specific query result in detail')
+  .option('--query <id>', 'Query ID (e.g. Q010)')
+  .option('--snapshot <name>', 'Load from saved snapshot instead of running live')
+  .option('--failures', 'Show only failing/partial queries')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { query?: string; snapshot?: string; failures?: boolean; json?: boolean }) => {
+    await benchmarkInspect(opts);
+  });
+
+bench
+  .command('invariants')
+  .description('Validate corpus integrity invariants')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { json?: boolean }) => {
+    await benchmarkInvariants(opts);
+  });
+
+bench
+  .command('list')
+  .description('List saved benchmark snapshots')
+  .option('--json', 'Output raw JSON')
+  .action((opts: { json?: boolean }) => {
+    benchmarkList(opts);
   });
 
 program.parse(process.argv);

@@ -98,7 +98,7 @@
     ]
   },
   "sdk_migration": {
-    "status": "migrating-from",
+    "status": "migrating-to",
     "from_package": "@farcaster/frames-client",
     "to_package": "@farcaster/frame-sdk",
     "notes": "v1 Frames used @farcaster/frames-client for server-side frame handling. v2 MiniApps use @farcaster/frame-sdk for client-side context access. These are architecturally different — v1 frames are stateless OpenGraph-based; v2 MiniApps are stateful client applications. A repo using @farcaster/frames-client is building a v1 Frame and should migrate to v2 MiniApps for richer functionality. Additionally, third-party frame builder SDKs (frames.js, frog) are community alternatives to the official SDK — they use different patterns and should be detected separately."
