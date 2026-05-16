@@ -1,0 +1,172 @@
+{
+  "id": "ethereum-aa-native-app",
+  "name": "Ethereum Account Abstraction Native App Workflow",
+  "goal": "Build an Ethereum (or EVM-chain) application for users with existing wallets, layered with ERC-4337 account abstraction for session keys, gasless transactions, and programmable smart account behavior.",
+  "goal_tags": [
+    "ethereum-app",
+    "evm-app",
+    "erc-4337",
+    "session-keys",
+    "gasless",
+    "existing-wallet",
+    "metamask",
+    "walletconnect",
+    "wagmi",
+    "zerodev",
+    "pimlico",
+    "reown",
+    "connect-wallet"
+  ],
+  "ecosystems": ["ethereum"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["reown"],
+      "alternative_tools": [
+        {
+          "tool_id": "dynamic",
+          "when_to_prefer": "When the app must serve both users who already have wallets (MetaMask, Coinbase Wallet, Ledger) AND users who need embedded wallets created for them. Dynamic handles the hybrid_wallet constraint in a single SDK — Reown AppKit connects existing wallets only and cannot create embedded wallets for new users."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Reown AppKit (formerly WalletConnect v2) is the standard for connecting existing Ethereum wallets. It supports 400+ wallets including MetaMask, Coinbase Wallet, Ledger, Trust Wallet, and every WalletConnect-compatible wallet. The key design decision is existing vs. embedded: Reown assumes the user already has a wallet. If you need to create wallets for users who have none, use Dynamic (hybrid) or Privy (embedded-only). For Ethereum mainnet and L2 apps where the target user is a crypto-native developer or DeFi user, existing wallet connection is the right starting point — do not force embedded wallets on users who already have their preferred wallet. Reown v5 (AppKit) is the current version; WalletConnect v1 is deprecated and removed."
+    },
+    {
+      "id": "smart-account",
+      "role": "signing",
+      "required": false,
+      "primary_tools": ["zerodev"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "ZeroDev Kernel upgrades the connected EOA (MetaMask or any external wallet) into a programmable ERC-4337 smart account. This unlocks session keys (let the app sign transactions autonomously within rules the user pre-approved), batched transactions (approve + execute in one user action), and spending policies (daily limits, contract allowlists). The core pattern: user connects via Reown, then the app upgrades that EOA to a ZeroDev Kernel account. The user retains their original wallet but gains smart account capabilities. This phase is NOT required for basic wallet connection — add it only when the product requires session keys, batching, or gasless without changing the user's wallet. ZeroDev Kernel is ERC-4337 compliant and works on any EVM chain that has a bundler deployed.",
+      "scale_overrides": {
+        "hackathon": "Skip. Standard EOA signing via Reown is sufficient for demos. Smart account deployment adds onboarding complexity and transaction overhead not worth it at hackathon scale.",
+        "mvp": "Add if session keys are a product feature (e.g., the user pre-approves a set of actions and the app executes them autonomously). Skip if the only reason is gasless — Pimlico paymaster alone handles gasless for standard EOAs without smart account overhead.",
+        "production": "Add when session keys are core to the product flow. Set up ZeroDev's policy engine with explicit spending caps and contract allowlists before launch. Smart account deployment cost (~$1-5 per user on mainnet) must be factored into unit economics."
+      }
+    },
+    {
+      "id": "bundler",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Pimlico is the ERC-4337 bundler and paymaster infrastructure. It does two things: bundles UserOperations into on-chain transactions (bundler role), and sponsors gas costs on behalf of users (paymaster role). For Ethereum mainnet, gas sponsorship is expensive — carefully model per-action gas costs before enabling unlimited sponsorship. Pimlico's gas policy API supports per-user daily limits, per-action maximum spend, and contract allowlists. Use Pimlico's verifying paymaster for standard gasless flows, or ZeroDev's bundled paymaster if using ZeroDev Kernel. If both smart-account (ZeroDev) and bundler are needed, ZeroDev handles the paymaster natively — you do not need a separate Pimlico integration when already using ZeroDev. Use Pimlico standalone when gasless is the only requirement and the smart account phase is skipped.",
+      "scale_overrides": {
+        "hackathon": "Use Pimlico free tier. Set a hard cap on total sponsored gas for the demo — ETH mainnet gas is real money even at hackathon scale.",
+        "mvp": "Configure per-user daily cap (recommend starting at $0.50/user/day). Contract allowlist required — only sponsor interactions with your own contracts, not arbitrary on-chain calls.",
+        "production": "Define explicit policy before any live traffic. Per-user daily cap + per-action maximum + contract allowlist + abuse detection. Budget gas sponsorship as a user acquisition cost. Monitor Pimlico dashboard. ETH L1 gas spikes require dynamic policy adjustment — do not hardcode fixed limits without a review mechanism."
+      }
+    },
+    {
+      "id": "frontend",
+      "role": "ui",
+      "required": true,
+      "primary_tools": ["wagmi"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "wagmi is the standard React hooks library for EVM application frontends. It provides hooks for wallet connection state, contract reads (useReadContract), contract writes (useWriteContract), transaction watching (useWaitForTransactionReceipt), and balance queries. wagmi v2 is the current version — it has breaking changes from v1 and uses viem as its underlying transport layer. Reown AppKit has native wagmi integration: WalletConnect connects through AppKit and exposes wallet state via wagmi hooks. For Ethereum mainnet apps, use viem's type-safe ABI encoding rather than ethers.js — wagmi v2 was built to pair with viem. Do not use OnchainKit for Ethereum mainnet or non-Base EVM chains — OnchainKit is Base-specific and assumes Base ecosystem tools (Basenames, Base-specific identity). Use wagmi directly for all non-Base EVM apps."
+    },
+    {
+      "id": "chain-data",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When the app requires multi-chain RPC beyond Ethereum and Base, or when already operating in the QuickNode stack. QuickNode supports more EVM chains than Alchemy with comparable reliability."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Alchemy is the dominant production RPC for Ethereum mainnet and major L2s (Arbitrum, Optimism, Polygon, Base). For ERC-4337 apps, Alchemy also provides a bundler API — if already using Alchemy for RPC, their bundler is a reasonable alternative to Pimlico for simpler bundler needs (without the paymaster policy features). wagmi's transport layer accepts Alchemy's HTTP RPC URL directly. Never use public RPCs (https://mainnet.infura.io, https://rpc.ankr.com) in production — rate limits will cause transaction failures at any meaningful user volume. Alchemy's free tier is sufficient through early MVP. Upgrade tier before production launch based on expected RPC call volume.",
+      "scale_overrides": {
+        "hackathon": "Alchemy free tier. One API key is sufficient.",
+        "production": "Size Alchemy tier by expected compute unit volume before launch. Build circuit breaker: if Alchemy is down, fallback RPC URL (QuickNode or public) prevents total outage. Log RPC failure rates to catch degradation before users do."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Reown AppKit + wagmi + Alchemy is the canonical external-wallet Ethereum app stack. This combination is used in the majority of production DeFi frontends and wallet-connected EVM apps.",
+    "ZeroDev Kernel has production deployments across multiple EVM apps. It is audited and ERC-4337 compliant. Session key infrastructure requires careful policy design — a compromised session key with broad permissions is equivalent to a compromised account.",
+    "Gas sponsorship on Ethereum mainnet has real cost. At $20 gas (gwei), a single ERC-20 transfer costs ~$1.50 to sponsor. Budget accordingly. L2s (Arbitrum, OP, Base) reduce this to cents, making sponsorship economically viable at scale.",
+    "wagmi v2 has significant breaking changes from v1. The ecosystem has fully migrated — do not start new projects on wagmi v1. The migration guide is available at wagmi.sh/react/guides/migrate-from-v1-to-v2.",
+    "ERC-4337 UserOperation failure modes differ from standard transaction failure — failed UserOps require specific error handling in the frontend. wagmi v2 does not natively expose UserOp status. Use ZeroDev or Pimlico SDK hooks for UserOp-aware UI state.",
+    "Reown AppKit requires a project ID from cloud.reown.com (formerly WalletConnect Cloud). The project ID is used for relay infrastructure and is required even in development — it is not optional. Rate limits apply on the free tier."
+  ],
+  "tradeoffs": [
+    "Reown locks into WalletConnect relay infrastructure — all wallet connections go through WalletConnect's relay network. This is standard and expected in the ecosystem but creates a centralized dependency for wallet communication.",
+    "ZeroDev smart account deployment is a one-time on-chain transaction (~100k gas on mainnet). This creates a first-time user cost. Counter-pattern: use a counterfactual deployment (the account address is deterministic before deployment — deploy only on first transaction).",
+    "wagmi + viem requires more boilerplate than higher-level SDKs like OnchainKit, but provides full control over the EVM interaction layer and is not chain-specific.",
+    "Pimlico paymaster policies must be maintained as gas prices fluctuate. A policy set at $20 gas conditions will overspend at $100 gas unless the policy includes gas price caps.",
+    "The ERC-4337 stack (ZeroDev + Pimlico) adds two additional infrastructure dependencies. Each has its own SDK versioning and API surface — maintenance burden is higher than a simple EOA + Alchemy setup."
+  ],
+  "anti_patterns": [
+    "Using OnchainKit for non-Base EVM apps — OnchainKit assumes Base ecosystem tools and will not work correctly for Ethereum mainnet or other EVM chains.",
+    "Using ethers.js for new EVM projects — wagmi v2 uses viem. Mixing ethers.js and viem creates type conflicts and dual-dependency overhead.",
+    "Building session keys without spending limits and contract allowlists — session keys with unbounded permissions are a critical security vulnerability. Never issue open-ended session keys.",
+    "Using Pimlico paymaster without a gas policy — unlimited sponsorship will be drained by bot activity or high-volume users within hours of launch.",
+    "Deploying ZeroDev Kernel for users who only need gasless transactions — if session keys and batching are not product requirements, Pimlico paymaster alone handles gasless without smart account complexity.",
+    "Using WalletConnect v1 (deprecated) or older versions of Reown SDK — v1 is fully deprecated and connections will fail as relay infrastructure is shut down.",
+    "Using public RPC endpoints (mainnet.infura.io, ankr.com free tier) in production — rate limits cause random transaction failures and degrade user experience at any meaningful volume."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "has_existing_wallet",
+      "modification": "Reown AppKit is the correct primary tool — this workflow is optimized for users who already have an Ethereum wallet. No modification required; the default wallet phase already targets this constraint.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "Promote the bundler phase to required. Configure Pimlico with an explicit gas policy (per-user daily cap + contract allowlist) before any live traffic. If ZeroDev smart-account phase is also active, use ZeroDev's integrated paymaster instead of standalone Pimlico.",
+      "affects_phase": "bundler"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Skip the smart-account (ZeroDev) phase entirely. Use Reown + wagmi + Alchemy as the minimal viable stack. Add Pimlico only if gasless is a demo requirement. Minimal path: Reown connects wallet, wagmi handles contract calls, Alchemy provides RPC.",
+      "affects_phase": "smart-account"
+    },
+    {
+      "constraint": "hybrid_wallet",
+      "modification": "Replace Reown with Dynamic in the wallet phase. Dynamic handles both external wallet connection (MetaMask, Coinbase Wallet, WalletConnect) and embedded wallet creation for users without wallets — in a single SDK and single onboarding flow. Reown cannot create embedded wallets.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "autonomous_agent",
+      "modification": "This workflow is user-facing and not designed for autonomous agents. For autonomous EVM agents that sign transactions without user interaction, use Turnkey for server-side key management and see the base-onchain-ai-agent workflow as a reference.",
+      "affects_phase": "wallet"
+    }
+  ],
+  "retrieval_tags": [
+    "ethereum-app",
+    "evm-app",
+    "account-abstraction",
+    "erc-4337",
+    "session-keys",
+    "gasless",
+    "existing-wallet",
+    "metamask",
+    "walletconnect",
+    "connect-wallet",
+    "wagmi",
+    "zerodev",
+    "pimlico",
+    "reown",
+    "smart-account",
+    "bundler",
+    "paymaster"
+  ],
+  "source": {
+    "derived_from": "PHASE_GATES.md Phase 1C spec + ToolRecord analysis + production-pattern analysis",
+    "last_verified": "2026-05-16"
+  },
+  "updated_at": "2026-05-16"
+}
