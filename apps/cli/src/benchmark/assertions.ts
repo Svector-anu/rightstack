@@ -128,14 +128,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'All primary tools are production-grade',
         'fail',
         r => {
-          // Pass if no primary tools, or all are production-grade (trust checked by the corpus)
-          // We rely on the fact that the ranker/assembler gates by trust_state
-          // So the assertion is: no "emerging" tools appear as primary
-          // This is structural — we can't re-check trust_state here without the corpus.
-          // Instead we verify: if trust_expectations.emerging_flagged is set,
-          // those tool IDs must NOT be primary without a flag.
-          const emerging = expected.trust_expectations?.emerging_flagged ?? [];
-          return !emerging.some(id => isPrimaryTool(r, id));
+          const nonProdStates = new Set(['hype-driven', 'experimental', 'abandoned']);
+          return !Object.values(r.primaryToolTrustStates).some(s => nonProdStates.has(s));
         }
       )
     );
@@ -184,7 +178,7 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'scale-match',
         `Scale detected: ${query.scale}`,
         'partial',
-        r => r.scale === query.scale || r.scale === 'mvp' // mvp is default, acceptable if scale not explicit
+        r => r.scale === query.scale || r.scale === null // null = extractor found no scale signal
       )
     );
   }

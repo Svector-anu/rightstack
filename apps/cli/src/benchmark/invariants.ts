@@ -176,6 +176,20 @@ function checkDeprecatedSdkLeakage(corpus: Corpus): InvariantViolation[] {
           });
         }
       }
+
+      for (const alt of phase.alternative_tools ?? []) {
+        const tool = corpus.tools.get(alt.tool_id);
+        if (!tool?.sdk_migration) continue;
+
+        const { status, from_package } = tool.sdk_migration;
+        if (status === 'deprecated' || status === 'migrating-from') {
+          violations.push({
+            id: 'deprecated-sdk-in-workflow-alt',
+            severity: 'warn',
+            message: `Workflow "${workflow.id}" phase "${phase.id}" lists deprecated/migrating-from tool "${alt.tool_id}" as alternative (${from_package})`,
+          });
+        }
+      }
     }
   }
 

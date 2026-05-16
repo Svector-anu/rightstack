@@ -108,4 +108,5 @@ export interface BenchmarkDiff {
   regressions: Array<{ queryId: string; from: QueryVerdict; to: QueryVerdict }>;
   improvements: Array<{ queryId: string; from: QueryVerdict; to: QueryVerdict }>;
   unchanged: number;
+  newQueries: number;
 }

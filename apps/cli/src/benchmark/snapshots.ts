@@ -75,22 +75,24 @@ export function listSnapshots(): Array<{ name: string; timestamp: string; gitSha
     .sort()
     .reverse();
 
-  return files.map(file => {
-    try {
-      const run = JSON.parse(
-        fs.readFileSync(path.join(SNAPSHOTS_DIR, file), 'utf8')
-      ) as BenchmarkRun;
-      return {
-        name: file.replace('.json', ''),
-        timestamp: run.timestamp,
-        gitSha: run.gitSha,
-        pass: run.metrics.pass,
-        total: run.metrics.total,
-      };
-    } catch {
-      return { name: file, timestamp: 'unknown', gitSha: 'unknown', pass: 0, total: 0 };
-    }
-  });
+  return files
+    .map(file => {
+      try {
+        const run = JSON.parse(
+          fs.readFileSync(path.join(SNAPSHOTS_DIR, file), 'utf8')
+        ) as BenchmarkRun;
+        return {
+          name: file.replace('.json', ''),
+          timestamp: run.timestamp,
+          gitSha: run.gitSha,
+          pass: run.metrics.pass,
+          total: run.metrics.total,
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
 }
 
 export function latestSnapshot(): BenchmarkRun | null {
@@ -110,10 +112,14 @@ export function diffRuns(baseline: BenchmarkRun, current: BenchmarkRun): Benchma
   const regressions: BenchmarkDiff['regressions'] = [];
   const improvements: BenchmarkDiff['improvements'] = [];
   let unchanged = 0;
+  let newQueries = 0;
 
   for (const result of current.results) {
     const baseVerdict = baselineMap.get(result.queryId);
-    if (!baseVerdict) continue;
+    if (!baseVerdict) {
+      newQueries++;
+      continue;
+    }
 
     const currentVerdict = result.verdict;
     if (isRegression(baseVerdict, currentVerdict)) {
@@ -139,6 +145,7 @@ export function diffRuns(baseline: BenchmarkRun, current: BenchmarkRun): Benchma
     regressions,
     improvements,
     unchanged,
+    newQueries,
   };
 }
 

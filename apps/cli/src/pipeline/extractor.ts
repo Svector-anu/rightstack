@@ -146,7 +146,7 @@ function keywordExtract(query: string): QueryIntent {
     build_goal: query,
     primary_ecosystem: primaryEcosystem,
     secondary_ecosystems: [],
-    scale: scale ?? 'mvp',
+    scale: scale,
     user_type: null,
     intent_categories: [...intentCategories],
     workflow_match: null,
@@ -172,8 +172,7 @@ export async function extractIntent(query: string): Promise<QueryIntent> {
     });
     const text = msg.content[0].type === 'text' ? msg.content[0].text.trim() : '';
     const parsed = JSON.parse(text) as QueryIntent;
-    // Guarantee scale always has a value
-    if (!parsed.scale) parsed.scale = 'mvp';
+    if (parsed.scale === undefined) parsed.scale = null;
     if (!parsed.secondary_ecosystems) parsed.secondary_ecosystems = [];
     if (!parsed.ambiguity_flags) parsed.ambiguity_flags = [];
     return parsed;

@@ -16,6 +16,7 @@ export interface EvaluationResult {
   scale: ScaleTarget | null;
   confidence: number;
   primaryToolIds: string[];
+  primaryToolTrustStates: Record<string, TrustState>;
   alternativeToolIds: string[];
   allToolIds: string[];
   phaseRoles: string[];
@@ -49,6 +50,7 @@ export async function evaluate(query: string): Promise<EvaluationResult> {
       scale: intent.scale,
       confidence: intent.confidence,
       primaryToolIds: [],
+      primaryToolTrustStates: {},
       alternativeToolIds: [],
       allToolIds: [],
       phaseRoles: [],
@@ -91,6 +93,12 @@ export async function evaluate(query: string): Promise<EvaluationResult> {
     .filter(p => p.primaryTool)
     .map(p => p.primaryTool!.tool.id);
 
+  const primaryToolTrustStates: Record<string, TrustState> = {};
+  for (const id of primaryToolIds) {
+    const tool = corpus.tools.get(id);
+    if (tool) primaryToolTrustStates[id] = tool.trust_state;
+  }
+
   const alternativeToolIds = [
     ...new Set(
       explanation.phases.flatMap(p =>
@@ -132,6 +140,7 @@ export async function evaluate(query: string): Promise<EvaluationResult> {
     scale: intent.scale,
     confidence: intent.confidence,
     primaryToolIds,
+    primaryToolTrustStates,
     alternativeToolIds,
     allToolIds: [...new Set([...primaryToolIds, ...alternativeToolIds])],
     phaseRoles: explanation.phases.map(p => p.role),

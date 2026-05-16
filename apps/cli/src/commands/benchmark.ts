@@ -287,6 +287,9 @@ function printDiff(diff: BenchmarkDiff): void {
   }
 
   console.log(`\n  Unchanged: ${diff.unchanged}`);
+  if (diff.newQueries > 0) {
+    console.log(`  New (no baseline): +${diff.newQueries}`);
+  }
   console.log('');
 }
 
