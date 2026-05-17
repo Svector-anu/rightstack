@@ -1,0 +1,82 @@
+{
+  "id": "coingecko",
+  "name": "CoinGecko",
+  "aliases": ["coingecko-api", "coingecko-pro"],
+  "category": "market-data",
+  "subcategory": "price-feed",
+  "description": "The most widely used cross-chain cryptocurrency market data API. Provides token prices, OHLCV, market cap, volume, and metadata across thousands of tokens and chains. The default choice for cross-chain market data when Birdeye's Solana-native depth is not required.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "strong", "notes": "Valid for cross-chain price feeds on Solana tokens. Use Birdeye when Solana-native depth (DEX liquidity, on-chain price discovery) is more important than cross-chain coverage." },
+    { "ecosystem": "ethereum", "strength": "dominant", "notes": "Default market data source for Ethereum tokens. Broadest coverage." },
+    { "ecosystem": "base", "strength": "strong", "notes": "Covers Base tokens including emerging ecosystem tokens." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used in Farcaster miniapps that display token price context." },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "token-price-usd",
+    "ohlcv-data",
+    "market-cap",
+    "volume-data",
+    "token-metadata",
+    "trending-tokens",
+    "cross-chain-coverage",
+    "historical-price-data",
+    "nft-floor-prices"
+  ],
+  "workflow_positions": ["market-data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "birdeye",
+      "relationship": "alternative",
+      "context": "Birdeye for Solana-native on-chain price discovery with DEX depth. CoinGecko for cross-chain coverage and off-chain aggregated prices. Use Birdeye when Solana-native data quality matters; CoinGecko when cross-chain coverage matters."
+    },
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "often-used-with",
+      "context": "AI agents use CoinGecko as a market data tool — the agent calls CoinGecko to fetch token prices as context for trading decisions."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "CoinGecko is the most referenced market data API across crypto applications. Used in production across virtually every crypto ecosystem.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Well-maintained public API with free tier and Pro tier for higher rate limits.",
+      "source_url": "https://www.coingecko.com/en/api/documentation",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["coingecko-api", "coingecko-api-v3"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Use the free tier — adequate for demos. Rate limits are generous.",
+    "mvp": "Free tier sufficient. Upgrade to Pro when rate limits become a bottleneck.",
+    "production": "Use CoinGecko Pro API for higher rate limits and reliability SLAs."
+  },
+  "alternatives": [
+    {
+      "tool_id": "birdeye",
+      "when_to_prefer": "Solana-native workloads where on-chain price discovery from DEX pools is required. Birdeye aggregates Solana DEX data in real-time; CoinGecko is off-chain aggregated.",
+      "ecosystem_context": "Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using CoinGecko free tier in high-frequency production workloads — rate limits will cause failures.",
+    "Using CoinGecko for Solana trading bots where on-chain price accuracy matters — Birdeye's DEX-native pricing is more accurate for Solana DeFi."
+  ],
+  "retrieval_tags": ["market-data", "price-feed", "token-price", "ohlcv", "cross-chain-prices", "crypto-prices"],
+  "source": {
+    "primary_url": "https://www.coingecko.com",
+    "docs_url": "https://www.coingecko.com/en/api/documentation"
+  },
+  "updated_at": "2026-05-17"
+}

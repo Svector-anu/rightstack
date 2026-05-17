@@ -1,0 +1,77 @@
+{
+  "id": "farcaster-hub-direct",
+  "name": "Farcaster Hub (direct)",
+  "aliases": ["@farcaster/hub-nodejs", "farcaster-hub", "hubble"],
+  "category": "social-layer",
+  "subcategory": "farcaster-infrastructure",
+  "description": "Direct access to Farcaster's peer-to-peer Hub network via the Hub gRPC/HTTP API. Bypasses Neynar's managed abstraction layer — the operator runs their own Hub node or connects directly to a public Hub. Significant operational overhead; only warranted when Neynar pricing becomes prohibitive at scale.",
+  "ecosystem_fit": [
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "The underlying infrastructure that Neynar abstracts. Direct Hub access gives full data control and removes per-API-call pricing — at the cost of running and maintaining a Hub node." },
+    { "ecosystem": "base", "strength": "limited", "notes": "Farcaster data only — no Base chain data." },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "solana", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "farcaster-casts-read",
+    "farcaster-reactions-read",
+    "farcaster-follows-read",
+    "farcaster-user-data-read",
+    "real-time-hub-events",
+    "grpc-streaming",
+    "hub-event-subscriptions"
+  ],
+  "workflow_positions": ["social-data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "neynar",
+      "relationship": "alternative",
+      "context": "Neynar abstracts Hub complexity with a managed API. Direct Hub is the cost-optimized alternative for teams that have reached Neynar's pricing ceiling and have the operational capacity to run their own infrastructure."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "The Farcaster Hub protocol is the foundational Farcaster infrastructure maintained by the Farcaster team. Hubble is the canonical reference implementation.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Farcaster protocol documentation covers Hub API, gRPC interface, and self-hosting guides.",
+      "source_url": "https://docs.farcaster.xyz/reference/hubble/architecture",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@farcaster/hub-nodejs", "@farcaster/core"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Never — use Neynar. Direct Hub adds operational complexity with no hackathon benefit.",
+    "mvp": "Never — use Neynar. Hub direct is a premature optimization at MVP scale.",
+    "production": "Only when Neynar pricing is confirmed to be unsustainable at your traffic volume. Requires running and maintaining a Hub node or using a public Hub with reliability caveats."
+  },
+  "alternatives": [
+    {
+      "tool_id": "neynar",
+      "when_to_prefer": "Default for all Farcaster apps. Managed API with webhooks, search, feed algorithms, and write APIs. Only graduate to direct Hub if Neynar pricing becomes a confirmed business problem.",
+      "ecosystem_context": "Farcaster."
+    }
+  ],
+  "anti_patterns": [
+    "Using direct Hub instead of Neynar at MVP scale — operational complexity far outweighs cost savings at low volume.",
+    "Assuming direct Hub gives write access — Hubs store and replicate data, but writes require signing with a user's Farcaster key. Write operations still require Neynar's managed signer or direct key management.",
+    "Using direct Hub for real-time webhook-style triggers — Hub event subscriptions via gRPC require persistent connections. Neynar's webhook delivery is far simpler to operate."
+  ],
+  "retrieval_tags": ["farcaster", "hub", "grpc", "social-data", "farcaster-protocol", "self-hosted", "hubble"],
+  "source": {
+    "primary_url": "https://www.farcaster.xyz",
+    "docs_url": "https://docs.farcaster.xyz/reference/hubble/architecture",
+    "github_url": "https://github.com/farcasterxyz/hub-monorepo"
+  },
+  "updated_at": "2026-05-17"
+}

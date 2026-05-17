@@ -1,0 +1,93 @@
+{
+  "id": "elizaos",
+  "name": "ElizaOS",
+  "aliases": ["eliza", "@ai16z/eliza", "elizaos-framework"],
+  "category": "agent-framework",
+  "subcategory": "character-agent",
+  "description": "Open-source multi-agent framework built for social and character-based AI agents. Designed for agents with persistent personas, memory, and social platform integrations (Twitter/X, Discord, Telegram, Farcaster). Popular in the crypto-native AI agent community. Emerging trust state — high hype velocity, rapid changes, real production usage in social trading agents.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "strong", "notes": "ElizaOS originated in the Solana ecosystem and is most used for Solana-native social trading agents and character-based bots." },
+    { "ecosystem": "base", "strength": "limited", "notes": "Can integrate with Base but is more EVM-agnostic. Less native than in the Solana ecosystem." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Farcaster plugin available for ElizaOS character agents posting to Farcaster." },
+    { "ecosystem": "ethereum", "strength": "limited" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "character-personas",
+    "multi-agent-coordination",
+    "long-term-memory",
+    "social-platform-integration",
+    "plugin-architecture",
+    "twitter-integration",
+    "discord-integration",
+    "farcaster-integration",
+    "onchain-action-plugins",
+    "rag-memory"
+  ],
+  "workflow_positions": ["agent-reasoning-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius for Solana onchain event detection; ElizaOS for character-based agent reasoning and social response generation."
+    },
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "alternative",
+      "context": "ElizaOS has its own execution loop; Trigger.dev is the orchestration alternative when production durability is required over ElizaOS's native loop."
+    }
+  ],
+  "trust_state": "experimental",
+  "trust_evidence": [
+    {
+      "tier": 2,
+      "type": "ecosystem-native-adoption",
+      "description": "High adoption in the crypto-native AI agent community, particularly for social trading agents. Significant GitHub stars and active development. But rapid release cadence introduces breaking changes.",
+      "verifiable": false
+    },
+    {
+      "tier": 3,
+      "type": "hype-signal",
+      "description": "ElizaOS received significant crypto-community attention in late 2024 / early 2025. Hype velocity is high — verify current stability before production adoption.",
+      "verifiable": false
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@elizaos/core", "@elizaos/cli", "@ai16z/eliza"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Valid for hackathons where the demo benefits from a character-based AI persona. Quick setup for social agent demos.",
+    "mvp": "Viable if the persona/character aspect is a core product differentiator. Verify stability of your required plugins before committing.",
+    "production": "Not recommended for production-critical agents due to experimental trust state and rapid breaking changes. Use Vercel AI SDK or LangChain for production agents, ElizaOS for persona overlay if needed."
+  },
+  "alternatives": [
+    {
+      "tool_id": "vercel-ai-sdk",
+      "when_to_prefer": "Production agents where stability and portability matter more than character personas. Vercel AI SDK has production-grade trust state and stable API surface.",
+      "ecosystem_context": "All chains."
+    },
+    {
+      "tool_id": "langchain",
+      "when_to_prefer": "Complex multi-step reasoning chains, memory management, and RAG pipelines where ElizaOS's character focus is not needed.",
+      "ecosystem_context": "All chains."
+    }
+  ],
+  "anti_patterns": [
+    "Using ElizaOS for production financial agents — experimental trust state means breaking changes are likely. Financial agents require stability guarantees ElizaOS cannot currently provide.",
+    "Assuming ElizaOS plugin ecosystem is stable — plugins vary widely in quality and maintenance. Audit each plugin before production use.",
+    "Using ElizaOS on EVM chains expecting the same depth as Solana — EVM plugins are less mature than Solana integrations."
+  ],
+  "sdk_migration": {
+    "status": "active",
+    "note": "ElizaOS package names have changed from @ai16z/eliza to @elizaos/* scope. Check current package names before installing."
+  },
+  "retrieval_tags": ["agent-framework", "character-agent", "social-agent", "multi-agent", "persona", "eliza", "elizaos", "crypto-agent"],
+  "source": {
+    "primary_url": "https://elizaos.ai",
+    "docs_url": "https://elizaos.github.io/eliza/docs/intro",
+    "github_url": "https://github.com/elizaOS/eliza"
+  },
+  "updated_at": "2026-05-17"
+}

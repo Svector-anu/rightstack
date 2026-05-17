@@ -1,0 +1,87 @@
+{
+  "id": "raydium",
+  "name": "Raydium",
+  "aliases": ["@raydium-io/raydium-sdk", "raydium-sdk-v2"],
+  "category": "defi-protocol",
+  "subcategory": "amm-dex",
+  "description": "Solana's largest AMM and liquidity protocol. Provides direct smart contract interaction for swaps, liquidity provisioning, and concentrated liquidity pools. Use when the application needs direct AMM integration beyond swap aggregation — Jupiter routes through Raydium pools but Raydium SDK enables direct pool interaction for liquidity management.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "dominant", "notes": "One of the two largest Solana DEXs by TVL and volume. Direct integration is required for liquidity provisioning, pool creation, and concentrated liquidity management." },
+    { "ecosystem": "base", "strength": "none" },
+    { "ecosystem": "ethereum", "strength": "none" },
+    { "ecosystem": "farcaster", "strength": "none" },
+    { "ecosystem": "aptos", "strength": "none" }
+  ],
+  "capabilities": [
+    "amm-swaps",
+    "concentrated-liquidity",
+    "liquidity-provisioning",
+    "pool-creation",
+    "farming-staking",
+    "permissionless-pool-launch",
+    "clmm-positions"
+  ],
+  "workflow_positions": ["defi-execution-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "jupiter",
+      "relationship": "complementary",
+      "context": "Jupiter aggregates Raydium pools for optimal swap routing — use Jupiter when swap price is the goal. Use Raydium SDK directly when managing liquidity positions or building directly on top of Raydium pools."
+    },
+    {
+      "tool_id": "helius",
+      "relationship": "often-used-with",
+      "context": "Helius RPC for Solana transaction submission; Raydium SDK for AMM interaction construction."
+    },
+    {
+      "tool_id": "jito-mev",
+      "relationship": "often-used-with",
+      "context": "Jito MEV bundles for submitting Raydium transactions with MEV protection and priority fee optimization."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Raydium is the largest Solana AMM by TVL. Core infrastructure of the Solana DeFi ecosystem with deep integration by trading bots and LP managers.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Raydium SDK v2 documentation covers pool interactions, liquidity management, and swap construction.",
+      "source_url": "https://docs.raydium.io",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@raydium-io/raydium-sdk-v2", "@raydium-io/raydium-sdk"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Use Jupiter instead — swap aggregation covers Raydium pools without the SDK overhead.",
+    "mvp": "Use Raydium SDK directly only if liquidity provisioning is a core product feature. For swap-only, Jupiter is simpler.",
+    "production": "Required for any product that manages liquidity positions on Raydium CLMM pools. Ensure SDK version matches on-chain program version."
+  },
+  "alternatives": [
+    {
+      "tool_id": "jupiter",
+      "when_to_prefer": "When the goal is optimal swap execution. Jupiter aggregates Raydium and other DEXs for best price. Use Raydium SDK directly only when direct pool interaction is required.",
+      "ecosystem_context": "Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using Raydium SDK for simple token swaps when Jupiter gives better prices via aggregation.",
+    "Assuming Raydium SDK v1 and v2 are compatible — v2 is a breaking rewrite. Check SDK version matches the on-chain program you're interacting with.",
+    "Using Raydium for EVM chains — Raydium is Solana-only."
+  ],
+  "retrieval_tags": ["solana", "amm", "dex", "liquidity", "clmm", "defi", "raydium", "pool"],
+  "source": {
+    "primary_url": "https://raydium.io",
+    "docs_url": "https://docs.raydium.io",
+    "github_url": "https://github.com/raydium-io/raydium-sdk-V2"
+  },
+  "updated_at": "2026-05-17"
+}

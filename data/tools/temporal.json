@@ -1,0 +1,90 @@
+{
+  "id": "temporal",
+  "name": "Temporal",
+  "aliases": ["@temporalio/client", "@temporalio/worker", "temporalio"],
+  "category": "workflow-orchestration",
+  "subcategory": "durable-workflow-engine",
+  "description": "Open-source durable workflow engine for complex, long-running workflows with fine-grained state management. The highest-reliability option in the orchestration space — workflows survive server restarts, network failures, and process crashes. Significantly more operational complexity than Trigger.dev or Inngest. Only warranted for workflows with very complex retry semantics or regulatory requirements for execution guarantees.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "strong", "notes": "Used in high-stakes Solana trading agent workflows requiring enterprise-grade execution durability." },
+    { "ecosystem": "base", "strength": "strong", "notes": "Applicable for complex Base agent orchestration where Trigger.dev's simpler model is insufficient." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "General-purpose — not chain-specific." },
+    { "ecosystem": "farcaster", "strength": "limited" },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "durable-workflow-execution",
+    "activity-retries",
+    "workflow-versioning",
+    "workflow-queries",
+    "workflow-signals",
+    "child-workflows",
+    "saga-pattern",
+    "scheduled-workflows",
+    "deterministic-execution",
+    "visibility-api"
+  ],
+  "workflow_positions": ["orchestration-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "trigger-dev",
+      "relationship": "alternative",
+      "context": "Trigger.dev is simpler to operate and sufficient for most agent orchestration. Temporal is the alternative when Trigger.dev's durability guarantees or observability model is insufficient for the use case."
+    },
+    {
+      "tool_id": "vercel-ai-sdk",
+      "relationship": "often-used-with",
+      "context": "Temporal as the durable outer workflow shell; Vercel AI SDK for LLM calls inside Temporal activities."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "Temporal is used by Stripe, Coinbase, Netflix, and other large-scale engineering organizations for mission-critical workflow orchestration. Production-grade trust across multiple industries.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Comprehensive documentation, SDKs for Go, TypeScript, Python, Java. Temporal Cloud available for managed operation.",
+      "source_url": "https://docs.temporal.io",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@temporalio/client", "@temporalio/worker", "@temporalio/workflow", "@temporalio/activity"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent"],
+  "scale_guidance": {
+    "hackathon": "Never — requires running a Temporal server. Operational overhead completely outweighs hackathon needs.",
+    "mvp": "Skip. Use Trigger.dev. Temporal is only warranted when Trigger.dev's model has been proven insufficient.",
+    "production": "Valid for high-stakes workflows with complex retry semantics, long-running state, or regulatory durability requirements. Use Temporal Cloud to avoid self-hosting the server."
+  },
+  "alternatives": [
+    {
+      "tool_id": "trigger-dev",
+      "when_to_prefer": "Default orchestration choice — simpler setup, strong observability, sufficient durability for most agent workflows. Reach for Temporal only when Trigger.dev proves insufficient.",
+      "ecosystem_context": "All chains."
+    },
+    {
+      "tool_id": "inngest",
+      "when_to_prefer": "Simpler event-driven workflows with strong Next.js integration and lower operational overhead than both Trigger.dev and Temporal.",
+      "ecosystem_context": "All chains."
+    }
+  ],
+  "anti_patterns": [
+    "Using Temporal at MVP scale — the operational complexity of running a Temporal server or paying for Temporal Cloud is premature before workflow needs are validated.",
+    "Choosing Temporal over Trigger.dev without first trying Trigger.dev — Temporal's complexity must be earned by hitting Trigger.dev's limits, not assumed upfront.",
+    "Running Temporal self-hosted in production without dedicated ops experience — Temporal server administration is non-trivial. Use Temporal Cloud for managed operation."
+  ],
+  "retrieval_tags": ["workflow-orchestration", "durable-execution", "long-running-workflows", "saga-pattern", "enterprise-workflows", "temporal"],
+  "source": {
+    "primary_url": "https://temporal.io",
+    "docs_url": "https://docs.temporal.io",
+    "github_url": "https://github.com/temporalio/temporal"
+  },
+  "updated_at": "2026-05-17"
+}

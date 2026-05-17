@@ -1,0 +1,94 @@
+{
+  "id": "quicknode",
+  "name": "QuickNode",
+  "aliases": ["quicknode-rpc", "@quicknode/sdk"],
+  "category": "chain-data",
+  "subcategory": "rpc-provider",
+  "description": "Multi-chain RPC and infrastructure provider. Competes with Alchemy across EVM chains and Solana. Known for Yellowstone gRPC streaming on Solana for ultra-low-latency data access, and broad chain coverage beyond Base and Ethereum.",
+  "ecosystem_fit": [
+    { "ecosystem": "solana", "strength": "strong", "notes": "Yellowstone gRPC streaming is a differentiated capability for Solana — provides real-time transaction streaming at much lower latency than HTTP polling. Preferred over Alchemy for latency-sensitive Solana workloads." },
+    { "ecosystem": "base", "strength": "strong", "notes": "Viable Alchemy alternative for Base RPC. Use when already on QuickNode stack for multi-chain coverage." },
+    { "ecosystem": "ethereum", "strength": "strong", "notes": "Production-grade Ethereum RPC with MEV-boost endpoint access." },
+    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used as the Base/Ethereum RPC layer under Farcaster miniapps when QuickNode is the existing infrastructure provider." },
+    { "ecosystem": "aptos", "strength": "limited" }
+  ],
+  "capabilities": [
+    "evm-rpc",
+    "solana-rpc",
+    "multi-chain-rpc",
+    "websocket-subscriptions",
+    "yellowstone-grpc-streaming",
+    "mev-boost-access",
+    "nft-apis",
+    "token-apis",
+    "webhook-notifications",
+    "archive-node-access"
+  ],
+  "workflow_positions": ["chain-data-layer"],
+  "common_pairings": [
+    {
+      "tool_id": "helius",
+      "relationship": "alternative",
+      "context": "Helius is Solana-native with richer indexed data APIs; QuickNode offers Yellowstone gRPC streaming and broader chain coverage. Both are viable Solana RPC providers — choose based on whether you need rich indexed APIs (Helius) or streaming + multi-chain (QuickNode)."
+    },
+    {
+      "tool_id": "jito-mev",
+      "relationship": "often-used-with",
+      "context": "QuickNode RPC with Jito MEV bundles for Solana trading bots requiring MEV protection."
+    },
+    {
+      "tool_id": "alchemy-rpc",
+      "relationship": "alternative",
+      "context": "Alchemy and QuickNode are the two dominant EVM RPC providers. Alchemy is the default for Base; QuickNode preferred when multi-chain coverage or Solana Yellowstone streaming is required."
+    }
+  ],
+  "trust_state": "production-grade",
+  "trust_evidence": [
+    {
+      "tier": 1,
+      "type": "ecosystem-native-adoption",
+      "description": "QuickNode is a major infrastructure provider used in production across EVM and Solana. Yellowstone gRPC is cited in Solana trading agent patterns as the canonical low-latency streaming approach.",
+      "verifiable": false
+    },
+    {
+      "tier": 2,
+      "type": "documentation-quality",
+      "description": "Comprehensive documentation for Yellowstone gRPC, multi-chain RPC, and SDK integrations.",
+      "source_url": "https://www.quicknode.com/docs",
+      "verifiable": true
+    }
+  ],
+  "package_identifiers": {
+    "npm": ["@quicknode/sdk"]
+  },
+  "skill_refs": [],
+  "workflow_refs": ["solana-trading-agent", "base-consumer-app", "embedded-wallet-onboarding", "ethereum-aa-native-app", "farcaster-consumer-onboarding"],
+  "scale_guidance": {
+    "hackathon": "Use Alchemy free tier instead — simpler setup for EVM. QuickNode for Solana if Yellowstone streaming is needed for the demo.",
+    "mvp": "Viable RPC provider for both EVM and Solana. Main decision factor: existing team familiarity vs. Alchemy.",
+    "production": "Yellowstone gRPC is the production choice for latency-sensitive Solana workloads. For EVM, choose between Alchemy and QuickNode based on existing stack and pricing."
+  },
+  "alternatives": [
+    {
+      "tool_id": "alchemy-rpc",
+      "when_to_prefer": "Default choice for Base and Ethereum. Better webhook integration and stronger Base-native tooling.",
+      "ecosystem_context": "Base, Ethereum."
+    },
+    {
+      "tool_id": "helius",
+      "when_to_prefer": "Solana-only deployments needing rich indexed APIs, NFT metadata, and webhook notifications. Helius is more Solana-native than QuickNode.",
+      "ecosystem_context": "Solana."
+    }
+  ],
+  "anti_patterns": [
+    "Using public RPCs in production instead of QuickNode or Alchemy — rate limits and reliability make public RPCs unacceptable for production.",
+    "Using QuickNode HTTP polling for Solana MEV-sensitive workloads when Yellowstone gRPC streaming is available — gRPC delivers significantly lower latency."
+  ],
+  "retrieval_tags": ["rpc", "node-provider", "multi-chain", "solana-rpc", "evm-rpc", "yellowstone", "grpc-streaming", "mev-boost"],
+  "source": {
+    "primary_url": "https://www.quicknode.com",
+    "docs_url": "https://www.quicknode.com/docs",
+    "github_url": "https://github.com/quiknode-labs/qn-oss"
+  },
+  "updated_at": "2026-05-17"
+}
