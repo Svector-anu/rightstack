@@ -3,6 +3,7 @@ import { recommend } from './commands/recommend';
 import { compare } from './commands/compare';
 import { workflow } from './commands/workflow';
 import { inspect } from './commands/inspect';
+import { repoAudit } from './commands/repo-audit';
 import {
   benchmarkRun,
   benchmarkCompare,
@@ -45,6 +46,14 @@ program
   .description('Inspect a tool record in detail')
   .action((id: string) => {
     inspect(id);
+  });
+
+program
+  .command('repo-audit [path]')
+  .description('Audit a repo for web3 stack gaps, anti-patterns, and migration risks')
+  .option('--json', 'output raw JSON')
+  .action(async (repoPath: string | undefined, opts: { json?: boolean }) => {
+    await repoAudit(repoPath ?? '.', opts);
   });
 
 const bench = program

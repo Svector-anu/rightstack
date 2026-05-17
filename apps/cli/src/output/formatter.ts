@@ -3,6 +3,7 @@ import type { RecommendationExplanation, PhaseExplanation } from '../pipeline/ex
 import type { QueryIntent, ToolRecord, WorkflowRecord } from '../corpus/types';
 import type { ScoredTool } from '../pipeline/ranker';
 import type { TraceEvent } from '../trace/tracer';
+import type { AuditResult } from '../corpus/audit-types';
 
 const DIVIDER = chalk.gray('─'.repeat(60));
 const HEADER_LINE = chalk.gray('━'.repeat(60));
@@ -358,6 +359,100 @@ export function printCompare(a: ToolRecord, b: ToolRecord): void {
   if (b.alternatives?.some(alt => alt.tool_id === a.id)) {
     const alt = b.alternatives!.find(alt => alt.tool_id === a.id)!;
     console.log(`  Use ${chalk.bold(a.name)} when: ${alt.when_to_prefer}`);
+  }
+
+  console.log('');
+}
+
+export function printRepoAudit(result: AuditResult): void {
+  console.log('\n' + HEADER_LINE);
+  console.log(chalk.bold.white(`  RIGHTSTACK — Repo Audit: ${result.repoName}`));
+  console.log(HEADER_LINE);
+  console.log(`\n  ${chalk.gray('Path:')}   ${result.repoPath}`);
+  console.log(`  ${chalk.gray('Scanned:')} ${result.totalDeps} packages`);
+
+  if (result.detectedTools.length === 0) {
+    console.log(`\n  ${chalk.gray('No RightStack-tracked web3 tools detected in dependencies.')}`);
+    console.log(`  ${chalk.gray('If this is a web3 project, check that package.json is at the repo root.')}\n`);
+    return;
+  }
+
+  console.log(`  ${chalk.gray('Matched:')} ${chalk.bold.green(String(result.detectedTools.length))} tracked tools\n`);
+
+  // Detected tools
+  console.log(DIVIDER);
+  console.log(chalk.bold.white('  Detected Tools'));
+  console.log(DIVIDER);
+  for (const { tool, matchedPackages } of result.detectedTools) {
+    const bullet = (tool.trust_state === 'emerging' || tool.trust_state === 'experimental')
+      ? chalk.yellow('  ⚠')
+      : chalk.green('  ●');
+    const name = chalk.bold(tool.name.padEnd(28));
+    const trust = trustColor(tool.trust_state);
+    const pkgs = chalk.gray(matchedPackages.join(', '));
+    console.log(`${bullet} ${name} [${trust}]`);
+    console.log(`       ${pkgs}`);
+  }
+
+  // Workflow coverage — top 1 match
+  if (result.workflowCoverages.length > 0) {
+    const top = result.workflowCoverages[0];
+    const scoreStr = scoreColor(top.coverageScore);
+    console.log('\n' + DIVIDER);
+    console.log(chalk.bold.white(`  Workflow Match: ${top.workflow.name}`));
+    console.log(`  ${chalk.gray('Workflow ID:')} ${top.workflow.id}   ${chalk.gray('Coverage:')} ${scoreStr}`);
+    console.log(DIVIDER);
+
+    for (const phase of top.coveredPhases) {
+      const req = phase.required ? chalk.white('required') : chalk.gray('optional');
+      const toolList = phase.detectedToolIds.join(', ');
+      console.log(`  ${chalk.green('✔')} ${phase.phaseId.padEnd(20)} [${req}]  ${chalk.green(toolList)}`);
+    }
+    for (const phase of top.missingPhases) {
+      const req = phase.required ? chalk.red('required') : chalk.gray('optional');
+      const suggested = phase.suggestedToolIds.join(', ');
+      console.log(`  ${chalk.red('✗')} ${phase.phaseId.padEnd(20)} [${req}]  ${chalk.gray('→ ' + suggested)}`);
+    }
+
+    // Secondary workflow matches
+    if (result.workflowCoverages.length > 1) {
+      console.log(`\n  ${chalk.gray('Also matches:')}`);
+      for (const coverage of result.workflowCoverages.slice(1, 4)) {
+        console.log(`  ${chalk.gray('  ' + coverage.workflow.id.padEnd(36) + scoreColor(coverage.coverageScore))}`);
+      }
+    }
+  } else {
+    console.log('\n' + DIVIDER);
+    console.log(chalk.gray('  No workflow pattern matched. Detected tools do not align to a known workflow.'));
+    console.log(DIVIDER);
+  }
+
+  // Migration warnings
+  if (result.migrationWarnings.length > 0) {
+    console.log('\n' + DIVIDER);
+    console.log(chalk.bold.yellow('  Migration Warnings'));
+    console.log(DIVIDER);
+    for (const w of result.migrationWarnings) {
+      console.log(`  ${chalk.yellow('⚠')}  ${chalk.bold(w.detectedPackage)} → ${chalk.cyan(w.replacementPackage)}`);
+      if (w.notes) {
+        const truncated = w.notes.length > 160 ? w.notes.slice(0, 160) + '…' : w.notes;
+        console.log(`     ${chalk.gray(truncated)}`);
+      }
+    }
+  }
+
+  // Emerging trust warnings
+  if (result.emergingTools.length > 0) {
+    console.log('\n' + DIVIDER);
+    console.log(chalk.bold.yellow('  Emerging / Experimental Tools'));
+    console.log(DIVIDER);
+    for (const { tool } of result.emergingTools) {
+      console.log(`  ${chalk.yellow('⚠')}  ${chalk.bold(tool.name)} [${trustColor(tool.trust_state)}]`);
+      if (tool.scale_guidance?.production) {
+        const note = tool.scale_guidance.production.slice(0, 140);
+        console.log(`     ${chalk.gray(note)}`);
+      }
+    }
   }
 
   console.log('');

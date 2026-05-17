@@ -35,7 +35,7 @@
     "to_tool_id": "solana-kit",
     "notes": "@solana/web3.js v1 is in maintenance mode — security patches only, no new features. @solana/kit is the official successor. Migration is HIGH risk: the API surface is entirely different (no direct method equivalents). Key changes: no more Connection class (replaced with Rpc client factory), Transaction replaced with transaction builder pattern, PublicKey replaced with Address type, Keypair replaced with CryptoKeyPair. New code should start with @solana/kit. Existing @solana/web3.js codebases require significant refactoring — plan 1-2 weeks for a non-trivial app. The Solana Foundation does not plan a compatibility shim."
   },
-  "package_identifiers": ["@solana/kit"],
+  "package_identifiers": { "npm": ["@solana/kit", "@solana/web3.js"] },
   "skill_refs": [],
   "workflow_refs": ["solana-trading-agent"],
   "scale_guidance": {
