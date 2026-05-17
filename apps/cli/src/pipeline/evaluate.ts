@@ -1,5 +1,5 @@
 import type { EcosystemName, ScaleTarget, TrustState, AmbiguityFlag } from '../corpus/types';
-import { loadCorpus } from '../corpus/loader';
+import { getCorpus } from '../corpus/loader';
 import { extractIntent } from './extractor';
 import { hardFilter } from './filter';
 import { matchWorkflows } from './matcher';
@@ -32,7 +32,7 @@ export interface EvaluationResult {
 }
 
 export async function evaluate(query: string): Promise<EvaluationResult> {
-  const corpus = loadCorpus();
+  const corpus = await getCorpus();
   const intent = await extractIntent(query);
 
   const { candidates } = hardFilter(corpus.tools, intent);

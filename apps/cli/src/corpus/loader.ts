@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Corpus, ToolRecord, WorkflowRecord, RelationshipMap } from './types';
+import { getPool } from './db';
 
 function findDataDir(): string {
   if (process.env.RIGHTSTACK_DATA_DIR) {
@@ -46,6 +47,34 @@ export function loadCorpus(): Corpus {
     : { version: 'unknown', relationships: [], workflow_chains: [] };
 
   return { tools, workflows, relationships };
+}
+
+async function loadCorpusFromDb(): Promise<Corpus> {
+  const pool = getPool()!;
+  const [toolsResult, workflowsResult] = await Promise.all([
+    pool.query<{ record: ToolRecord }>('SELECT record FROM tools'),
+    pool.query<{ record: WorkflowRecord }>('SELECT record FROM workflows'),
+  ]);
+
+  const tools = new Map<string, ToolRecord>();
+  for (const row of toolsResult.rows) tools.set(row.record.id, row.record);
+
+  const workflows = new Map<string, WorkflowRecord>();
+  for (const row of workflowsResult.rows) workflows.set(row.record.id, row.record);
+
+  const { relationships } = loadCorpus();
+  return { tools, workflows, relationships };
+}
+
+export async function getCorpus(): Promise<Corpus> {
+  if (process.env.DATABASE_URL) {
+    try {
+      return await loadCorpusFromDb();
+    } catch {
+      // DB unavailable — fall through to in-memory
+    }
+  }
+  return loadCorpus();
 }
 
 export function validateCorpus(corpus: Corpus): string[] {
