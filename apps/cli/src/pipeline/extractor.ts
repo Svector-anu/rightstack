@@ -82,10 +82,24 @@ const CATEGORY_KEYWORDS: Array<[RegExp, ToolCategory]> = [
 ];
 
 function keywordExtract(query: string): QueryIntent {
-  let primaryEcosystem: EcosystemName | null = null;
+  const allEcosystems: EcosystemName[] = [];
   for (const [pattern, eco] of ECOSYSTEM_PATTERNS) {
-    if (pattern.test(query)) { primaryEcosystem = eco; break; }
+    if (pattern.test(query) && !allEcosystems.includes(eco)) allEcosystems.push(eco);
   }
+
+  let primaryEcosystem: EcosystemName | null = allEcosystems[0] ?? null;
+
+  if (allEcosystems.length > 1) {
+    // AgentKit is exclusively a Base/Coinbase product — overrides Farcaster as primary when Base is detected
+    if (/\bagentkit\b/i.test(query) && allEcosystems.includes('base')) {
+      primaryEcosystem = 'base';
+    // Multi-chain query with both Ethereum and Solana → Ethereum is primary (EVM DeFi context)
+    } else if (allEcosystems.includes('ethereum') && allEcosystems.includes('solana') && /cross.?chain|multi.?chain/i.test(query)) {
+      primaryEcosystem = 'ethereum';
+    }
+  }
+
+  const secondaryEcosystems = allEcosystems.filter(e => e !== primaryEcosystem);
 
   let scale: ScaleTarget | null = null;
   for (const [pattern, s] of SCALE_PATTERNS) {
@@ -146,7 +160,7 @@ function keywordExtract(query: string): QueryIntent {
     raw_query: query,
     build_goal: query,
     primary_ecosystem: primaryEcosystem,
-    secondary_ecosystems: [],
+    secondary_ecosystems: secondaryEcosystems,
     scale: scale,
     user_type: null,
     intent_categories: [...intentCategories],
