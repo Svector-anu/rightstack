@@ -350,3 +350,206 @@ function printQueryDetail(result: QueryResult): void {
     }
   }
 }
+
+// ── gate ─────────────────────────────────────────────────────────────────────
+
+interface GateCheck {
+  name: string;
+  passed: boolean;
+  detail: string;
+}
+
+export async function benchmarkGate(options: {
+  minPassRate?: number;
+  baseline?: string;
+  save?: boolean;
+  json?: boolean;
+}): Promise<void> {
+  const minRate = options.minPassRate ?? 0.95;
+
+  if (!options.json) {
+    console.log(chalk.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+    console.log(chalk.bold('  RIGHTSTACK — Benchmark Gate'));
+    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
+  }
+
+  const run = await runBenchmark({
+    onProgress: options.json
+      ? undefined
+      : (completed, total, queryId) => {
+          if (queryId === 'done') return;
+          process.stdout.write(`  [${String(completed + 1).padStart(2)}/${total}] ${queryId}...\r`);
+        },
+  });
+
+  if (!options.json) process.stdout.write('  '.padEnd(40) + '\r');
+
+  const gates: GateCheck[] = [];
+
+  // Gate 1: all golden queries PASS
+  const goldenResults = run.results.filter(r => r.golden);
+  const goldenFailed = goldenResults.filter(r => r.verdict !== 'PASS');
+  gates.push({
+    name: 'golden-stability',
+    passed: goldenFailed.length === 0,
+    detail: goldenFailed.length === 0
+      ? `${goldenResults.length}/${goldenResults.length} golden PASS`
+      : `${goldenFailed.length} golden not PASS: ${goldenFailed.map(r => r.queryId).join(', ')}`,
+  });
+
+  // Gate 2: overall pass rate >= threshold
+  gates.push({
+    name: 'pass-rate',
+    passed: run.metrics.passRate >= minRate,
+    detail: `${(run.metrics.passRate * 100).toFixed(0)}% ${run.metrics.passRate >= minRate ? '>=' : '<'} ${(minRate * 100).toFixed(0)}% required  (${run.metrics.pass}/${run.metrics.total})`,
+  });
+
+  // Gate 3: no regressions vs baseline (optional)
+  if (options.baseline) {
+    try {
+      const baseline = loadSnapshot(options.baseline);
+      const diff = diffRuns(baseline, run);
+      gates.push({
+        name: 'no-regressions',
+        passed: diff.regressions.length === 0,
+        detail: diff.regressions.length === 0
+          ? `no regressions vs ${options.baseline}`
+          : `${diff.regressions.length} regressions: ${diff.regressions.map(r => `${r.queryId}(${r.from}→${r.to})`).join(', ')}`,
+      });
+    } catch (err) {
+      gates.push({
+        name: 'no-regressions',
+        passed: false,
+        detail: `baseline not found: ${(err as Error).message}`,
+      });
+    }
+  }
+
+  const allPassed = gates.every(g => g.passed);
+
+  if (options.save && allPassed) {
+    const filepath = saveSnapshot(run);
+    if (!options.json) console.log(`  Snapshot saved: ${filepath}`);
+  }
+
+  if (options.json) {
+    console.log(JSON.stringify({ passed: allPassed, gates, metrics: run.metrics }, null, 2));
+    process.exit(allPassed ? 0 : 1);
+    return;
+  }
+
+  for (const gate of gates) {
+    const mark = gate.passed ? chalk.green('  ✓') : chalk.red('  ✗');
+    const label = gate.name.padEnd(22);
+    console.log(`${mark}  ${label}  ${chalk.dim(gate.detail)}`);
+  }
+
+  if (allPassed) {
+    console.log(chalk.green(chalk.bold('\n  Gate PASSED\n')));
+  } else {
+    const failed = gates.filter(g => !g.passed);
+    console.log(chalk.red(chalk.bold(`\n  Gate FAILED  (${failed.length} check(s) did not pass)\n`)));
+  }
+
+  process.exit(allPassed ? 0 : 1);
+}
+
+// ── determinism ───────────────────────────────────────────────────────────────
+
+interface DivergenceReport {
+  queryId: string;
+  field: string;
+  values: string[];
+}
+
+export async function benchmarkDeterminism(options: {
+  runs?: number;
+  queries?: string;
+  json?: boolean;
+}): Promise<void> {
+  const nRuns = options.runs ?? 2;
+
+  if (process.env.ANTHROPIC_API_KEY) {
+    const msg = 'Skipping determinism check: ANTHROPIC_API_KEY is set. AI path is non-deterministic.';
+    if (options.json) {
+      console.log(JSON.stringify({ skipped: true, reason: msg }));
+    } else {
+      console.log(chalk.yellow(`\n  ⚠  ${msg}\n`));
+    }
+    return;
+  }
+
+  const queryIds = options.queries ? options.queries.split(',').map(s => s.trim()) : undefined;
+
+  if (!options.json) {
+    console.log(chalk.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+    console.log(chalk.bold('  RIGHTSTACK — Pipeline Determinism Check'));
+    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
+    console.log(`  Runs: ${nRuns}  ·  Queries: ${queryIds ? queryIds.join(', ') : 'golden only (default)'}\n`);
+  }
+
+  // Default to golden queries only (fast, high-signal)
+  const suite = queryIds ? null : loadBenchmarkSuite();
+  const effectiveIds = queryIds ?? suite!.golden_queries;
+
+  const allRuns: BenchmarkRun[] = [];
+  for (let i = 0; i < nRuns; i++) {
+    if (!options.json) process.stdout.write(`  Run ${i + 1}/${nRuns}...\r`);
+    allRuns.push(await runBenchmark({ queryIds: effectiveIds }));
+  }
+  if (!options.json) process.stdout.write('  '.padEnd(30) + '\r');
+
+  const divergences: DivergenceReport[] = [];
+  const ref = allRuns[0];
+
+  for (const refResult of ref.results) {
+    const qid = refResult.queryId;
+
+    for (let ri = 1; ri < allRuns.length; ri++) {
+      const other = allRuns[ri].results.find(r => r.queryId === qid);
+      if (!other) continue;
+
+      const checks: Array<[string, string, string]> = [
+        ['verdict', refResult.verdict, other.verdict],
+        ['workflowId', String(refResult.evalResult.workflowId), String(other.evalResult.workflowId)],
+        ['ecosystem', String(refResult.evalResult.ecosystem), String(other.evalResult.ecosystem)],
+        ['scale', String(refResult.evalResult.scale), String(other.evalResult.scale)],
+        [
+          'primaryToolIds',
+          [...refResult.evalResult.primaryToolIds].sort().join(','),
+          [...other.evalResult.primaryToolIds].sort().join(','),
+        ],
+        [
+          'activeConstraints',
+          [...refResult.evalResult.activeConstraints].sort().join(','),
+          [...other.evalResult.activeConstraints].sort().join(','),
+        ],
+      ];
+
+      for (const [field, v1, v2] of checks) {
+        if (v1 !== v2) {
+          divergences.push({ queryId: qid, field, values: [v1, v2] });
+        }
+      }
+    }
+  }
+
+  if (options.json) {
+    console.log(JSON.stringify({ deterministic: divergences.length === 0, divergences }, null, 2));
+    process.exit(divergences.length === 0 ? 0 : 1);
+    return;
+  }
+
+  if (divergences.length === 0) {
+    console.log(chalk.green(`  ✓ Pipeline is deterministic across ${nRuns} runs (${effectiveIds.length} queries)\n`));
+  } else {
+    console.log(chalk.red(`  ✗ ${divergences.length} divergence(s) detected:\n`));
+    for (const d of divergences) {
+      console.log(`  ${chalk.bold(d.queryId)}  ${d.field}`);
+      d.values.forEach((v, i) => console.log(`    run${i + 1}: ${chalk.dim(v || '(empty)')}`));
+    }
+    console.log('');
+  }
+
+  process.exit(divergences.length === 0 ? 0 : 1);
+}

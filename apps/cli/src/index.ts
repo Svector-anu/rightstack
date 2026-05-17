@@ -10,6 +10,8 @@ import {
   benchmarkInspect,
   benchmarkInvariants,
   benchmarkList,
+  benchmarkGate,
+  benchmarkDeterminism,
 } from './commands/benchmark';
 
 const program = new Command();
@@ -106,6 +108,27 @@ bench
   .option('--json', 'Output raw JSON')
   .action((opts: { json?: boolean }) => {
     benchmarkList(opts);
+  });
+
+bench
+  .command('gate')
+  .description('CI gate: fail if golden queries regress or pass rate drops below threshold')
+  .option('--min-pass-rate <rate>', 'Minimum required pass rate (default: 0.95)', parseFloat)
+  .option('--baseline <name>', 'Snapshot name to check regressions against')
+  .option('--save', 'Save snapshot on gate pass')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { minPassRate?: number; baseline?: string; save?: boolean; json?: boolean }) => {
+    await benchmarkGate(opts);
+  });
+
+bench
+  .command('determinism')
+  .description('Verify the pipeline produces identical output across multiple runs')
+  .option('--runs <n>', 'Number of runs to compare (default: 2)', parseInt)
+  .option('--queries <ids>', 'Comma-separated query IDs (default: golden queries)')
+  .option('--json', 'Output raw JSON')
+  .action(async (opts: { runs?: number; queries?: string; json?: boolean }) => {
+    await benchmarkDeterminism(opts);
   });
 
 program.parse(process.argv);
