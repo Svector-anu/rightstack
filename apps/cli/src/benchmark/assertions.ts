@@ -7,9 +7,10 @@ function assertion(
   id: string,
   description: string,
   severity: 'fail' | 'partial',
-  check: (r: EvaluationResult, q: BenchmarkQuery) => boolean
+  check: (r: EvaluationResult, q: BenchmarkQuery) => boolean,
+  getDetail?: (r: EvaluationResult, q: BenchmarkQuery) => string
 ): Assertion {
-  return { id, description, severity, check };
+  return { id, description, severity, check, getDetail };
 }
 
 // --- Standard assertion library ---
@@ -42,7 +43,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'workflow-match',
         `Expected workflow: ${expected.workflow}`,
         'partial',
-        r => r.workflowId === expected.workflow
+        r => r.workflowId === expected.workflow,
+        r => `got: ${r.workflowId ?? 'none'}, expected: ${expected.workflow}`
       )
     );
   } else {
@@ -51,10 +53,10 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'has-some-result',
         'Some result returned (no silent failure)',
         'fail',
-        r => r.hasWorkflowMatch || r.ambiguityFlags.length > 0
+        r => r.hasWorkflowMatch || r.ambiguityFlags.length > 0,
+        r => `no workflow match and no ambiguity flags; confidence: ${r.confidence.toFixed(2)}`
       )
     );
-    // Only expect ambiguity flags for categories where query ambiguity is intended
     const expectsAmbiguity = query.category === 'ambiguous' || query.category === 'conflicting_constraints';
     if (expectsAmbiguity) {
       assertions.push(
@@ -62,7 +64,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
           'has-ambiguity-flag',
           'Ambiguity flag present for open-ended query',
           'partial',
-          r => r.ambiguityFlags.length > 0 || r.confidence < 0.65
+          r => r.ambiguityFlags.length > 0 || r.confidence < 0.65,
+          r => `no ambiguity flags detected; confidence: ${r.confidence.toFixed(2)}`
         )
       );
     }
@@ -76,7 +79,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'confidence-min',
         `Confidence >= ${min}`,
         'partial',
-        r => r.confidence >= min
+        r => r.confidence >= min,
+        r => `got: ${r.confidence.toFixed(2)}, expected >= ${min}`
       )
     );
   }
@@ -91,7 +95,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         `tool-present:${primary}`,
         `${primary} (or acceptable alt) in ${phase.phase} phase`,
         'fail',
-        r => acceptable.some(id => hasTool(r, id))
+        r => acceptable.some(id => hasTool(r, id)),
+        r => `none of [${acceptable.join(', ')}] in allToolIds: [${r.allToolIds.join(', ') || 'empty'}]`
       )
     );
   }
@@ -103,7 +108,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         `tool-absent:${excluded}`,
         `Forbidden tool absent: ${excluded}`,
         'fail',
-        r => !hasTool(r, excluded)
+        r => !hasTool(r, excluded),
+        r => `${excluded} was present in allToolIds: [${r.allToolIds.join(', ')}]`
       )
     );
   }
@@ -115,7 +121,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         `eco-violation-absent:${forbidden}`,
         `Ecosystem-violating tool absent: ${forbidden}`,
         'fail',
-        r => !hasTool(r, forbidden)
+        r => !hasTool(r, forbidden),
+        _r => `${forbidden} was included despite ecosystem mismatch (query eco: ${query.ecosystem ?? 'unspecified'})`
       )
     );
   }
@@ -130,6 +137,12 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         r => {
           const nonProdStates = new Set(['hype-driven', 'experimental', 'abandoned']);
           return !Object.values(r.primaryToolTrustStates).some(s => nonProdStates.has(s));
+        },
+        r => {
+          const offenders = Object.entries(r.primaryToolTrustStates)
+            .filter(([, s]) => !['production-grade', 'emerging'].includes(s))
+            .map(([id, s]) => `${id}=${s}`);
+          return `non-production primary tools: ${offenders.join(', ')}`;
         }
       )
     );
@@ -142,7 +155,8 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         `emerging-not-primary:${emergingTool}`,
         `Emerging tool ${emergingTool} not recommended as primary`,
         'fail',
-        r => !isPrimaryTool(r, emergingTool)
+        r => !isPrimaryTool(r, emergingTool),
+        r => `${emergingTool} appeared as primary tool in: [${r.primaryToolIds.join(', ')}]`
       )
     );
   }
@@ -156,7 +170,11 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
           'no-evm-primary-for-solana',
           'No EVM-only tool as primary for Solana query',
           'partial',
-          r => !EVM_ONLY_TOOLS.some(id => isPrimaryTool(r, id))
+          r => !EVM_ONLY_TOOLS.some(id => isPrimaryTool(r, id)),
+          r => {
+            const offenders = EVM_ONLY_TOOLS.filter(id => isPrimaryTool(r, id));
+            return `EVM-only tools in primary: [${offenders.join(', ')}]`;
+          }
         )
       );
     } else {
@@ -165,7 +183,11 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
           'no-solana-primary-for-evm',
           'No Solana-only tool as primary for EVM query',
           'partial',
-          r => !SOLANA_ONLY_TOOLS.some(id => isPrimaryTool(r, id))
+          r => !SOLANA_ONLY_TOOLS.some(id => isPrimaryTool(r, id)),
+          r => {
+            const offenders = SOLANA_ONLY_TOOLS.filter(id => isPrimaryTool(r, id));
+            return `Solana-only tools in primary: [${offenders.join(', ')}]`;
+          }
         )
       );
     }
@@ -178,21 +200,35 @@ export function deriveAssertions(query: BenchmarkQuery): Assertion[] {
         'scale-match',
         `Scale detected: ${query.scale}`,
         'partial',
-        r => r.scale === query.scale || r.scale === null // null = extractor found no scale signal
+        r => r.scale === query.scale || r.scale === null,
+        r => `got: ${r.scale ?? 'null'}, expected: ${query.scale}`
       )
     );
   }
 
-  // 10. Migration warnings: if any phase has sdk_migration tools, ensure warnings surfaced
-  // (Structural check: if a migrating tool is recommended, migrationWarnings must be non-empty)
-  // Only applies to migration-risk category
+  // 10. Migration warnings — only for migration_risk category
   if (query.category === 'migration_risk') {
     assertions.push(
       assertion(
         'migration-warning-surfaced',
         'Migration warning surfaced for migration-risk query',
         'partial',
-        r => r.migrationWarnings.length > 0
+        r => r.migrationWarnings.length > 0,
+        r => `no migration warnings; primary tools: [${r.primaryToolIds.join(', ')}]`
+      )
+    );
+  }
+
+  // 11. Constraint activation assertions
+  for (const [key, value] of Object.entries(query.constraints ?? {})) {
+    if (value !== true) continue;
+    assertions.push(
+      assertion(
+        `constraint-active:${key}`,
+        `Constraint activated: ${key}`,
+        'partial',
+        r => r.activeConstraints.includes(key),
+        r => `${key} not in activeConstraints: [${r.activeConstraints.join(', ') || 'empty'}]`
       )
     );
   }
@@ -217,11 +253,13 @@ export function runAssertions(
     } else {
       verdict = 'fail';
     }
+    const detail = !passed && a.getDetail ? a.getDetail(result, query) : undefined;
     return {
       assertionId: a.id,
       description: a.description,
       verdict,
       severity: a.severity,
+      detail,
     };
   });
 }

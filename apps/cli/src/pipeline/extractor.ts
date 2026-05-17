@@ -99,8 +99,8 @@ function keywordExtract(query: string): QueryIntent {
   if (intentCategories.size === 0) intentCategories.add('wallet-infrastructure');
 
   const q = query.toLowerCase();
-  const hasExisting = /metamask|existing.wallet|connect.wallet/.test(q) ? true : null;
-  const noExisting = /no.wallet|new.user|onboard|email.login/.test(q) ? true : null;
+  const hasExisting = /metamask|existing.wallet|connect.wallet|ledger|coinbase.wallet/.test(q) ? true : null;
+  const noExisting = /no.wallet|new.user|onboard|email.login|embedded.wallet|one.tap/.test(q) ? true : null;
 
   // Merge conflicting wallet signals into hybrid_wallet rather than treating as contradiction
   const hybridFromSignals = (hasExisting === true && noExisting === true) ? true : null;
@@ -108,17 +108,18 @@ function keywordExtract(query: string): QueryIntent {
   const hybridWallet = (hybridFromSignals ?? hybridExplicit) ? true : null;
 
   const constraints = {
-    gasless_required: /gasless|no.?gas|sponsored/.test(q) ? true : null,
-    no_existing_wallet: hybridWallet ? null : noExisting,
-    has_existing_wallet: hybridWallet ? null : hasExisting,
+    gasless_required: /gasless|no.?gas|sponsored|cheaper.*(transact|tx|fee)|transact.*cheap|free.*transact/.test(q) ? true : null,
+    // When hybrid_wallet, keep individual signals true so assertions can verify both were detected
+    no_existing_wallet: noExisting,
+    has_existing_wallet: hasExisting,
     autonomous_agent: /autonomous|agent|bot\b|automated/.test(q) ? true : null,
     python_only: /python/.test(q) ? true : null,
-    high_frequency_execution: /high.freq|hft|fast.trad/.test(q) ? true : null,
-    mev_sensitive: /mev|sandwich|frontrun/.test(q) ? true : null,
+    high_frequency_execution: /high.freq|hft|fast.trad|high.speed/.test(q) ? true : null,
+    mev_sensitive: /mev|sandwich|frontrun|low.latency.*solana|solana.*low.latency/.test(q) ? true : null,
     cross_chain: /cross.chain|multi.chain/.test(q) ? true : null,
     hackathon_timeline: /hackathon|demo/.test(q) ? true : null,
-    social_features_required: /farcaster|social|cast\b|frame\b/.test(q) ? true : null,
-    ai_reasoning_required: /\bai\b|ai.?agent|llm|reasoning|claude|gpt/.test(q) ? true : null,
+    social_features_required: /farcaster|social|cast\b|frame\b|miniapp/.test(q) ? true : null,
+    ai_reasoning_required: /\bai\b|ai.?agent|llm|reasoning|claude|gpt|autonomous.*(agent|bot)|agent.*(reason|think|decid)|x402|micropay/.test(q) ? true : null,
     hybrid_wallet: hybridWallet,
   };
 

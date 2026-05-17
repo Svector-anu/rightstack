@@ -5,6 +5,7 @@ import { deriveAssertions, runAssertions, deriveVerdict } from './assertions';
 import { buildRunMetadata } from './snapshots';
 import type {
   BenchmarkSuite,
+  BenchmarkQuery,
   BenchmarkRun,
   QueryResult,
   RunMetrics,
@@ -50,20 +51,27 @@ export async function runBenchmark(options: RunOptions = {}): Promise<BenchmarkR
     const benchQuery = queries[i];
     options.onProgress?.(i, queries.length, benchQuery.id);
 
-    const evalResult = await evaluate(benchQuery.query);
-    const assertions = deriveAssertions(benchQuery);
-    const assertionResults = runAssertions(assertions, evalResult, benchQuery);
-    const verdict = deriveVerdict(assertionResults);
+    let queryResult: QueryResult;
+    try {
+      const evalResult = await evaluate(benchQuery.query);
+      const assertions = deriveAssertions(benchQuery);
+      const assertionResults = runAssertions(assertions, evalResult, benchQuery);
+      const verdict = deriveVerdict(assertionResults);
+      queryResult = {
+        queryId: benchQuery.id,
+        query: benchQuery.query,
+        golden: benchQuery.golden,
+        category: benchQuery.category,
+        verdict,
+        evalResult,
+        assertions: assertionResults,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      queryResult = makeCrashResult(benchQuery, message);
+    }
 
-    results.push({
-      queryId: benchQuery.id,
-      query: benchQuery.query,
-      golden: benchQuery.golden,
-      category: benchQuery.category,
-      verdict,
-      evalResult,
-      assertions: assertionResults,
-    });
+    results.push(queryResult);
   }
 
   options.onProgress?.(queries.length, queries.length, 'done');
@@ -78,6 +86,47 @@ export async function runBenchmark(options: RunOptions = {}): Promise<BenchmarkR
     suiteVersion: suite.version,
     results,
     metrics,
+  };
+}
+
+function makeCrashResult(query: BenchmarkQuery, errorMessage: string): QueryResult {
+  const nullEval = {
+    query: query.query,
+    workflowId: null,
+    workflowName: null,
+    workflowTrustState: null,
+    ecosystem: null,
+    scale: null,
+    confidence: 0,
+    primaryToolIds: [],
+    primaryToolTrustStates: {},
+    alternativeToolIds: [],
+    allToolIds: [],
+    phaseRoles: [],
+    migrationWarnings: [],
+    ambiguityFlags: [],
+    activeConstraints: [],
+    constraintNotes: [],
+    antiPatternsText: [],
+    scaleNotes: [],
+    missingRecords: [],
+    hasWorkflowMatch: false,
+    summary: '',
+  };
+  return {
+    queryId: query.id,
+    query: query.query,
+    golden: query.golden,
+    category: query.category,
+    verdict: 'FAIL',
+    evalResult: nullEval,
+    assertions: [{
+      assertionId: 'runner-error',
+      description: 'Pipeline threw exception',
+      verdict: 'fail',
+      severity: 'fail',
+      detail: errorMessage,
+    }],
   };
 }
 

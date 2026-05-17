@@ -320,5 +320,8 @@ function printQueryDetail(result: QueryResult): void {
       a.verdict === 'partial' ? chalk.yellow('  ~') :
       chalk.red('  ✗');
     console.log(`${mark}  [${a.severity}]  ${a.description}`);
+    if (a.detail && a.verdict !== 'pass') {
+      console.log(`         ${chalk.dim('→ ' + a.detail)}`);
+    }
   }
 }

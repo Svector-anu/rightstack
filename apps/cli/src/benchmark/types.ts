@@ -55,6 +55,7 @@ export interface Assertion {
   description: string;
   severity: AssertionSeverity;
   check: (result: EvaluationResult, query: BenchmarkQuery) => boolean;
+  getDetail?: (result: EvaluationResult, query: BenchmarkQuery) => string;
 }
 
 export type AssertionVerdict = 'pass' | 'fail' | 'partial';
