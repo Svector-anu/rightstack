@@ -110,4 +110,7 @@ export interface BenchmarkDiff {
   improvements: Array<{ queryId: string; from: QueryVerdict; to: QueryVerdict }>;
   unchanged: number;
   newQueries: number;
+  goldenRegressed: number;
+  goldenImproved: number;
+  byCategoryDelta: Record<string, { regressed: number; improved: number; unchanged: number }>;
 }

@@ -1,4 +1,5 @@
 import type { Corpus, ToolRecord, WorkflowRecord, TrustState } from '../corpus/types';
+import type { BenchmarkSuite } from './types';
 
 export type InvariantSeverity = 'error' | 'warn';
 
@@ -28,7 +29,28 @@ export function validateCorpusInvariants(corpus: Corpus): InvariantViolation[] {
     ...checkDeprecatedSdkLeakage(corpus),
     ...checkEcosystemCrossContamination(corpus),
     ...checkOntologyIntegrity(corpus),
+    ...checkPhaseCompleteness(corpus),
+    ...checkPhaseIdUniqueness(corpus),
   );
+
+  return violations;
+}
+
+export function validateBenchmarkAlignment(corpus: Corpus, suite: BenchmarkSuite): InvariantViolation[] {
+  const violations: InvariantViolation[] = [];
+
+  for (const query of suite.queries) {
+    const expected = query.expected.workflow;
+    if (!expected) continue;
+    if (!corpus.workflows.has(expected)) {
+      violations.push({
+        id: 'benchmark-missing-workflow',
+        severity: 'error',
+        message: `Benchmark query "${query.id}" expects workflow "${expected}" which does not exist in corpus`,
+        context: query.query.slice(0, 80),
+      });
+    }
+  }
 
   return violations;
 }
@@ -273,6 +295,44 @@ function checkOntologyIntegrity(corpus: Corpus): InvariantViolation[] {
         severity: 'warn',
         message: `Duplicate tool name "${name}" across IDs: ${ids.join(', ')}`,
       });
+    }
+  }
+
+  return violations;
+}
+
+function checkPhaseCompleteness(corpus: Corpus): InvariantViolation[] {
+  const violations: InvariantViolation[] = [];
+
+  for (const [wid, workflow] of corpus.workflows) {
+    for (const phase of workflow.phases) {
+      if (phase.required && (!phase.primary_tools || phase.primary_tools.length === 0)) {
+        violations.push({
+          id: 'required-phase-no-primary-tools',
+          severity: 'warn',
+          message: `Workflow "${wid}" required phase "${phase.id}" has no primary tools`,
+        });
+      }
+    }
+  }
+
+  return violations;
+}
+
+function checkPhaseIdUniqueness(corpus: Corpus): InvariantViolation[] {
+  const violations: InvariantViolation[] = [];
+
+  for (const [wid, workflow] of corpus.workflows) {
+    const seen = new Set<string>();
+    for (const phase of workflow.phases) {
+      if (seen.has(phase.id)) {
+        violations.push({
+          id: 'duplicate-phase-id',
+          severity: 'error',
+          message: `Workflow "${wid}" has duplicate phase ID: "${phase.id}"`,
+        });
+      }
+      seen.add(phase.id);
     }
   }
 

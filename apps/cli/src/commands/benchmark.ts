@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { runBenchmark, loadBenchmarkSuite } from '../benchmark/runner';
-import { validateCorpusInvariants, formatViolations } from '../benchmark/invariants';
+import { validateCorpusInvariants, validateBenchmarkAlignment, formatViolations } from '../benchmark/invariants';
 import { saveSnapshot, loadSnapshot, listSnapshots, latestSnapshot, diffRuns } from '../benchmark/snapshots';
 import { loadCorpus } from '../corpus/loader';
 import type { BenchmarkRun, QueryResult, BenchmarkDiff } from '../benchmark/types';
@@ -163,7 +163,11 @@ export async function benchmarkInspect(options: {
 
 export async function benchmarkInvariants(options: { json?: boolean }): Promise<void> {
   const corpus = loadCorpus();
-  const violations = validateCorpusInvariants(corpus);
+  const suite = loadBenchmarkSuite();
+  const violations = [
+    ...validateCorpusInvariants(corpus),
+    ...validateBenchmarkAlignment(corpus, suite),
+  ];
 
   if (options.json) {
     console.log(JSON.stringify(violations, null, 2));
@@ -173,7 +177,7 @@ export async function benchmarkInvariants(options: { json?: boolean }): Promise<
   console.log(chalk.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.bold('  RIGHTSTACK — Corpus Invariant Validation'));
   console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
-  console.log(`  Tools: ${corpus.tools.size}  |  Workflows: ${corpus.workflows.size}\n`);
+  console.log(`  Tools: ${corpus.tools.size}  |  Workflows: ${corpus.workflows.size}  |  Benchmark queries: ${suite.total_queries}\n`);
   console.log(formatViolations(violations));
 
   const errors = violations.filter(v => v.severity === 'error');
@@ -205,7 +209,7 @@ export function benchmarkList(options: { json?: boolean }): void {
     const passRate = snap.total > 0 ? ((snap.pass / snap.total) * 100).toFixed(0) : '?';
     const color = snap.pass === snap.total ? chalk.green : snap.pass / snap.total >= 0.90 ? chalk.yellow : chalk.red;
     console.log(`  ${chalk.bold(snap.name)}`);
-    console.log(`    ${color(`${snap.pass}/${snap.total} PASS (${passRate}%)`)}  ·  ${snap.timestamp}  ·  ${snap.gitSha}`);
+    console.log(`    ${color(`${snap.pass}/${snap.total} PASS (${passRate}%)`)}  ·  ${snap.partial} PARTIAL  ·  ${snap.fail} FAIL  ·  ${snap.timestamp}  ·  ${snap.gitSha}`);
   }
   console.log('');
 }
@@ -270,6 +274,14 @@ function printDiff(diff: BenchmarkDiff): void {
   console.log(`  Current:  ${diff.current.gitSha}  ${diff.current.metrics.pass}/${diff.current.metrics.total} PASS`);
   console.log(`  Delta:    ${deltaSign}${deltaPass} queries  (${deltaSign}${deltaRate}pp)`);
 
+  if (diff.goldenRegressed > 0) {
+    console.log(chalk.red(`  Golden:   ${diff.goldenRegressed} regressed`));
+  } else if (diff.goldenImproved > 0) {
+    console.log(chalk.green(`  Golden:   ${diff.goldenImproved} improved`));
+  } else {
+    console.log(`  Golden:   stable`);
+  }
+
   if (diff.regressions.length > 0) {
     console.log(chalk.red(chalk.bold('\n  Regressions')));
     for (const r of diff.regressions) {
@@ -283,6 +295,19 @@ function printDiff(diff: BenchmarkDiff): void {
     console.log(chalk.green(chalk.bold('\n  Improvements')));
     for (const r of diff.improvements) {
       console.log(chalk.green(`  ✓ ${r.queryId}  ${r.from} → ${r.to}`));
+    }
+  }
+
+  const movedCategories = Object.entries(diff.byCategoryDelta)
+    .filter(([, d]) => d.regressed > 0 || d.improved > 0);
+
+  if (movedCategories.length > 0) {
+    console.log(chalk.bold('\n  By Category'));
+    for (const [cat, d] of movedCategories) {
+      const parts: string[] = [];
+      if (d.regressed > 0) parts.push(chalk.red(`-${d.regressed}`));
+      if (d.improved > 0) parts.push(chalk.green(`+${d.improved}`));
+      console.log(`  ${cat.padEnd(28)} ${parts.join('  ')}`);
     }
   }
 

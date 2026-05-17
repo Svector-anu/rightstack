@@ -68,7 +68,7 @@ export function loadSnapshot(nameOrPath: string): BenchmarkRun {
   return JSON.parse(fs.readFileSync(filepath, 'utf8')) as BenchmarkRun;
 }
 
-export function listSnapshots(): Array<{ name: string; timestamp: string; gitSha: string; pass: number; total: number }> {
+export function listSnapshots(): Array<{ name: string; timestamp: string; gitSha: string; pass: number; partial: number; fail: number; total: number }> {
   ensureSnapshotsDir();
   const files = fs.readdirSync(SNAPSHOTS_DIR)
     .filter(f => f.endsWith('.json'))
@@ -86,6 +86,8 @@ export function listSnapshots(): Array<{ name: string; timestamp: string; gitSha
           timestamp: run.timestamp,
           gitSha: run.gitSha,
           pass: run.metrics.pass,
+          partial: run.metrics.partial,
+          fail: run.metrics.fail,
           total: run.metrics.total,
         };
       } catch {
@@ -107,27 +109,43 @@ export function latestSnapshot(): BenchmarkRun | null {
 }
 
 export function diffRuns(baseline: BenchmarkRun, current: BenchmarkRun): BenchmarkDiff {
-  const baselineMap = new Map(baseline.results.map(r => [r.queryId, r.verdict]));
+  const baselineMap = new Map(baseline.results.map(r => [r.queryId, r]));
 
   const regressions: BenchmarkDiff['regressions'] = [];
   const improvements: BenchmarkDiff['improvements'] = [];
+  const byCategoryDelta: BenchmarkDiff['byCategoryDelta'] = {};
   let unchanged = 0;
   let newQueries = 0;
+  let goldenRegressed = 0;
+  let goldenImproved = 0;
 
   for (const result of current.results) {
-    const baseVerdict = baselineMap.get(result.queryId);
-    if (!baseVerdict) {
+    const baseResult = baselineMap.get(result.queryId);
+    const cat = result.category;
+
+    if (!byCategoryDelta[cat]) {
+      byCategoryDelta[cat] = { regressed: 0, improved: 0, unchanged: 0 };
+    }
+
+    if (!baseResult) {
       newQueries++;
       continue;
     }
 
-    const currentVerdict = result.verdict;
-    if (isRegression(baseVerdict, currentVerdict)) {
-      regressions.push({ queryId: result.queryId, from: baseVerdict, to: currentVerdict });
-    } else if (isImprovement(baseVerdict, currentVerdict)) {
-      improvements.push({ queryId: result.queryId, from: baseVerdict, to: currentVerdict });
+    const from = baseResult.verdict;
+    const to = result.verdict;
+
+    if (isRegression(from, to)) {
+      regressions.push({ queryId: result.queryId, from, to });
+      byCategoryDelta[cat].regressed++;
+      if (result.golden) goldenRegressed++;
+    } else if (isImprovement(from, to)) {
+      improvements.push({ queryId: result.queryId, from, to });
+      byCategoryDelta[cat].improved++;
+      if (result.golden) goldenImproved++;
     } else {
       unchanged++;
+      byCategoryDelta[cat].unchanged++;
     }
   }
 
@@ -146,6 +164,9 @@ export function diffRuns(baseline: BenchmarkRun, current: BenchmarkRun): Benchma
     improvements,
     unchanged,
     newQueries,
+    goldenRegressed,
+    goldenImproved,
+    byCategoryDelta,
   };
 }
 
