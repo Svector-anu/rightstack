@@ -22,6 +22,9 @@ out/
 .vscode/
 .idea/
 
+# Claude Code project settings (local only)
+.claude/
+
 # Logs
 *.log
 npm-debug.log*
