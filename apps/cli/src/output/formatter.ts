@@ -3,7 +3,7 @@ import type { RecommendationExplanation, PhaseExplanation } from '../pipeline/ex
 import type { QueryIntent, ToolRecord, WorkflowRecord } from '../corpus/types';
 import type { ScoredTool } from '../pipeline/ranker';
 import type { TraceEvent } from '../trace/tracer';
-import type { AuditResult } from '../corpus/audit-types';
+import type { AuditResult, ActionItem, ActionSeverity } from '../corpus/audit-types';
 
 const DIVIDER = chalk.gray('─'.repeat(60));
 const HEADER_LINE = chalk.gray('━'.repeat(60));
@@ -364,6 +364,50 @@ export function printCompare(a: ToolRecord, b: ToolRecord): void {
   console.log('');
 }
 
+const SEVERITY_ICONS: Record<ActionSeverity, string> = {
+  critical: '🔴',
+  high:     '🟠',
+  medium:   '🟡',
+  info:     'ℹ️ ',
+};
+
+export function printActionItems(items: ActionItem[]): void {
+  if (items.length === 0) return;
+
+  const actionable = items.filter(i => i.severity !== 'info');
+  const allInfo = items.filter(i => i.severity === 'info');
+
+  const infoByTool = new Map<string, ActionItem[]>();
+  for (const item of allInfo) {
+    const list = infoByTool.get(item.toolId) ?? [];
+    infoByTool.set(item.toolId, list);
+    list.push(item);
+  }
+  const cappedInfo: ActionItem[] = [];
+  let hiddenInfo = 0;
+  for (const [, toolItems] of infoByTool) {
+    cappedInfo.push(...toolItems.slice(0, 2));
+    hiddenInfo += Math.max(0, toolItems.length - 2);
+  }
+
+  const toPrint = [...actionable, ...cappedInfo];
+  const totalShown = toPrint.length;
+
+  console.log(chalk.bold(`\n  Action Items (${totalShown}${hiddenInfo > 0 ? ` +${hiddenInfo} info` : ''})`));
+  console.log(chalk.gray('  ' + '─'.repeat(54)));
+  for (const item of toPrint) {
+    const icon = SEVERITY_ICONS[item.severity];
+    console.log(`  ${icon} ${chalk.bold(item.severity.toUpperCase().padEnd(8))}  ${chalk.cyan(item.toolName)}`);
+    console.log(`    ${chalk.bold(item.title)}`);
+    if (item.detail) console.log(`    ${chalk.gray(item.detail)}`);
+    if (item.fix) console.log(`    ${chalk.green('Fix:')} ${item.fix}`);
+    console.log();
+  }
+  if (hiddenInfo > 0) {
+    console.log(chalk.gray(`  +${hiddenInfo} more INFO advisories\n`));
+  }
+}
+
 export function printRepoAudit(result: AuditResult): void {
   console.log('\n' + HEADER_LINE);
   console.log(chalk.bold.white(`  RIGHTSTACK — Repo Audit: ${result.repoName}`));
@@ -393,6 +437,9 @@ export function printRepoAudit(result: AuditResult): void {
     console.log(`${bullet} ${name} [${trust}]`);
     console.log(`       ${pkgs}`);
   }
+
+  // Action items — ranked severity list (between Detected Tools and Workflow Coverage)
+  printActionItems(result.actionItems);
 
   // Workflow coverage — top 1 match
   if (result.workflowCoverages.length > 0) {
@@ -441,10 +488,11 @@ export function printRepoAudit(result: AuditResult): void {
     }
   }
 
-  // Emerging trust warnings
+  // Emerging tools (trust_state === 'emerging' only)
+  // experimental/abandoned are surfaced as HIGH action items above
   if (result.emergingTools.length > 0) {
     console.log('\n' + DIVIDER);
-    console.log(chalk.bold.yellow('  Emerging / Experimental Tools'));
+    console.log(chalk.bold.yellow('  Emerging Tools'));
     console.log(DIVIDER);
     for (const { tool } of result.emergingTools) {
       console.log(`  ${chalk.yellow('⚠')}  ${chalk.bold(tool.name)} [${trustColor(tool.trust_state)}]`);

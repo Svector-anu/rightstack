@@ -1,5 +1,16 @@
 import type { ToolRecord, WorkflowRecord } from './types';
 
+export type ActionSeverity = 'critical' | 'high' | 'medium' | 'info';
+
+export interface ActionItem {
+  severity: ActionSeverity;
+  toolId: string;
+  toolName: string;
+  title: string;
+  detail: string;
+  fix?: string;
+}
+
 export interface DetectedTool {
   tool: ToolRecord;
   matchedPackages: string[];
@@ -42,4 +53,5 @@ export interface AuditResult {
   workflowCoverages: WorkflowCoverage[];
   migrationWarnings: MigrationWarning[];
   emergingTools: DetectedTool[];
+  actionItems: ActionItem[];
 }

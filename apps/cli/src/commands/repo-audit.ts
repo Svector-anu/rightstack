@@ -10,6 +10,8 @@ import type {
   WorkflowCoverage,
   MigrationWarning,
   AuditResult,
+  ActionItem,
+  ActionSeverity,
 } from '../corpus/audit-types';
 
 function readPackageJson(repoPath: string): Record<string, unknown> | null {
@@ -127,6 +129,75 @@ function buildMigrationWarnings(detectedTools: DetectedTool[]): MigrationWarning
   return warnings;
 }
 
+// _pkg reserved for Phase 5.1 semver range matching — do not remove
+function buildActionItems(
+  detectedTools: DetectedTool[],
+  _pkg: Record<string, unknown>
+): ActionItem[] {
+  const items: ActionItem[] = [];
+  const criticalToolIds = new Set<string>();
+
+  for (const { tool, matchedPackages } of detectedTools) {
+    if (
+      tool.sdk_migration?.status === 'deprecated' ||
+      tool.sdk_migration?.status === 'migrating-from'
+    ) {
+      criticalToolIds.add(tool.id);
+      items.push({
+        severity: 'critical',
+        toolId: tool.id,
+        toolName: tool.name,
+        title: tool.sdk_migration.status === 'deprecated'
+          ? 'Deprecated SDK detected'
+          : 'Package has been renamed/migrated',
+        detail: tool.sdk_migration.notes ?? `Migrate from ${tool.sdk_migration.from_package ?? tool.id}`,
+        fix: tool.sdk_migration.to_package,
+      });
+    }
+
+    if (tool.trust_state === 'experimental' || tool.trust_state === 'abandoned') {
+      items.push({
+        severity: 'high',
+        toolId: tool.id,
+        toolName: tool.name,
+        title: tool.trust_state === 'abandoned' ? 'Abandoned tool in stack' : 'Experimental tool in stack',
+        detail: `${tool.name} has trust_state '${tool.trust_state}'. Production use carries stability risk.`,
+      });
+    }
+
+    const mig = tool.sdk_migration;
+    if (!criticalToolIds.has(tool.id) && mig?.from_package && mig.to_package) {
+      const isScoped = mig.from_package.startsWith('@');
+      const fromBase = isScoped
+        ? '@' + mig.from_package.split('@')[1]
+        : mig.from_package.split('@')[0];
+      if (matchedPackages.some(p => p === fromBase || p.startsWith(fromBase + '@'))) {
+        items.push({
+          severity: 'medium',
+          toolId: tool.id,
+          toolName: tool.name,
+          title: 'Package migration available',
+          detail: mig.notes ?? '',
+          fix: mig.to_package,
+        });
+      }
+    }
+
+    for (const ap of tool.anti_patterns ?? []) {
+      items.push({
+        severity: 'info',
+        toolId: tool.id,
+        toolName: tool.name,
+        title: 'Anti-pattern advisory',
+        detail: ap,
+      });
+    }
+  }
+
+  const order: Record<ActionSeverity, number> = { critical: 0, high: 1, medium: 2, info: 3 };
+  return items.sort((a, b) => order[a.severity] - order[b.severity]);
+}
+
 export interface RepoAuditJson {
   repoName: string;
   repoPath: string;
@@ -140,6 +211,14 @@ export interface RepoAuditJson {
   }>;
   migrationWarnings: MigrationWarning[];
   emergingTools: string[];
+  actionItems: Array<{
+    severity: string;
+    toolId: string;
+    toolName: string;
+    title: string;
+    detail: string;
+    fix?: string;
+  }>;
 }
 
 export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson> {
@@ -161,9 +240,10 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     .sort((a, b) => b.coverageScore - a.coverageScore);
 
   const migrationWarnings = buildMigrationWarnings(detectedTools);
+  const actionItems = buildActionItems(detectedTools, pkg);
 
   const emergingTools = detectedTools.filter(
-    d => d.tool.trust_state === 'emerging' || d.tool.trust_state === 'experimental'
+    d => d.tool.trust_state === 'emerging'
   );
 
   const result: AuditResult = {
@@ -174,6 +254,7 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     workflowCoverages,
     migrationWarnings,
     emergingTools,
+    actionItems,
   };
 
   return {
@@ -195,6 +276,7 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     })),
     migrationWarnings: result.migrationWarnings,
     emergingTools: result.emergingTools.map(d => d.tool.id),
+    actionItems: result.actionItems,
   };
 }
 
@@ -227,18 +309,17 @@ export async function repoAudit(
     .map(wf => computeWorkflowCoverage(wf, detectedToolIds))
     .filter(c => c.coveredPhases.length > 0)
     .sort((a, b) => b.coverageScore - a.coverageScore);
-  const migrationWarnings = buildMigrationWarnings(detectedTools);
-  const emergingTools = detectedTools.filter(
-    d => d.tool.trust_state === 'emerging' || d.tool.trust_state === 'experimental'
-  );
+  const actionItems = buildActionItems(detectedTools, pkg);
+  const emergingTools = detectedTools.filter(d => d.tool.trust_state === 'emerging');
   const result: AuditResult = {
     repoName: typeof pkg['name'] === 'string' ? pkg['name'] : path.basename(resolvedPath),
     repoPath: resolvedPath,
     totalDeps: deps.size,
     detectedTools,
     workflowCoverages,
-    migrationWarnings,
+    migrationWarnings: [],
     emergingTools,
+    actionItems,
   };
   printRepoAudit(result);
 }
