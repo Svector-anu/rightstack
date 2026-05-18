@@ -1,4 +1,5 @@
 import { loadCorpus } from '../corpus/loader';
+import { getFromPackageBase } from '../corpus/utils';
 import { printMigrate, printError } from '../output/formatter';
 import type { ToolRecord } from '../corpus/types';
 
@@ -7,9 +8,7 @@ function findMigrationByPackage(fromPackage: string): ToolRecord | undefined {
   for (const [, tool] of corpus.tools) {
     const mig = tool.sdk_migration;
     if (!mig?.from_package) continue;
-    const fromBase = mig.from_package.startsWith('@')
-      ? '@' + mig.from_package.split('@')[1]
-      : mig.from_package.split('@')[0];
+    const fromBase = getFromPackageBase(mig.from_package);
     if (fromPackage === fromBase || fromPackage === mig.from_package) return tool;
   }
   return undefined;

@@ -1,4 +1,5 @@
 import { loadCorpus } from '../corpus/loader';
+import { getFromPackageBase } from '../corpus/utils';
 import { printExplain, printError } from '../output/formatter';
 import type { ToolRecord } from '../corpus/types';
 
@@ -20,9 +21,7 @@ function findToolByQuery(query: string): ExplainMatch | undefined {
       const mig = tool.sdk_migration;
       let matchedAsDeprecated: string | undefined;
       if (mig?.from_package && (mig.status === 'migrating-from' || mig.status === 'deprecated')) {
-        const fromBase = mig.from_package.startsWith('@')
-          ? '@' + mig.from_package.split('@')[1]
-          : mig.from_package.split('@')[0];
+        const fromBase = getFromPackageBase(mig.from_package);
         if (query === fromBase || query === mig.from_package) {
           matchedAsDeprecated = query;
         }
@@ -34,9 +33,7 @@ function findToolByQuery(query: string): ExplainMatch | undefined {
   for (const [, tool] of corpus.tools) {
     const mig = tool.sdk_migration;
     if (!mig?.from_package) continue;
-    const fromBase = mig.from_package.startsWith('@')
-      ? '@' + mig.from_package.split('@')[1]
-      : mig.from_package.split('@')[0];
+    const fromBase = getFromPackageBase(mig.from_package);
     if (query === fromBase || query === mig.from_package) {
       return { tool, matchedAsDeprecated: query };
     }

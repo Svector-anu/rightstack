@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCorpus } from '../corpus/loader';
+import { getFromPackageBase } from '../corpus/utils';
 import { printRepoAudit } from '../output/formatter';
 import type { ToolRecord, WorkflowRecord } from '../corpus/types';
 import type {
@@ -114,8 +115,7 @@ function buildMigrationWarnings(detectedTools: DetectedTool[]): MigrationWarning
     if (!mig.from_package || !mig.to_package) continue;
 
     for (const matched of matchedPackages) {
-      // Normalize version suffix: "@solana/web3.js@^1" → "@solana/web3.js"
-      const fromBase = mig.from_package.split('@').slice(0, matched.startsWith('@') ? 2 : 1).join('@');
+      const fromBase = getFromPackageBase(mig.from_package);
       if (matched === fromBase || matched === mig.from_package) {
         warnings.push({
           toolId: tool.id,
@@ -167,10 +167,7 @@ function buildActionItems(
       let shouldFireCritical = true;
 
       if (mig.from_package) {
-        const raw = mig.from_package;
-        const fromBase = raw.startsWith('@')
-          ? '@' + raw.split('@')[1]
-          : raw.split('@')[0];
+        const fromBase = getFromPackageBase(mig.from_package);
         if (!matchedPackages.some(p => p === fromBase || p.startsWith(fromBase + '@'))) {
           shouldFireCritical = false;
         }
@@ -203,10 +200,7 @@ function buildActionItems(
 
     const mig = tool.sdk_migration;
     if (!criticalToolIds.has(tool.id) && mig?.from_package && mig.to_package) {
-      const isScoped = mig.from_package.startsWith('@');
-      const fromBase = isScoped
-        ? '@' + mig.from_package.split('@')[1]
-        : mig.from_package.split('@')[0];
+      const fromBase = getFromPackageBase(mig.from_package);
       if (matchedPackages.some(p => p === fromBase || p.startsWith(fromBase + '@'))) {
         items.push({
           severity: 'medium',
@@ -350,6 +344,7 @@ export async function repoAudit(
     .map(wf => computeWorkflowCoverage(wf, detectedToolIds))
     .filter(c => c.coveredPhases.length > 0)
     .sort((a, b) => b.coverageScore - a.coverageScore);
+  const migrationWarnings = buildMigrationWarnings(detectedTools);
   const actionItems = buildActionItems(detectedTools, pkg);
   const emergingTools = detectedTools.filter(d => d.tool.trust_state === 'emerging');
   const stackScore = computeStackScore(actionItems);
@@ -359,7 +354,7 @@ export async function repoAudit(
     totalDeps: deps.size,
     detectedTools,
     workflowCoverages,
-    migrationWarnings: [],
+    migrationWarnings,
     emergingTools,
     actionItems,
     stackScore,
