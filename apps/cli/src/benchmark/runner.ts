@@ -22,9 +22,8 @@ function findSuitePath(): string {
   throw new Error('Cannot locate benchmark-suite-v1.json. Set RIGHTSTACK_BENCHMARK_SUITE env var.');
 }
 
-const SUITE_PATH = findSuitePath();
-
 export function loadBenchmarkSuite(): BenchmarkSuite {
+  const SUITE_PATH = findSuitePath();
   if (!fs.existsSync(SUITE_PATH)) {
     throw new Error(`Benchmark suite not found: ${SUITE_PATH}`);
   }

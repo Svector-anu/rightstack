@@ -31,6 +31,9 @@ internals/
 notes.md
 task_plan.md
 
+# Corpus copy created by prepublishOnly — not tracked (source of truth is /data)
+apps/cli/data/
+
 # Logs
 *.log
 npm-debug.log*

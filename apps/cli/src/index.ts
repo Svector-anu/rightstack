@@ -21,7 +21,7 @@ const program = new Command();
 program
   .name('rightstack')
   .description('AI-native web3 stack intelligence CLI')
-  .version('0.1.0');
+  .version('0.3.0');
 
 program
   .command('recommend <query>')
