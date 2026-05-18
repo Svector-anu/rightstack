@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import chalk from 'chalk';
 import { recommend } from './commands/recommend';
 import { compare } from './commands/compare';
 import { workflow } from './commands/workflow';
@@ -16,12 +17,31 @@ import {
   benchmarkDeterminism,
 } from './commands/benchmark';
 
+function buildLogo(): string {
+  const m = chalk.gray;
+  const brand = chalk.bold.white;
+  const sub = chalk.dim;
+
+  return [
+    '',
+    `  ${m('╭─ ─╮')}`,
+    `  ${m('│   │')}  ${brand('RIGHTSTACK')}`,
+    `  ${m('╰─┬─╯')}  ${sub('AI-native web3 stack intelligence')}`,
+    `    ${m('│')}`,
+    `  ${m('╭─┴─╮')}  ${sub('v0.3.0')}`,
+    `  ${m('│   │')}`,
+    `  ${m('╰─ ─╯')}`,
+    '',
+  ].join('\n');
+}
+
 const program = new Command();
 
 program
   .name('rightstack')
   .description('AI-native web3 stack intelligence CLI')
-  .version('0.3.0');
+  .version('0.3.0')
+  .addHelpText('before', buildLogo());
 
 program
   .command('recommend <query>')
@@ -148,5 +168,9 @@ bench
   .action(async (opts: { runs?: number; queries?: string; json?: boolean }) => {
     await benchmarkDeterminism(opts);
   });
+
+if (process.argv.length <= 2) {
+  program.help();
+}
 
 program.parse(process.argv);

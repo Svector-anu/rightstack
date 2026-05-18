@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RightStack — AI-native web3 stack intelligence</title>
+  <meta name="description" content="Web3 stack intelligence for builders and AI agents. Get intent-aware, workflow-aware stack recommendations via CLI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:          #0a0a0a;
+      --bg-raised:   #0f0f0f;
+      --bg-code:     #111111;
+      --border:      #1e1e1e;
+      --border-dim:  #161616;
+      --text:        #d4d4d4;
+      --text-dim:    #666666;
+      --text-muted:  #444444;
+      --text-bright: #f0f0f0;
+      --accent:      #e8e8e8;
+      --green:       #4ade80;
+      --green-dim:   #1a3a26;
+      --sidebar-w:   240px;
+      --font:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #222 #0a0a0a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* ─── Layout ──────────────────────────────────────────── */
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── Sidebar ─────────────────────────────────────────── */
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg);
+      padding: 32px 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: #222; }
+
+    .sidebar-logo {
+      padding: 0 24px 28px;
+      border-bottom: 1px solid var(--border-dim);
+      margin-bottom: 20px;
+    }
+
+    .logo-ascii {
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: 0;
+      white-space: pre;
+      display: block;
+      margin-bottom: 10px;
+      font-family: var(--font);
+    }
+
+    .logo-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-bright);
+      letter-spacing: 0.08em;
+      display: block;
+    }
+
+    .logo-tag {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      display: block;
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    .nav-section {
+      padding: 0 0 20px;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 0 24px 8px;
+      display: block;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 6px 24px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+      transition: color 0.15s, background 0.15s;
+      line-height: 1.5;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: var(--bg-raised);
+    }
+
+    .nav-link.active {
+      color: var(--text-bright);
+      background: var(--bg-raised);
+      border-left: 2px solid var(--green);
+      padding-left: 22px;
+    }
+
+    .nav-link code {
+      font-family: var(--font);
+      font-size: 12px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px 24px 0;
+      border-top: 1px solid var(--border-dim);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-footer a:hover { color: var(--text-dim); }
+
+    /* ─── Hamburger ───────────────────────────────────────── */
+
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 200;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    .mobile-nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 150;
+    }
+
+    .mobile-nav-overlay.open {
+      display: block;
+    }
+
+    .mobile-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      z-index: 160;
+      overflow-y: auto;
+      padding: 32px 0;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+    }
+
+    .mobile-nav.open {
+      transform: translateX(0);
+    }
+
+    /* ─── Main content ────────────────────────────────────── */
+
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 820px;
+      padding: 80px 60px 120px;
+    }
+
+    /* ─── Hero ────────────────────────────────────────────── */
+
+    .hero {
+      padding-bottom: 72px;
+      border-bottom: 1px solid var(--border-dim);
+      margin-bottom: 72px;
+    }
+
+    .hero-logo {
+      margin-bottom: 36px;
+    }
+
+    .hero-ascii {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre;
+      font-family: var(--font);
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .hero-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-bright);
+      letter-spacing: 0.05em;
+      display: block;
+    }
+
+    .hero-tagline {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      display: block;
+      margin-top: 6px;
+      font-weight: 400;
+    }
+
+    .hero-description {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin: 28px 0 0;
+      max-width: 520px;
+      line-height: 1.8;
+    }
+
+    /* ─── Section ─────────────────────────────────────────── */
+
+    .section {
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--border-dim);
+      margin-bottom: 64px;
+    }
+
+    .section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 14px;
+      letter-spacing: 0.01em;
+    }
+
+    .section-desc {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      margin-bottom: 36px;
+      max-width: 540px;
+      line-height: 1.85;
+    }
+
+    /* ─── Code block ──────────────────────────────────────── */
+
+    .code-block {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      position: relative;
+      margin: 0 0 8px;
+    }
+
+    .code-block pre {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 0;
+    }
+
+    .code-block .prompt {
+      color: var(--text-muted);
+      user-select: none;
+      margin-right: 6px;
+    }
+
+    .code-block .cmd {
+      color: var(--text-bright);
+    }
+
+    .code-block .arg {
+      color: #93c5fd;
+    }
+
+    .code-block .output-line {
+      color: var(--text-dim);
+      font-size: 12.5px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 10px;
+      padding: 4px 9px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: color 0.15s, border-color 0.15s;
+      line-height: 1.4;
+    }
+
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: #333;
+    }
+
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green-dim);
+    }
+
+    /* ─── Install hero block ──────────────────────────────── */
+
+    .install-block {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 28px;
+      position: relative;
+      min-width: 320px;
+    }
+
+    .install-block code {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-bright);
+      letter-spacing: 0.02em;
+    }
+
+    .install-block .install-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 10px;
+      padding: 4px 10px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .install-block .install-copy:hover {
+      color: var(--text-bright);
+      border-color: #333;
+      background: #151515;
+    }
+
+    .install-block .install-copy.copied {
+      color: var(--green);
+      border-color: var(--green-dim);
+      background: var(--green-dim);
+    }
+
+    /* ─── Command sections ────────────────────────────────── */
+
+    .cmd-entry {
+      margin-bottom: 48px;
+    }
+
+    .cmd-entry:last-child {
+      margin-bottom: 0;
+    }
+
+    .cmd-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cmd-name {
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-bright);
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .cmd-badge {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 4px 8px;
+      border: 1px solid;
+      line-height: 1.2;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    .badge-key {
+      color: var(--green);
+      border-color: var(--green-dim);
+      background: var(--green-dim);
+    }
+
+    .badge-free {
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+
+    .cmd-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      line-height: 1.8;
+      max-width: 560px;
+    }
+
+    /* ─── Note ────────────────────────────────────────────── */
+
+    .note {
+      border-left: 2px solid var(--border);
+      padding: 12px 18px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.7;
+    }
+
+    .note strong {
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    /* ─── Future section ──────────────────────────────────── */
+
+    .future-box {
+      border: 1px solid var(--border-dim);
+      padding: 28px 32px;
+      background: var(--bg-raised);
+    }
+
+    .future-box p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.85;
+      margin-top: 10px;
+    }
+
+    .future-box a {
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.15s;
+    }
+
+    .future-box a:hover {
+      border-color: var(--text-dim);
+    }
+
+    /* ─── Footer ──────────────────────────────────────────── */
+
+    .footer {
+      padding: 40px 0 0;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer .sep {
+      color: var(--border);
+    }
+
+    /* ─── Inline code ─────────────────────────────────────── */
+
+    code {
+      font-family: var(--font);
+      font-size: 12.5px;
+      color: var(--text);
+      background: #141414;
+      padding: 1px 5px;
+    }
+
+    /* ─── Responsive ──────────────────────────────────────── */
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .hamburger { display: block; }
+      .main {
+        margin-left: 0;
+        padding: 48px 28px 80px;
+      }
+      .install-block {
+        min-width: unset;
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main {
+        padding: 40px 20px 80px;
+      }
+      .hero-name { font-size: 22px; }
+      .hero-ascii { font-size: 11px; }
+    }
+
+    /* ─── Scroll animations ───────────────────────────────── */
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hamburger -->
+<button class="hamburger" id="hamburger" aria-label="Open navigation">&#9776;</button>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobile-overlay"></div>
+
+<!-- Mobile nav -->
+<nav class="mobile-nav" id="mobile-nav" aria-label="Site navigation">
+  <div class="sidebar-logo">
+    <span class="logo-ascii">╭─ ─╮
+│   │
+╰─┬─╯
+  │
+╭─┴─╮
+│   │
+╰─ ─╯</span>
+    <span class="logo-name">RIGHTSTACK</span>
+    <span class="logo-tag">AI-native web3 stack intelligence</span>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">Overview</span>
+    <a href="#install" class="nav-link" onclick="closeMobileNav()">Install</a>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">Commands</span>
+    <a href="#recommend" class="nav-link" onclick="closeMobileNav()"><code>recommend</code></a>
+    <a href="#compare" class="nav-link" onclick="closeMobileNav()"><code>compare</code></a>
+    <a href="#workflow" class="nav-link" onclick="closeMobileNav()"><code>workflow</code></a>
+    <a href="#inspect" class="nav-link" onclick="closeMobileNav()"><code>inspect</code></a>
+    <a href="#explain" class="nav-link" onclick="closeMobileNav()"><code>explain</code></a>
+    <a href="#migrate" class="nav-link" onclick="closeMobileNav()"><code>migrate</code></a>
+    <a href="#repo-audit" class="nav-link" onclick="closeMobileNav()"><code>repo-audit</code></a>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">More</span>
+    <a href="#extend" class="nav-link" onclick="closeMobileNav()">MCP / Tools</a>
+  </div>
+</nav>
+
+<!-- Desktop sidebar -->
+<aside class="sidebar" aria-label="Site navigation">
+  <div class="sidebar-logo">
+    <span class="logo-ascii">╭─ ─╮
+│   │
+╰─┬─╯
+  │
+╭─┴─╮
+│   │
+╰─ ─╯</span>
+    <span class="logo-name">RIGHTSTACK</span>
+    <span class="logo-tag">AI-native web3 stack intelligence</span>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Overview</span>
+    <a href="#install" class="nav-link">Install</a>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Commands</span>
+    <a href="#recommend" class="nav-link"><code>recommend</code></a>
+    <a href="#compare" class="nav-link"><code>compare</code></a>
+    <a href="#workflow" class="nav-link"><code>workflow</code></a>
+    <a href="#inspect" class="nav-link"><code>inspect</code></a>
+    <a href="#explain" class="nav-link"><code>explain</code></a>
+    <a href="#migrate" class="nav-link"><code>migrate</code></a>
+    <a href="#repo-audit" class="nav-link"><code>repo-audit</code></a>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">More</span>
+    <a href="#extend" class="nav-link">MCP / Tools</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <span>v0.3.0 &nbsp;·&nbsp; MIT</span>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="layout">
+  <main class="main">
+
+    <!-- Hero -->
+    <section id="install" class="hero">
+      <div class="hero-logo">
+        <span class="hero-ascii">╭─ ─╮
+│   │  <span style="color: var(--text-bright); font-weight: 700; letter-spacing: 0.08em;">RIGHTSTACK</span>
+╰─┬─╯  <span style="color: var(--text-muted);">AI-native web3 stack intelligence</span>
+  │
+╭─┴─╮
+│   │
+╰─ ─╯</span>
+      </div>
+
+      <p class="hero-description">
+        Web3 stack intelligence for builders and AI agents. Get intent-aware, workflow-aware recommendations across Base, Farcaster, Solana, and the broader onchain ecosystem.
+      </p>
+
+      <div class="install-block">
+        <code id="install-cmd">npm install -g rightstack</code>
+        <button class="install-copy" data-copy="npm install -g rightstack" aria-label="Copy install command">copy</button>
+      </div>
+    </section>
+
+    <!-- Commands section header -->
+    <section id="commands" class="section fade-in">
+      <span class="section-label">Reference</span>
+      <h2 class="section-title">Commands</h2>
+      <p class="section-desc">
+        All commands run locally. The <code>recommend</code> command calls Claude via your API key. Everything else works offline against the local corpus.
+      </p>
+    </section>
+
+    <!-- recommend -->
+    <div id="recommend" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack recommend</span>
+        <span class="cmd-badge badge-key">requires ANTHROPIC_API_KEY</span>
+      </div>
+      <p class="cmd-desc">
+        Describe your build goal in plain language. RightStack reasons over the local tool corpus and returns a stack recommendation with workflow phases, tradeoffs, and ecosystem context.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack recommend &quot;consumer farcaster miniapp with embedded wallet&quot;">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack recommend </span><span class="arg">"consumer farcaster miniapp with embedded wallet"</span></pre>
+      </div>
+      <div class="note">
+        <strong>Note:</strong> Set <code>ANTHROPIC_API_KEY</code> in your environment before running. RightStack uses Claude to synthesize recommendations — no key, no reasoning.
+      </div>
+    </div>
+
+    <!-- compare -->
+    <div id="compare" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack compare</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Head-to-head comparison of two tools. Returns a structured breakdown of capabilities, tradeoffs, maturity, and which use cases each tool wins.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack compare privy dynamic">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack compare </span><span class="arg">privy dynamic</span></pre>
+      </div>
+    </div>
+
+    <!-- workflow -->
+    <div id="workflow" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack workflow</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Retrieve a full workflow definition for a known build pattern. Returns phases, recommended tools per phase, and integration order.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack workflow embedded-wallet-onboarding">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack workflow </span><span class="arg">embedded-wallet-onboarding</span></pre>
+      </div>
+    </div>
+
+    <!-- inspect -->
+    <div id="inspect" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack inspect</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Deep-dive into a specific tool record. Returns the full structured entry including ecosystem, category, trust signals, known issues, and package links.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack inspect wagmi">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack inspect </span><span class="arg">wagmi</span></pre>
+      </div>
+    </div>
+
+    <!-- explain -->
+    <div id="explain" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack explain</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Look up a tool by npm package name, GitHub slug, or known ID. Useful when you encounter an unfamiliar dependency and want context fast.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack explain @farcaster/hub-web">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack explain </span><span class="arg">@farcaster/hub-web</span></pre>
+      </div>
+    </div>
+
+    <!-- migrate -->
+    <div id="migrate" class="cmd-entry fade-in">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack migrate</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Get a migration guide for a deprecated or superseded package. Returns the recommended replacement, breaking changes, and a step-by-step upgrade path.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack migrate web3.js">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack migrate </span><span class="arg">web3.js</span></pre>
+      </div>
+    </div>
+
+    <!-- repo-audit -->
+    <div id="repo-audit" class="cmd-entry fade-in" style="margin-bottom: 0;">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack repo-audit</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Audits a local repository's dependency tree against the RightStack corpus. Surfaces deprecated packages, missing ecosystem primitives, and known stack gaps.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack repo-audit .">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack repo-audit </span><span class="arg">.</span></pre>
+      </div>
+      <div class="code-block" style="margin-top:4px;">
+        <button class="copy-btn" data-copy="rightstack repo-audit ./my-app">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack repo-audit </span><span class="arg">./my-app</span>
+<span class="output-line">  ✓ detected 24 packages</span>
+<span class="output-line">  ✗ web3.js — deprecated, migrate to viem</span>
+<span class="output-line">  ⚠ no wallet abstraction layer found</span>
+<span class="output-line">  → recommended: @privy-io/react-auth or dynamic-labs</span></pre>
+      </div>
+    </div>
+
+    <!-- Spacer between commands and next section -->
+    <div style="height:64px; border-bottom:1px solid var(--border-dim); margin-bottom:64px;"></div>
+
+    <!-- MCP / Extend -->
+    <section id="extend" class="section fade-in" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+      <span class="section-label">Coming soon</span>
+      <h2 class="section-title">MCP / Tools</h2>
+      <div class="future-box">
+        <p>
+          RightStack is being extended as an MCP server — giving AI coding agents direct access to the stack corpus, workflow retrieval, and comparison tools as native tool calls. If you're building agentic tooling or want early access, <a href="mailto:ezekielkolapo94@gmail.com">drop us a note</a>.
+        </p>
+        <p style="margin-top:12px; font-size:12px; color: var(--text-muted);">
+          Tool integrations for Cursor, Windsurf, and Claude Code are planned for a future release.
+        </p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>rightstack v0.3.0</span>
+      <span class="sep">·</span>
+      <span>MIT</span>
+      <span class="sep">·</span>
+      <a href="https://github.com/Svector-anu/rightstack" style="color:var(--text-muted); border-bottom:1px solid var(--border); transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--text-muted)'" onmouseout="this.style.borderColor='var(--border)'">github</a>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // Copy to clipboard
+  function setupCopy(btn) {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.copy;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1800);
+      });
+    });
+  }
+
+  document.querySelectorAll('[data-copy]').forEach(setupCopy);
+
+  // Mobile nav
+  const hamburger = document.getElementById('hamburger');
+  const overlay   = document.getElementById('mobile-overlay');
+  const mobileNav = document.getElementById('mobile-nav');
+
+  function openMobileNav() {
+    mobileNav.classList.add('open');
+    overlay.classList.add('open');
+  }
+
+  function closeMobileNav() {
+    mobileNav.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  hamburger.addEventListener('click', openMobileNav);
+  overlay.addEventListener('click', closeMobileNav);
+
+  // Active nav link on scroll
+  const sections = ['install','recommend','compare','workflow','inspect','explain','migrate','repo-audit','extend'];
+  const navLinks  = document.querySelectorAll('.sidebar .nav-link, .mobile-nav .nav-link');
+
+  function setActive(id) {
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+    });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // Fade-in on scroll
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const fadeObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        fadeObs.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -60px 0px' });
+
+  fadeEls.forEach(el => fadeObs.observe(el));
+</script>
+</body>
+</html>
