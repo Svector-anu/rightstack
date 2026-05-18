@@ -26,6 +26,11 @@ out/
 # Claude Code project settings (local only)
 .claude/
 
+# Internal planning, research, and session files — never push
+internals/
+notes.md
+task_plan.md
+
 # Logs
 *.log
 npm-debug.log*

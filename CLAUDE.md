@@ -6,19 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 RightStack is an AI-native web3 development intelligence system — not a chatbot, not a RAG wrapper, not a SaaS dashboard. The product is a **reasoning layer** that gives intent-aware, workflow-aware, ecosystem-aware stack recommendations to builders and AI coding agents.
 
-Full product constitution: [`docs/CLAUDE.md`](docs/CLAUDE.md). Read it before doing any product work.
+Full product constitution: `internals/docs/CLAUDE.md` (local only — gitignored). Read it before doing any product work.
 
 ---
 
 ## Current Stage
 
-**Foundation.** No application code exists yet. The active work is defining:
-1. Ontology (`docs/ONTOLOGY.md`)
-2. Workflows (`docs/WORKFLOWS.md`)
-3. Retrieval philosophy (`docs/RETRIEVAL.md`)
-4. Trust model (`docs/TRUST_MODEL.md`)
+**Shipped v0.3.0.** CLI is functional with 8 commands. Active work is Phase 5.2 (corpus validation, pipeline merge).
 
-Do not build UI, vector databases at scale, autonomous agents, or deployment infrastructure. Not yet.
+Public docs: `docs/SYSTEM_ARCHITECTURE.md`, `docs/ONTOLOGY.md`, `docs/TRUST_MODEL.md`.
 
 ---
 
