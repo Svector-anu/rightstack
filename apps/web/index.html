@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RightStack — AI-native web3 stack intelligence</title>
-  <meta name="description" content="Web3 stack intelligence for builders and AI agents. Get intent-aware, workflow-aware stack recommendations via CLI." />
+  <meta name="description" content="Your agent doesn't need more skills — it needs the right stack. Intent-aware web3 stack intelligence for builders and AI coding agents." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
@@ -618,7 +618,7 @@
   </div>
   <div class="nav-section">
     <span class="nav-label">More</span>
-    <a href="#extend" class="nav-link" onclick="closeMobileNav()">MCP / Tools</a>
+    <a href="#extend" class="nav-link" onclick="closeMobileNav()">MCP Server</a>
   </div>
 </nav>
 
@@ -654,7 +654,7 @@
 
   <div class="nav-section">
     <span class="nav-label">More</span>
-    <a href="#extend" class="nav-link">MCP / Tools</a>
+    <a href="#extend" class="nav-link">MCP Server</a>
   </div>
 
   <div class="sidebar-footer">
@@ -679,7 +679,7 @@
       </div>
 
       <p class="hero-description">
-        Web3 stack intelligence for builders and AI agents. Get intent-aware, workflow-aware recommendations across Base, Farcaster, Solana, and the broader onchain ecosystem.
+        Your agent doesn't need more skills — it needs the right stack. Intent-aware, workflow-aware stack intelligence for builders and AI coding agents across the onchain ecosystem.
       </p>
 
       <div class="install-block">
@@ -816,18 +816,45 @@
     <!-- Spacer between commands and next section -->
     <div style="height:64px; border-bottom:1px solid var(--border-dim); margin-bottom:64px;"></div>
 
-    <!-- MCP / Extend -->
+    <!-- MCP Server -->
     <section id="extend" class="section fade-in" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
-      <span class="section-label">Coming soon</span>
-      <h2 class="section-title">MCP / Tools</h2>
-      <div class="future-box">
-        <p>
-          RightStack is being extended as an MCP server — giving AI coding agents direct access to the stack corpus, workflow retrieval, and comparison tools as native tool calls. If you're building agentic tooling or want early access, <a href="mailto:ezekielkolapo94@gmail.com">drop us a note</a>.
-        </p>
-        <p style="margin-top:12px; font-size:12px; color: var(--text-muted);">
-          Tool integrations for Cursor, Windsurf, and Claude Code are planned for a future release.
-        </p>
+      <span class="section-label">MCP Server</span>
+      <h2 class="section-title">Use with AI agents</h2>
+      <p class="section-desc">
+        <code>rightstack-mcp</code> is a fully working MCP server. Wire it into Claude Code, Cursor, Windsurf, or any MCP-compatible host and your AI agent gets direct access to stack intelligence as native tool calls.
+      </p>
+
+      <div class="cmd-block">
+        <div class="cmd-meta">
+          <span class="cmd-name">Claude Code</span>
+        </div>
+        <div class="code-block">
+          <pre><span class="prompt">$</span> claude mcp add rightstack -- rightstack-mcp</pre>
+          <button class="copy-btn" data-copy="claude mcp add rightstack -- rightstack-mcp" aria-label="Copy">copy</button>
+        </div>
+        <p class="cmd-desc">Adds RightStack as an MCP server to your Claude Code config.</p>
       </div>
+
+      <div class="cmd-block">
+        <div class="cmd-meta">
+          <span class="cmd-name">Cursor / Windsurf / other</span>
+        </div>
+        <div class="code-block">
+          <pre>{
+  "mcpServers": {
+    "rightstack": {
+      "command": "rightstack-mcp"
+    }
+  }
+}</pre>
+          <button class="copy-btn" data-copy='{"mcpServers":{"rightstack":{"command":"rightstack-mcp"}}}' aria-label="Copy">copy</button>
+        </div>
+        <p class="cmd-desc">Add to your MCP config file (e.g. <code>~/.cursor/mcp.json</code>).</p>
+      </div>
+
+      <p class="section-desc" style="margin-top:24px;">
+        Exposed tools: <code>recommend</code> &nbsp;·&nbsp; <code>workflow</code> &nbsp;·&nbsp; <code>repo_audit</code>
+      </p>
     </section>
 
     <!-- Footer -->
