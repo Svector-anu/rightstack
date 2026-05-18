@@ -1,0 +1,162 @@
+{
+  "id": "telegram-miniapp",
+  "name": "Telegram Mini App Workflow",
+  "goal": "Build a Telegram Mini App (TMA) with onchain features — embedded wallet creation, token transactions, and optional gasless UX — for Telegram's 900M+ user base.",
+  "goal_tags": [
+    "telegram-miniapp",
+    "telegram-mini-app",
+    "tma",
+    "telegram-app",
+    "telegram-wallet",
+    "embedded-wallet",
+    "telegram-web-app",
+    "social-wallet",
+    "telegram-onchain",
+    "bot-app"
+  ],
+  "ecosystems": ["ethereum", "base"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["dynamic"],
+      "alternative_tools": [
+        {
+          "tool_id": "privy",
+          "when_to_prefer": "When the Telegram Mini App targets entirely new-to-crypto users and embedded wallet creation is the only required flow. Privy's Telegram embedded wallet integration is straightforward for email and Telegram account-based wallet creation."
+        },
+        {
+          "tool_id": "coinbase-smart-wallet",
+          "when_to_prefer": "When targeting Base-native deployment and users already have the Coinbase app. Coinbase Smart Wallet provides passkey-based signing within Telegram's WebApp environment."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Telegram Mini Apps run inside Telegram's WebApp container, which has browser API restrictions that affect wallet connection flows. Dynamic has explicit Telegram Mini App support and handles these restrictions. Key constraint: WalletConnect modal flows do not work reliably inside Telegram's in-app browser — use embedded wallet creation as the primary flow, not wallet connection prompts. Dynamic's embedded wallet works inside the TMA container. Use Telegram.WebApp.initData for user identity — do not rely on email alone, since Telegram users identify by username and phone number."
+    },
+    {
+      "id": "chain",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When the Mini App needs multi-chain support beyond Base and Ethereum, or when already on QuickNode for other chains."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Base is the recommended chain for Telegram Mini Apps: low fees, fast finality, strong developer ecosystem. Alchemy is the reference RPC for Base and Ethereum. For Solana-native Telegram Mini Apps, replace with Helius."
+    },
+    {
+      "id": "ui",
+      "role": "ui",
+      "required": false,
+      "primary_tools": ["wagmi"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "wagmi provides lightweight React hooks for wallet interactions inside the Telegram WebApp container. Avoid heavy UI component libraries — Telegram Mini Apps have a 5MB bundle size soft limit and users are on mobile. Keep the UI thin and use Telegram's native UI patterns (MainButton, BackButton, HapticFeedback) via the Telegram.WebApp SDK alongside wagmi for onchain interactions."
+    },
+    {
+      "id": "gasless-actions",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [
+        {
+          "tool_id": "zerodev",
+          "when_to_prefer": "When session keys are needed to allow the Mini App to submit transactions on behalf of the user without a signing prompt on every action. Particularly useful for games or high-frequency interaction TMAs."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Gasless transactions are especially important for Telegram Mini Apps — users accessing via Telegram have zero tolerance for 'you need ETH' errors. Gas sponsorship should be treated as a required feature for consumer TMAs, not optional. Pimlico's gas policy API handles per-user and per-action spending limits. Configure budget caps before launch.",
+      "scale_overrides": {
+        "hackathon": "Skip unless the demo's core mechanic requires a transaction. Focus on the Mini App UI and wallet creation flow.",
+        "production": "Treat as required for any user-facing transaction. Budget for gas sponsorship costs against expected DAU and transactions per user per day."
+      }
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["inngest"],
+      "alternative_tools": [
+        {
+          "tool_id": "trigger-dev",
+          "when_to_prefer": "When the Mini App has complex backend flows with many sequential steps, retries, and observability requirements. Trigger.dev's step-level visibility is better for complex agent or multi-step pipelines."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add orchestration when the Mini App has backend jobs: processing payments, distributing rewards, updating leaderboards, sending Telegram notifications. Inngest integrates cleanly with Next.js and handles Telegram bot webhook events as durable background jobs.",
+      "scale_overrides": {
+        "production": "Required if the app sends automated Telegram messages or has reward distribution logic. Unorchestrated webhook processing causes duplicate messages and lost events."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Telegram Mini Apps are opened inside Telegram's in-app browser — test every wallet flow in an actual Telegram environment, not a desktop browser. Many wallet SDK features behave differently in the TMA container.",
+    "Telegram.WebApp.initData is signed by Telegram and must be verified server-side to authenticate users — never trust client-side user data from a TMA without backend verification.",
+    "Bundle size matters — Telegram Mini Apps load over mobile data. Keep JavaScript bundle under 500KB gzipped. Audit bundle size before launch.",
+    "Telegram's MainButton and BackButton should be used for primary actions — they are native to the TMA UX and feel faster than custom UI buttons.",
+    "Gas sponsorship economics must be modeled before launch. Telegram apps can go viral quickly — an unexpected surge in DAU can exhaust a gas sponsorship budget in hours without per-user spending caps."
+  ],
+  "tradeoffs": [
+    "Embedded wallet creation is required for Telegram TMAs targeting new users — WalletConnect modal flows do not work reliably inside Telegram's browser. This limits advanced users who prefer hardware wallets.",
+    "Base is recommended for low fees, but the Telegram user base is global and includes significant Solana and TON users — scope the chain choice to your specific audience.",
+    "Inngest adds backend complexity but solves Telegram's unreliable webhook delivery problem — webhook processing without durability leads to lost events at scale.",
+    "Pimlico gas sponsorship requires ongoing cost modeling — it shifts gas cost to the developer, which is correct for consumer UX but requires a sustainable economics model."
+  ],
+  "anti_patterns": [
+    "Using WalletConnect modal flows inside Telegram — the modal popup flow does not work reliably in Telegram's in-app browser. Use embedded wallet creation as the primary path.",
+    "Not verifying Telegram.WebApp.initData server-side — any unverified user identity claim in a TMA is a security vulnerability.",
+    "Deploying without testing inside actual Telegram — desktop browser testing misses critical Mobile Safari and Telegram-container rendering differences.",
+    "Requiring users to have ETH for transactions — Telegram's mainstream audience has zero crypto context. Gas sponsorship is non-negotiable for good UX.",
+    "Building without Telegram native UI patterns (MainButton, BackButton, HapticFeedback) — custom buttons that mimic Telegram's UX feel slower and out-of-place compared to native elements."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "no_existing_wallet",
+      "modification": "Dynamic embedded wallet with Telegram login as the identity source is the recommended flow. Configure Telegram login as the primary auth method alongside email.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "Promote gasless-actions phase to required. Pimlico gas policy must be configured with per-user daily limits before any production launch.",
+      "affects_phase": "gasless-actions"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Minimum viable TMA stack: Dynamic + Alchemy + wagmi. Skip gasless and orchestration. Use Telegram's initData for user identity, create an embedded wallet on first open.",
+      "affects_phase": "gasless-actions"
+    },
+    {
+      "constraint": "solana_ecosystem",
+      "modification": "Replace alchemy-rpc with helius for the chain RPC phase. Replace wagmi with Solana wallet adapter hooks. Dynamic still works for the wallet phase.",
+      "affects_phase": "chain"
+    }
+  ],
+  "retrieval_tags": [
+    "telegram",
+    "telegram-mini-app",
+    "tma",
+    "telegram-wallet",
+    "telegram-onchain",
+    "dynamic",
+    "inngest",
+    "pimlico",
+    "wagmi",
+    "alchemy",
+    "gasless",
+    "base"
+  ],
+  "source": {
+    "derived_from": "corpus-expansion — CEO review gap analysis. Telegram Mini App pattern validated against TON/EVM TMA production patterns.",
+    "last_verified": "2026-05-18"
+  },
+  "updated_at": "2026-05-18"
+}

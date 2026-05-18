@@ -1,0 +1,169 @@
+{
+  "id": "cross-chain-app",
+  "name": "Cross-Chain App Workflow",
+  "goal": "Build an application that operates across multiple chains — EVM (Base, Ethereum) and/or Solana — with a unified wallet experience, cross-chain asset visibility, and chain-specific RPC access.",
+  "goal_tags": [
+    "cross-chain",
+    "multichain",
+    "multi-chain",
+    "cross-chain-app",
+    "multi-chain-wallet",
+    "evm-solana",
+    "chain-agnostic",
+    "portfolio",
+    "unified-wallet",
+    "cross-chain-bridge",
+    "interoperability"
+  ],
+  "ecosystems": ["ethereum", "base", "solana"],
+  "scale": ["mvp", "production"],
+  "user_types": ["advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["dynamic"],
+      "alternative_tools": [
+        {
+          "tool_id": "reown",
+          "when_to_prefer": "When the app only needs to connect existing wallets across EVM chains — no embedded wallet creation needed. Reown (formerly WalletConnect) is the reference standard for connecting hardware wallets, MetaMask, and Ledger across EVM chains."
+        },
+        {
+          "tool_id": "privy",
+          "when_to_prefer": "When the app targets new users who need an embedded wallet across multiple chains. Privy supports cross-chain embedded wallets but without the external wallet connection breadth of Dynamic."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Dynamic is the correct choice for cross-chain apps because it is natively multi-chain — it supports EVM chains, Solana, Aptos, and more in a single SDK, handling both embedded wallet creation and external wallet connection (MetaMask, Phantom, Coinbase Wallet, Backpack) across chains. A cross-chain app that forces users to connect a different wallet for each chain will have catastrophic UX. Dynamic unifies the wallet context. Use Dynamic's network switcher to handle the EVM ↔ Solana transition cleanly."
+    },
+    {
+      "id": "evm-rpc",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When the app needs a single RPC provider for ALL chains including Solana, Polygon, Arbitrum, and others. QuickNode supports more chains than Alchemy in a single account. If chain breadth matters more than Base/Ethereum optimization, use QuickNode."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "For EVM chains (Base, Ethereum, Polygon, Arbitrum), Alchemy provides the highest quality endpoints with enhanced APIs. If the cross-chain app includes Solana, a second RPC provider is needed for the Solana side — see the solana-rpc phase."
+    },
+    {
+      "id": "solana-rpc",
+      "role": "data-indexing",
+      "required": false,
+      "primary_tools": ["helius"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When already on QuickNode for EVM chains and want a single provider for all chains."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add this phase when the app includes Solana chain support. Helius provides Solana RPC + enhanced transaction parsing, DAS API for digital assets, and webhook support for Solana wallet activity. Required alongside alchemy-rpc if the app spans both EVM and Solana.",
+      "scale_overrides": {
+        "mvp": "Skip if EVM-only in MVP. Add Solana support as a follow-on phase — do not attempt full cross-chain from day one if not strictly required."
+      }
+    },
+    {
+      "id": "market-data",
+      "role": "market-data",
+      "required": false,
+      "primary_tools": ["birdeye"],
+      "alternative_tools": [
+        {
+          "tool_id": "coingecko",
+          "when_to_prefer": "When the app only needs EVM token prices and does not require Solana-specific portfolio data. CoinGecko has broader token coverage but no Solana portfolio analytics."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "For cross-chain portfolio apps, Birdeye provides unified token price and portfolio data across Solana and EVM chains — a single API that aggregates DEX prices from both ecosystems. Required for any app that shows 'your total portfolio value' across chains.",
+      "scale_overrides": {
+        "hackathon": "Skip unless portfolio display is the core demo feature."
+      }
+    },
+    {
+      "id": "gasless",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["pimlico"],
+      "alternative_tools": [
+        {
+          "tool_id": "zerodev",
+          "when_to_prefer": "When session keys or advanced smart account programmability across EVM chains is needed, beyond standard gas sponsorship."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Gas sponsorship applies to EVM chains only — Solana has native priority fee mechanics handled separately. If the app sponsors gas on Base/Ethereum but uses Solana natively, Pimlico covers EVM and Jito (from the solana-consumer-app workflow) covers Solana priority fees. Note: cross-chain gas sponsorship requires separate configurations per chain.",
+      "scale_overrides": {
+        "mvp": "Optional. Add when the EVM-side user flows require transactions and user-facing gas fees degrade UX."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Cross-chain UX is hard. The single biggest UX failure in cross-chain apps is forcing users to think about which chain they are on. Dynamic's network abstraction helps, but the app must handle chain-switching errors, wrong-network states, and pending transactions across chains gracefully.",
+    "Chain-specific features are real: Solana accounts have rent, EVM accounts have nonce, Solana transactions expire after ~90 seconds, EVM transactions can be replaced. Build chain-specific error handling, not a generic error handler.",
+    "Two RPC provider relationships (Alchemy + Helius) means two API keys, two rate limits, and two billing relationships. Build monitoring for both from day one.",
+    "Bridging assets across chains is explicitly out of scope for this workflow — bridging requires integrating a cross-chain bridge protocol (LayerZero, Wormhole, Across). If bridging is required, it is a separate feature with significant security surface area.",
+    "Token addresses are chain-specific — the same token (e.g., USDC) has different contract addresses on Base, Ethereum, and Solana. Build a token registry abstraction that maps symbol → chain → address to avoid hardcoded address errors."
+  ],
+  "tradeoffs": [
+    "Dynamic's multi-chain support is excellent for wallet management but adds SDK complexity compared to a chain-specific library. The UX improvement from unified wallet context is worth the setup overhead.",
+    "Two RPC providers (Alchemy + Helius) is more complex than one but provides optimal quality per chain. QuickNode as a single provider trades per-chain optimization for operational simplicity.",
+    "Building cross-chain from day one vs. expanding later: expanding chain support later is significantly harder than building multi-chain architecture from the start. If Solana is on the product roadmap, include Dynamic (not a Solana-incompatible EVM-only wallet SDK) from day one.",
+    "Birdeye for cross-chain portfolio data is opinionated — Solana price data is excellent, EVM data is good but not as comprehensive as Alchemy's token API. Multi-chain portfolio apps may need to reconcile data from multiple sources."
+  ],
+  "anti_patterns": [
+    "Using a chain-specific wallet SDK (wagmi-only, Solana-wallet-adapter-only) for a cross-chain app — forces separate wallet connections per chain, which is an UX anti-pattern.",
+    "Treating cross-chain as 'just add another RPC endpoint' — chain-specific semantics (account model, transaction lifecycle, fee model, finality guarantees) require chain-specific handling throughout the stack.",
+    "Building bridge functionality in-house — cross-chain bridging is a security-critical primitive. Use established bridge protocols (LayerZero, Wormhole) or exclude bridging from scope.",
+    "Hardcoding token addresses without a chain-registry abstraction — the same token has different addresses on each chain. A hardcoded address that works on Ethereum will be wrong on Base or Solana.",
+    "Not handling chain-switching UX — users on the wrong chain should get a clear 'switch to X' prompt, not a cryptic transaction failure."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "evm_only",
+      "modification": "Remove the solana-rpc phase. Use Alchemy + wagmi for EVM-only cross-chain (Base, Ethereum, Polygon, Arbitrum). Replace Dynamic with Reown if no embedded wallet creation is needed.",
+      "affects_phase": "solana-rpc"
+    },
+    {
+      "constraint": "has_existing_wallet",
+      "modification": "Use Reown for external wallet connection across EVM chains. Use Dynamic if Solana wallet support is also needed.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Pick one chain for the MVP and build chain-specific. Add cross-chain support in a follow-on. A hackathon cross-chain implementation is almost always a single-chain demo with cross-chain branding.",
+      "affects_phase": "evm-rpc"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Add Vercel AI SDK for portfolio analysis, trade recommendations, or cross-chain data interpretation. Pass aggregated Birdeye + Alchemy token data as context to the LLM.",
+      "affects_phase": "market-data"
+    }
+  ],
+  "retrieval_tags": [
+    "cross-chain",
+    "multichain",
+    "multi-chain",
+    "dynamic",
+    "alchemy",
+    "helius",
+    "birdeye",
+    "cross-chain-wallet",
+    "evm-solana",
+    "portfolio",
+    "unified-wallet"
+  ],
+  "source": {
+    "derived_from": "corpus-expansion — CEO review gap analysis. Cross-chain app pattern validated against multi-chain production apps.",
+    "last_verified": "2026-05-18"
+  },
+  "updated_at": "2026-05-18"
+}

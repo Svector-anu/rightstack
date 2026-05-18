@@ -1,0 +1,155 @@
+{
+  "id": "onchain-gaming",
+  "name": "Onchain Gaming Workflow",
+  "goal": "Build an onchain game where player actions, assets (NFTs, tokens), and game state are recorded onchain — with smooth UX via session keys and gasless transactions so players never think about gas.",
+  "goal_tags": [
+    "onchain-game",
+    "onchain-gaming",
+    "blockchain-game",
+    "web3-game",
+    "nft-game",
+    "session-keys",
+    "gasless-gaming",
+    "smart-account",
+    "player-wallet",
+    "game-assets",
+    "erc-4337",
+    "game-economy"
+  ],
+  "ecosystems": ["base", "ethereum"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["privy"],
+      "alternative_tools": [
+        {
+          "tool_id": "dynamic",
+          "when_to_prefer": "When the game needs to support both new players (embedded wallet creation) and existing wallet holders (Phantom, MetaMask, Coinbase Wallet) in the same flow. Dynamic handles the hybrid case."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Games require frictionless onboarding — players must get into gameplay immediately. Privy's email/social login creates an embedded wallet in seconds with no crypto knowledge required. This is the right default for consumer games targeting non-crypto audiences. The wallet phase must be invisible to the player — the goal is for the player to think 'I created an account', not 'I created a blockchain wallet'."
+    },
+    {
+      "id": "smart-account",
+      "role": "payment",
+      "required": true,
+      "primary_tools": ["zerodev"],
+      "alternative_tools": [
+        {
+          "tool_id": "pimlico",
+          "when_to_prefer": "When session keys are not required and the game only needs gas sponsorship (not programmable session-based transaction permissions). Pimlico is simpler when the full programmability of ZeroDev is not needed."
+        },
+        {
+          "tool_id": "alchemy-account-kit",
+          "when_to_prefer": "When the team is fully in the Alchemy stack and wants a single provider for RPC + smart account infrastructure."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Session keys are the critical unlock for onchain games. Without session keys, every player action that touches the blockchain requires a wallet signature popup — which destroys game flow. ZeroDev session keys allow the game client to submit transactions on the player's behalf (within defined permissions and spending limits) without a signing prompt. The player signs once at game start to authorize a session; the game then handles all in-session transactions automatically. Configure session key permissions tightly: scope to the specific contract addresses and function selectors the game needs. Never grant unbounded permissions. Session keys expire — refresh them before expiry to avoid mid-session failures.",
+      "scale_overrides": {
+        "hackathon": "Use Pimlico gas sponsorship only (no session keys). Manual signing is acceptable for a demo. Session key implementation takes 2-3 hours minimum.",
+        "production": "Session keys are required. Players will abandon a game that asks for a wallet signature on every action. ZeroDev session key setup is a one-time investment with major UX return."
+      }
+    },
+    {
+      "id": "rpc",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["alchemy-rpc"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When multi-chain deployment is needed (Base + Polygon + other chains) and a single RPC provider relationship is preferred."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Games generate high read traffic — leaderboard queries, asset ownership checks, transaction history for player inventories. Alchemy's Compute Unit budget must be planned before launch. A viral game can exhaust free tier compute units in hours. Plan at least a growth tier subscription before any significant player load."
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["inngest"],
+      "alternative_tools": [
+        {
+          "tool_id": "trigger-dev",
+          "when_to_prefer": "When the game has complex server-side mechanics — matchmaking, tournament settlement, rewards distribution — with many sequential steps and retry requirements."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add orchestration for game backend jobs: distributing end-of-season rewards, settling tournament outcomes, processing asset minting queues, running scheduled game events. Without orchestration, these jobs are fire-and-forget cron tasks that silently fail under load.",
+      "scale_overrides": {
+        "production": "Required if the game has any reward distribution or settlement logic. Failed reward distribution at scale is a player trust disaster."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Session key expiry is the most common production failure in onchain games. Implement graceful session refresh that triggers before expiry — mid-game session expiry that causes a transaction failure will cause player churn.",
+    "Gas sponsorship economics at game scale: model average actions per player per session and multiply by expected gas cost at the target chain's current fee level. An action-heavy game can spend significant sums on gas sponsorship. Per-player and per-day spending caps in ZeroDev are required.",
+    "Onchain state is slow — do not make every game tick an onchain transaction. Use optimistic local state for gameplay and settle to chain at checkpoints (end of level, end of match, asset transfer). This is the correct architecture for responsive game UX.",
+    "Asset security: NFT contracts must be audited before launch. A bug in an in-game NFT contract can drain player funds. Do not deploy unaudited contracts to mainnet.",
+    "Player wallet recovery: if a player loses access to their email/social login (Privy account), they lose their assets. Implement and test recovery flows before launch. Make wallet recovery visible in onboarding."
+  ],
+  "tradeoffs": [
+    "Session keys solve UX but add smart account complexity. ZeroDev setup requires understanding ERC-4337 account abstraction concepts — budget time for the learning curve.",
+    "Fully onchain game state creates a transparent, trustless game economy but is slow and expensive at high frequency. Most production onchain games use a hybrid: off-chain game loop, onchain asset ownership and settlement.",
+    "Base is recommended for low fees and fast finality, but limits the addressable wallet holder audience to EVM users. Solana is worth considering for action-heavy games where even Base fees add up.",
+    "Gas sponsorship shifts cost to the developer — this is correct for consumer UX but requires a sustainable business model. Free-to-play onchain games must model gas costs as part of player acquisition cost."
+  ],
+  "anti_patterns": [
+    "Requiring wallet signature on every player action — destroys game flow. Use session keys (ZeroDev) to allow the game to submit transactions without user interruption.",
+    "Making every game tick an onchain transaction — on-chain latency is 200ms-2s. No real-time game can run with on-chain state per tick. Use optimistic local state and settle at checkpoints.",
+    "Deploying game contracts without an audit — game contracts hold player assets and are high-value targets. Do not launch to mainnet without a security review.",
+    "Not modeling gas sponsorship costs before launch — a viral game can burn through a gas budget in hours. Set per-user and per-day spending limits before launch, not after.",
+    "Skipping wallet recovery flows — players who lose their embedded wallet credentials lose their game assets permanently. Recovery must be implemented before launch."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "no_existing_wallet",
+      "modification": "Privy embedded wallet with email/social login is the recommended new-player onboarding path. Make wallet creation invisible — it happens as part of 'creating an account', not as a blockchain step.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "gasless_required",
+      "modification": "ZeroDev session keys are required. Session key setup must be the first step after wallet creation. Configure permissions scoped to the game's specific contracts and function selectors.",
+      "affects_phase": "smart-account"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Use Privy + Pimlico (gas sponsorship only, no session keys) + Alchemy. Manual signing is acceptable for demos. Focus on the game mechanic, not the smart account stack.",
+      "affects_phase": "smart-account"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Add Vercel AI SDK for game AI (NPC dialogue, procedural content generation, dynamic difficulty). Pair with Trigger.dev for background AI processing that does not block the game loop.",
+      "affects_phase": "orchestration"
+    }
+  ],
+  "retrieval_tags": [
+    "onchain-game",
+    "blockchain-game",
+    "web3-game",
+    "session-keys",
+    "zerodev",
+    "erc-4337",
+    "gasless-gaming",
+    "privy",
+    "alchemy",
+    "nft-game",
+    "smart-account",
+    "base"
+  ],
+  "source": {
+    "derived_from": "corpus-expansion — CEO review gap analysis. Onchain gaming pattern validated against Base gaming ecosystem production apps.",
+    "last_verified": "2026-05-18"
+  },
+  "updated_at": "2026-05-18"
+}

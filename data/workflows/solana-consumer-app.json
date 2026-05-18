@@ -1,0 +1,145 @@
+{
+  "id": "solana-consumer-app",
+  "name": "Solana Consumer App Workflow",
+  "goal": "Build a consumer-facing application on Solana with embedded wallet onboarding, onchain interactions, and a smooth UX for users who have never held crypto.",
+  "goal_tags": [
+    "solana-app",
+    "consumer-app",
+    "embedded-wallet",
+    "solana-consumer",
+    "social-login",
+    "new-users",
+    "solana-wallet",
+    "wallet-infrastructure",
+    "onboarding"
+  ],
+  "ecosystems": ["solana"],
+  "scale": ["hackathon", "mvp", "production"],
+  "user_types": ["vibe-coder", "advanced-builder"],
+  "phases": [
+    {
+      "id": "wallet",
+      "role": "wallet-setup",
+      "required": true,
+      "primary_tools": ["dynamic"],
+      "alternative_tools": [
+        {
+          "tool_id": "privy",
+          "when_to_prefer": "When the app only needs Solana and you want a simpler integration with email/social login embedded wallet creation. Privy has strong Solana embedded wallet support via @privy-io/react-auth with the Solana connector."
+        },
+        {
+          "tool_id": "turnkey",
+          "when_to_prefer": "When building a non-browser app, server-side application, or autonomous agent on Solana. Turnkey provides server-side MPC key management without user-facing flows."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Dynamic is the recommended choice for Solana consumer apps because it handles both embedded wallet creation (for new users) and external wallet connection (Phantom, Solflare, Backpack) in a single SDK. Solana's ecosystem has more existing wallet holders than EVM — a hybrid approach that welcomes both is correct. Use Dynamic's SolanaWalletConnectors for full coverage. If the app is Solana-only and targets brand-new-to-crypto users, Privy is simpler."
+    },
+    {
+      "id": "rpc",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["helius"],
+      "alternative_tools": [
+        {
+          "tool_id": "quicknode",
+          "when_to_prefer": "When the app needs multi-chain RPC beyond Solana, or when the team is already on the QuickNode stack and wants a single provider relationship for all chains."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Helius is the reference Solana RPC for consumer apps. It provides enhanced transaction parsing (human-readable Solana transactions), webhook support for wallet activity notifications, and DAS API for compressed NFTs and digital assets. Never use public Solana RPC in production — mainnet public endpoints are heavily rate-limited and unreliable. Helius free tier supports development and early MVP."
+    },
+    {
+      "id": "market-data",
+      "role": "market-data",
+      "required": false,
+      "primary_tools": ["birdeye"],
+      "alternative_tools": [
+        {
+          "tool_id": "coingecko",
+          "when_to_prefer": "When only token prices and market cap data are needed without Solana-specific portfolio or wallet analytics. CoinGecko has broader token coverage but no Solana-native portfolio features."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add this phase if the app displays token prices, portfolio values, or trending tokens. Birdeye provides real-time Solana token prices, DEX price feeds, portfolio snapshots, and token metadata. Required for any app with a 'your balance' or 'trending on Solana' UX component.",
+      "scale_overrides": {
+        "hackathon": "Skip unless price display is a core feature. Helius token balances are sufficient for wallet display without price data."
+      }
+    },
+    {
+      "id": "transaction-priority",
+      "role": "payment",
+      "required": false,
+      "primary_tools": ["jito-mev"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "On Solana, transaction landing reliability depends on priority fees. Without priority fees, consumer-facing transactions can silently fail during network congestion — a UX disaster. Jito bundles provide priority fee estimation and MEV protection. Add this phase when the app involves user-facing token transfers, swaps, or any high-stakes transaction where failure would degrade UX. Not required for read-only applications or apps with low transaction frequency.",
+      "scale_overrides": {
+        "hackathon": "Skip. Use default transaction settings. Priority fees are a production optimization.",
+        "production": "Required for any app with meaningful transaction volume. Silently dropped transactions at scale destroy user trust. Model priority fee cost per transaction before launch."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Solana transaction confirmation is probabilistic — design the UX to handle 'pending' states gracefully. Do not assume transactions are confirmed until finalized.",
+    "Helius DAS API is the correct way to fetch NFT and compressed NFT data — do not rely on raw RPC calls for digital asset queries.",
+    "Dynamic's SolanaWalletConnectors must include all major Solana wallets (Phantom, Solflare, Backpack, Coinbase Wallet for Solana) to avoid alienating existing users.",
+    "Priority fees must be estimated dynamically, not hardcoded. Jito's fee estimation endpoint reflects current network conditions.",
+    "Account rent on Solana is a real cost — budget for account creation fees when users take first-time onchain actions."
+  ],
+  "tradeoffs": [
+    "Dynamic's hybrid embedded + external wallet approach adds SDK complexity vs. a Privy-only embedded wallet. The tradeoff is worth it for Solana — existing Phantom users are a significant part of the audience.",
+    "Helius enhanced APIs are Solana-specific — they cannot be reused if the app ever expands to EVM chains. Multi-chain apps should consider QuickNode.",
+    "Priority fees improve reliability but add cost per transaction. At scale, priority fee economics must be modeled against user LTV.",
+    "Birdeye pricing is real-time but subject to rate limits — cache price data aggressively to avoid rate limit errors in high-traffic conditions."
+  ],
+  "anti_patterns": [
+    "Using public Solana mainnet RPC in production — helius free tier is nearly free and prevents the dropped transactions and rate limit failures that plague public endpoints.",
+    "Requiring users to have Phantom installed — Solana consumer apps targeting new users must offer embedded wallet creation via Dynamic or Privy.",
+    "Hardcoding priority fees — Solana network congestion varies by orders of magnitude. Static fees either fail during congestion or overpay during quiet periods.",
+    "Fetching NFT data via raw RPC — use Helius DAS API instead. Raw RPC NFT queries are unreliable for compressed NFTs.",
+    "Not handling transaction expiry — Solana blockhashes expire after ~90 seconds. Consumer apps must implement retry logic with fresh blockhashes."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "no_existing_wallet",
+      "modification": "Dynamic's embedded wallet creation or Privy Solana embedded wallet covers the new-user case. Configure social login (email, Google, Twitter) as primary wallet creation flow.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "has_existing_wallet",
+      "modification": "Dynamic with SolanaWalletConnectors handles external wallet connection. Phantom, Solflare, and Backpack are the primary targets.",
+      "affects_phase": "wallet"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Add Vercel AI SDK as an ai-reasoning phase. For Solana data context, pass Helius transaction history or Birdeye portfolio data as context to the LLM.",
+      "affects_phase": "ai-reasoning"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Use Dynamic + Helius as the minimal stack. Skip market-data and transaction-priority phases unless core to the demo.",
+      "affects_phase": "market-data"
+    }
+  ],
+  "retrieval_tags": [
+    "solana-consumer",
+    "solana-app",
+    "solana-wallet",
+    "embedded-wallet",
+    "helius",
+    "dynamic",
+    "birdeye",
+    "jito",
+    "solana-onboarding",
+    "new-users"
+  ],
+  "source": {
+    "derived_from": "corpus-expansion — CEO review gap analysis. Solana consumer app pattern validated against Solana ecosystem production apps.",
+    "last_verified": "2026-05-18"
+  },
+  "updated_at": "2026-05-18"
+}

@@ -28,7 +28,7 @@ function buildLogo(): string {
     `  ${m('│   │')}  ${brand('RIGHTSTACK')}`,
     `  ${m('╰─┬─╯')}  ${sub('AI-native web3 stack intelligence')}`,
     `    ${m('│')}`,
-    `  ${m('╭─┴─╮')}  ${sub('v0.3.0')}`,
+    `  ${m('╭─┴─╮')}  ${sub('v0.3.1')}`,
     `  ${m('│   │')}`,
     `  ${m('╰─ ─╯')}`,
     '',
@@ -40,7 +40,7 @@ const program = new Command();
 program
   .name('rightstack')
   .description('AI-native web3 stack intelligence CLI')
-  .version('0.3.0')
+  .version('0.3.1')
   .addHelpText('before', buildLogo());
 
 program

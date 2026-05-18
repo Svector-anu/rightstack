@@ -1,0 +1,206 @@
+{
+  "id": "solana-ai-agent",
+  "name": "Solana AI Agent Workflow",
+  "goal": "Build an autonomous AI agent that reasons about Solana market conditions, executes onchain actions (swaps, transfers, staking), manages a server-side wallet, and runs durable background jobs without human-in-the-loop for every decision.",
+  "goal_tags": [
+    "solana-ai-agent",
+    "autonomous-agent",
+    "solana-agent",
+    "onchain-ai-agent",
+    "defi-agent",
+    "trading-agent",
+    "solana-bot",
+    "server-side-wallet",
+    "ai-execution",
+    "autonomous-execution",
+    "mcp-agent",
+    "agent-framework"
+  ],
+  "ecosystems": ["solana"],
+  "scale": ["mvp", "production"],
+  "user_types": ["advanced-builder", "ai-agent"],
+  "phases": [
+    {
+      "id": "agent-reasoning",
+      "role": "ai-reasoning",
+      "required": true,
+      "primary_tools": ["vercel-ai-sdk"],
+      "alternative_tools": [
+        {
+          "tool_id": "elizaos",
+          "when_to_prefer": "When building a multi-modal social + trading agent with a pre-built character system, plugin ecosystem, and Farcaster/Twitter/Discord integrations. ElizaOS provides an agent framework with Solana plugins for swaps and wallet management — faster to start for complex agent personas. Use Vercel AI SDK for more control and custom reasoning loops."
+        },
+        {
+          "tool_id": "coinbase-agentkit",
+          "when_to_prefer": "When the agent needs pre-built tool definitions for common onchain actions and the team wants a quick start with structured agent capabilities. AgentKit provides MCP-compatible tool schemas for blockchain interactions."
+        },
+        {
+          "tool_id": "langchain",
+          "when_to_prefer": "When complex multi-step reasoning chains, agent memory (conversation history, vector store), or RAG over market data is needed. LangChain handles richer memory patterns. Also preferred for Python-native teams."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "The reasoning layer processes market signals, portfolio state, and external triggers to produce action decisions. Use claude-sonnet-4-6 for most agent reasoning decisions — it has strong tool-use capabilities and reliable structured output generation. Design the agent's decision loop explicitly: what data does it receive, what actions can it take, what constraints apply. For trading agents: implement a 'dry run' mode that logs decisions without executing — validate reasoning quality before enabling live execution. Use structured outputs (Zod schema validation) for all action decisions to ensure deterministic parsing of the LLM's output.",
+      "scale_overrides": {
+        "mvp": "Start with a simple trigger-reason-execute loop before adding memory or multi-step planning. Validate that single-step decisions are correct before building autonomous chains.",
+        "production": "Model LLM cost per agent invocation cycle. High-frequency agents that run every minute with context windows of 10k+ tokens can accumulate significant LLM costs."
+      }
+    },
+    {
+      "id": "data-indexing",
+      "role": "data-indexing",
+      "required": true,
+      "primary_tools": ["helius"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Helius is the core data layer for the Solana AI agent. Enhanced transaction parsing provides human-readable Solana transaction history. Webhooks allow the agent to react to wallet events, token transfers, and program interactions without polling. DAS API provides digital asset holdings. The agent's data quality is bounded by the RPC data quality — Helius enhanced APIs are significantly richer than raw Solana RPC for agent context building. For agents that need DEX price data as context, pair with Birdeye."
+    },
+    {
+      "id": "market-data",
+      "role": "market-data",
+      "required": false,
+      "primary_tools": ["birdeye"],
+      "alternative_tools": [
+        {
+          "tool_id": "coingecko",
+          "when_to_prefer": "When the agent only needs token prices without Solana-specific DEX price feeds or portfolio analytics."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Birdeye provides real-time DEX price data, trending tokens, and token analytics on Solana — the market context layer for a trading or DeFi agent. Pass Birdeye token data as tool results to the LLM context. Design the context carefully: an agent with too much market data in context (thousands of token prices) will have degraded reasoning quality. Pass only relevant tokens and a summary of market conditions.",
+      "scale_overrides": {
+        "mvp": "Required if the agent makes any price-based decisions. An agent without market data context will make uninformed execution decisions."
+      }
+    },
+    {
+      "id": "wallet-signing",
+      "role": "signing",
+      "required": true,
+      "primary_tools": ["turnkey"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "Turnkey provides server-side MPC key management for the agent's Solana wallet. Never use environment-variable private keys for production Solana agents — a leaked key means total loss of all agent funds. Turnkey's MPC architecture means the private key is never fully materialized. Configure Turnkey policy rules that limit the agent's spending: max transaction value, allowed programs, rate limits. The policy layer is the last line of defense against agent reasoning errors that produce dangerous instructions. Required for any agent that moves real value."
+    },
+    {
+      "id": "execution",
+      "role": "execution",
+      "required": false,
+      "primary_tools": ["jupiter"],
+      "alternative_tools": [
+        {
+          "tool_id": "raydium",
+          "when_to_prefer": "When the agent needs direct access to Raydium liquidity pools or Raydium-specific AMM features beyond Jupiter's aggregation. Jupiter routes through Raydium, so direct Raydium integration is only needed for specific pool interactions."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Add this phase when the agent executes token swaps or DeFi actions. Jupiter is the canonical swap aggregator on Solana — it finds the best route across all Solana DEXes for a given swap. Do not build direct DEX integrations when Jupiter covers 95%+ of swap routing. Jupiter V6 API provides: quote, swap transaction, and program error parsing. For agents: always use Jupiter's quote API to compute expected output before executing, and validate slippage tolerance matches the agent's risk parameters. Implement max slippage guards at the execution layer — not just in the LLM prompt.",
+      "scale_overrides": {
+        "mvp": "Required if the agent's core function involves swaps. Skip if the agent is analytics-only or manages non-swap onchain actions."
+      }
+    },
+    {
+      "id": "mev-protection",
+      "role": "mev-protection",
+      "required": false,
+      "primary_tools": ["jito-mev"],
+      "alternative_tools": [],
+      "skill_refs": [],
+      "phase_notes": "For agents executing high-value swaps or time-sensitive transactions, Jito bundle submission provides two benefits: MEV protection (the transaction is not visible in the mempool before inclusion) and landing rate improvement (Jito validators have priority inclusion for bundled transactions). Required for trading agents — without priority fees, transactions can fail silently during network congestion, and swap transactions without MEV protection are vulnerable to sandwich attacks.",
+      "scale_overrides": {
+        "mvp": "Optional. Use for any swap above $100 in value. Below that threshold, standard Solana fee mechanics are sufficient.",
+        "production": "Required for any swap execution. The cost of a missed or sandwiched transaction exceeds Jito tip cost at almost any trade size."
+      }
+    },
+    {
+      "id": "orchestration",
+      "role": "orchestration",
+      "required": false,
+      "primary_tools": ["trigger-dev"],
+      "alternative_tools": [
+        {
+          "tool_id": "inngest",
+          "when_to_prefer": "For simpler agent run loops with linear steps and standard retry logic. Trigger.dev's step-level observability is preferred for complex multi-step execution flows."
+        },
+        {
+          "tool_id": "temporal",
+          "when_to_prefer": "When the agent requires long-running workflows (hours to days), complex state machines, or cross-service coordination at production scale. Temporal is heavier to operate but provides the strongest guarantees for mission-critical agent execution."
+        }
+      ],
+      "skill_refs": [],
+      "phase_notes": "Orchestration provides durability to the agent's execution loop. Without it: agent crashes are opaque, failed transactions are not retried, and the execution history is not auditable. With Trigger.dev: each agent cycle (receive trigger → gather data → reason → execute → confirm) is a durable job with step-level retry and a persistent audit trail. Critical for production agents — knowing that an agent decided to execute a swap but the transaction failed is exactly the kind of event that needs to be surfaced, not silently dropped.",
+      "scale_overrides": {
+        "mvp": "Optional. A cron-triggered function with basic error logging is acceptable for MVP. Add Trigger.dev when the agent is handling real value and opaque failures are unacceptable.",
+        "production": "Required. Every agent execution cycle should be a durable, auditable job. Unorchestrated production agents that handle real funds are an incident waiting to happen."
+      }
+    }
+  ],
+  "prerequisite_workflows": [],
+  "prerequisite_skills": [],
+  "trust_state": "production-grade",
+  "production_notes": [
+    "Spending limits are the most important production safety control. Configure Turnkey policy with maximum transaction value, maximum daily volume, and an allowlist of permitted programs. An unconstrained agent with a reasoning error can execute catastrophic transactions.",
+    "Dry run mode before live execution: every new agent reasoning configuration should be validated in dry run mode (log decisions, do not execute) before enabling live execution. Validate at least 100 decision cycles before going live.",
+    "Slippage guard at the execution layer — not just in the LLM prompt. The LLM prompt is not a security boundary. Implement max slippage validation in the code that calls Jupiter, independent of what the LLM decides.",
+    "Jito tips must be set dynamically based on current network conditions. Static Jito tips either fail during high congestion or overpay during quiet periods.",
+    "Transaction monitoring: every executed transaction must be confirmed before the agent proceeds to the next action. Treating a submitted transaction as confirmed is incorrect — Solana transactions can expire before landing.",
+    "Rate limit all external API calls (Helius, Birdeye, Jupiter) at the agent level. An agent reasoning loop running faster than expected can exhaust API rate limits in minutes."
+  ],
+  "tradeoffs": [
+    "Vercel AI SDK gives maximum control over the reasoning loop but requires building tool definitions from scratch. ElizaOS provides pre-built plugins but constrains the agent architecture to its framework patterns.",
+    "Turnkey MPC vs. environment variable private keys: Turnkey is significantly more complex to set up but is the only acceptable approach for production agents handling real value. An environment variable private key in a cloud function is one leaked log away from total loss.",
+    "Jupiter aggregation vs. direct DEX integration: Jupiter provides best execution across all Solana DEXes automatically. Direct DEX integration gives more control over specific pool interactions but requires significantly more maintenance as DEX protocols evolve.",
+    "Trigger.dev orchestration adds latency to each step but provides the audit trail and retry logic that makes production agents trustworthy. An unorchestrated agent that 'probably worked' is not acceptable at scale."
+  ],
+  "anti_patterns": [
+    "Using environment variable private keys for a production Solana agent — use Turnkey MPC. A leaked key is total loss with no recovery.",
+    "No spending limits — configuring an agent with an unbounded wallet and a single reasoning layer is an incident waiting to happen. Turnkey policy controls are non-optional.",
+    "Not implementing dry run mode before live execution — reasoning errors in a live agent are expensive. Validate the decision quality first.",
+    "Passing all available market data to the LLM context — hundreds of token prices degrade reasoning quality. Pass only relevant, summarized market context.",
+    "Treating submitted transactions as confirmed — Solana transactions expire. Always wait for finalization before proceeding with dependent actions.",
+    "Not implementing slippage guards in code — the LLM prompt is not a security boundary. Max slippage must be enforced at the execution layer.",
+    "Building an agent without an audit trail — if the agent makes a bad decision and executes a harmful transaction, the audit trail is what allows post-mortem analysis and recovery."
+  ],
+  "constraint_modifiers": [
+    {
+      "constraint": "autonomous_agent",
+      "modification": "Turnkey is required for wallet signing — never use browser wallets for autonomous execution. Trigger.dev orchestration is required for production. Spending limits must be configured in Turnkey policy before live execution.",
+      "affects_phase": "wallet-signing"
+    },
+    {
+      "constraint": "ai_reasoning_required",
+      "modification": "Vercel AI SDK with claude-sonnet-4-6 and structured tool use is the recommended reasoning stack. Define all agent actions as tools with Zod schemas. Use tool-choice: required to force the LLM to always output a valid action.",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "python_only",
+      "modification": "Replace Vercel AI SDK with LangChain (Python) or direct Anthropic SDK (Python). Replace Trigger.dev with Temporal or Prefect for orchestration. Helius, Birdeye, and Jupiter all provide REST APIs usable from Python.",
+      "affects_phase": "agent-reasoning"
+    },
+    {
+      "constraint": "hackathon_timeline",
+      "modification": "Minimum viable Solana agent stack: Vercel AI SDK + Helius + Jupiter + Turnkey. Skip Birdeye, Jito, and Trigger.dev. Use dry run mode for the demo — execute a single test transaction to prove the stack works, then demo the reasoning loop live without executing.",
+      "affects_phase": "orchestration"
+    }
+  ],
+  "retrieval_tags": [
+    "solana-agent",
+    "solana-ai-agent",
+    "autonomous-agent",
+    "defi-agent",
+    "trading-agent",
+    "turnkey",
+    "helius",
+    "jupiter",
+    "jito",
+    "birdeye",
+    "vercel-ai-sdk",
+    "elizaos",
+    "trigger-dev",
+    "solana-execution"
+  ],
+  "source": {
+    "derived_from": "corpus-expansion — CEO review gap analysis. Solana AI agent pattern validated against Solana DeFi agent production patterns and elizaos/coinbase-agentkit open source implementations.",
+    "last_verified": "2026-05-18"
+  },
+  "updated_at": "2026-05-18"
+}
