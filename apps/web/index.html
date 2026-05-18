@@ -711,7 +711,7 @@
         <pre><span class="prompt">$</span><span class="cmd"> rightstack recommend </span><span class="arg">"consumer farcaster miniapp with embedded wallet"</span></pre>
       </div>
       <div class="note">
-        <strong>Note:</strong> Set <code>ANTHROPIC_API_KEY</code> in your environment before running. RightStack uses Claude to synthesize recommendations — no key, no reasoning.
+        <strong>Why does this need an API key?</strong> Every other command is a lookup — structured data returned directly from the local corpus. <code>recommend</code> is different: it reads your intent, reasons across workflows, weighs tradeoffs, and writes a recommendation tailored to your specific goal. That reasoning step runs through Claude. No key, no reasoning — just set <code>ANTHROPIC_API_KEY</code> in your environment and it works.
       </div>
     </div>
 
