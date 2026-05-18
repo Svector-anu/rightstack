@@ -3,7 +3,7 @@ import type { RecommendationExplanation, PhaseExplanation } from '../pipeline/ex
 import type { QueryIntent, ToolRecord, WorkflowRecord } from '../corpus/types';
 import type { ScoredTool } from '../pipeline/ranker';
 import type { TraceEvent } from '../trace/tracer';
-import type { AuditResult, ActionItem, ActionSeverity } from '../corpus/audit-types';
+import type { AuditResult, ActionItem, ActionSeverity, StackScore } from '../corpus/audit-types';
 
 const DIVIDER = chalk.gray('─'.repeat(60));
 const HEADER_LINE = chalk.gray('━'.repeat(60));
@@ -408,6 +408,20 @@ export function printActionItems(items: ActionItem[]): void {
   }
 }
 
+function stackScoreColor(score: number): string {
+  if (score >= 90) return chalk.green(String(score));
+  if (score >= 75) return chalk.cyan(String(score));
+  if (score >= 60) return chalk.yellow(String(score));
+  return chalk.red(String(score));
+}
+
+function gradeColor(grade: string): string {
+  if (grade === 'A') return chalk.bold.green(grade);
+  if (grade === 'B') return chalk.bold.cyan(grade);
+  if (grade === 'C') return chalk.bold.yellow(grade);
+  return chalk.bold.red(grade);
+}
+
 export function printRepoAudit(result: AuditResult): void {
   console.log('\n' + HEADER_LINE);
   console.log(chalk.bold.white(`  RIGHTSTACK — Repo Audit: ${result.repoName}`));
@@ -421,7 +435,9 @@ export function printRepoAudit(result: AuditResult): void {
     return;
   }
 
-  console.log(`  ${chalk.gray('Matched:')} ${chalk.bold.green(String(result.detectedTools.length))} tracked tools\n`);
+  console.log(`  ${chalk.gray('Matched:')} ${chalk.bold.green(String(result.detectedTools.length))} tracked tools`);
+  const { score, grade } = result.stackScore;
+  console.log(`  ${chalk.gray('Health:')}  ${stackScoreColor(score)}/100  ${gradeColor(grade)}\n`);
 
   // Detected tools
   console.log(DIVIDER);
@@ -501,6 +517,170 @@ export function printRepoAudit(result: AuditResult): void {
         console.log(`     ${chalk.gray(note)}`);
       }
     }
+  }
+
+  console.log('');
+}
+
+export function printExplain(tool: ToolRecord, matchedAsDeprecated?: string): void {
+  console.log('\n' + HEADER_LINE);
+  console.log(chalk.bold.white(`  RIGHTSTACK — Explain: ${tool.name}`));
+  console.log(HEADER_LINE);
+
+  if (matchedAsDeprecated) {
+    console.log(`\n  ${chalk.yellow('⚠  You searched for a deprecated/renamed package:')}`);
+    console.log(`  ${chalk.yellow(matchedAsDeprecated)} → ${chalk.green(tool.sdk_migration?.to_package ?? tool.name)}`);
+    console.log(`  ${chalk.gray('Showing info for the replacement tool.')}`);
+  }
+
+  console.log(`\n  ${chalk.gray('ID:')}           ${tool.id}`);
+  console.log(`  ${chalk.gray('Category:')}     ${tool.category}${tool.subcategory ? ' (' + tool.subcategory + ')' : ''}`);
+  console.log(`  ${chalk.gray('Trust:')}        ${trustColor(tool.trust_state)}`);
+  console.log(`  ${chalk.gray('Updated:')}      ${tool.updated_at ?? chalk.red('never reviewed')}`);
+
+  if (tool.description) {
+    console.log(`\n  ${chalk.bold.white('What it does:')}`);
+    const words = tool.description.split(' ');
+    let line = '  ';
+    for (const word of words) {
+      if (line.length + word.length > 78) {
+        console.log(line.trimEnd());
+        line = '  ' + word + ' ';
+      } else {
+        line += word + ' ';
+      }
+    }
+    if (line.trim()) console.log(line.trimEnd());
+  }
+
+  const npmPkgs = tool.package_identifiers?.npm ?? [];
+  if (npmPkgs.length > 0) {
+    console.log(`\n  ${chalk.bold.white('npm packages:')}`);
+    for (const pkg of npmPkgs) {
+      console.log(`  ${chalk.gray('$')} npm install ${chalk.bold(pkg)}`);
+    }
+  }
+
+  const relevantEcos = tool.ecosystem_fit.filter(
+    e => e.strength !== 'none' && e.strength !== 'not-applicable'
+  );
+  if (relevantEcos.length > 0) {
+    console.log(`\n  ${chalk.bold.white('Ecosystem fit:')}`);
+    for (const e of relevantEcos) {
+      const strength = e.strength === 'dominant' ? chalk.green(e.strength)
+        : e.strength === 'strong' ? chalk.cyan(e.strength)
+        : chalk.yellow(e.strength);
+      const note = e.notes ? chalk.gray(`  — ${e.notes}`) : '';
+      console.log(`  ${e.ecosystem.padEnd(12)} ${strength}${note}`);
+    }
+  }
+
+  if (tool.scale_guidance) {
+    console.log(`\n  ${chalk.bold.white('Scale guidance:')}`);
+    if (tool.scale_guidance.hackathon) console.log(`  ${chalk.gray('hackathon')}   ${tool.scale_guidance.hackathon}`);
+    if (tool.scale_guidance.mvp)       console.log(`  ${chalk.gray('mvp')}         ${tool.scale_guidance.mvp}`);
+    if (tool.scale_guidance.production) console.log(`  ${chalk.gray('production')} ${tool.scale_guidance.production}`);
+  }
+
+  if (tool.common_pairings && tool.common_pairings.length > 0) {
+    console.log(`\n  ${chalk.bold.white('Often used with:')}`);
+    for (const p of tool.common_pairings) {
+      const rel = chalk.gray(`[${p.relationship}]`);
+      console.log(`  ${chalk.gray('→')} ${chalk.bold(p.tool_id)}  ${rel}`);
+      if (p.context) console.log(`    ${chalk.gray(p.context)}`);
+    }
+  }
+
+  if (tool.anti_patterns && tool.anti_patterns.length > 0) {
+    console.log(`\n  ${chalk.bold.yellow('Anti-patterns:')}`);
+    for (const ap of tool.anti_patterns) {
+      console.log(`  ${chalk.yellow('⚠')} ${ap}`);
+    }
+  }
+
+  if (tool.alternatives && tool.alternatives.length > 0) {
+    console.log(`\n  ${chalk.bold.white('Alternatives:')}`);
+    for (const alt of tool.alternatives) {
+      console.log(`  ${chalk.gray('→')} ${chalk.bold(alt.tool_id)}`);
+      console.log(`    ${chalk.gray('when:')} ${alt.when_to_prefer}`);
+    }
+  }
+
+  if (tool.sdk_migration && (tool.sdk_migration.from_package || tool.sdk_migration.notes)) {
+    const isWarning = tool.sdk_migration.status !== 'stable';
+    const header = isWarning
+      ? chalk.bold.yellow('Migration warning:')
+      : chalk.bold.white('Migration info:');
+    console.log(`\n  ${header}`);
+    console.log(`  Status: ${tool.sdk_migration.status}`);
+    if (tool.sdk_migration.from_package && tool.sdk_migration.to_package) {
+      console.log(`  ${chalk.yellow(tool.sdk_migration.from_package)} → ${chalk.green(tool.sdk_migration.to_package)}`);
+    }
+    if (tool.sdk_migration.notes) {
+      const notes = tool.sdk_migration.notes;
+      const truncated = notes.length > 280 ? notes.slice(0, 280) + '…' : notes;
+      console.log(`  ${chalk.gray(truncated)}`);
+    }
+  }
+
+  if (tool.source) {
+    const hasLinks = tool.source.docs_url || tool.source.primary_url || tool.source.github_url;
+    if (hasLinks) {
+      console.log(`\n  ${chalk.bold.white('Links:')}`);
+      if (tool.source.docs_url) console.log(`  ${chalk.gray('Docs:')}    ${tool.source.docs_url}`);
+      if (tool.source.primary_url) console.log(`  ${chalk.gray('Website:')} ${tool.source.primary_url}`);
+      if (tool.source.github_url) console.log(`  ${chalk.gray('GitHub:')}  ${tool.source.github_url}`);
+    }
+  }
+
+  console.log('');
+}
+
+export function printMigrate(tool: ToolRecord, fromPackage: string): void {
+  const mig = tool.sdk_migration!;
+
+  console.log('\n' + HEADER_LINE);
+  console.log(chalk.bold.white(`  RIGHTSTACK — Migration: ${fromPackage}`));
+  console.log(HEADER_LINE);
+
+  console.log(`\n  ${chalk.gray('Tool:')}   ${chalk.bold(tool.name)}`);
+  const statusDisplay = (mig.status === 'deprecated' || mig.status === 'migrating-from')
+    ? chalk.red(mig.status)
+    : chalk.yellow(mig.status);
+  console.log(`  ${chalk.gray('Status:')} ${statusDisplay}`);
+
+  if (mig.from_package && mig.to_package) {
+    console.log(`\n  ${chalk.bold.white('Migration path:')}`);
+    console.log(`  ${chalk.red(mig.from_package)}  →  ${chalk.green(mig.to_package)}`);
+  }
+
+  if (mig.notes) {
+    console.log(`\n  ${chalk.bold.white('Notes:')}`);
+    const words = mig.notes.split(' ');
+    let line = '  ';
+    for (const word of words) {
+      if (line.length + word.length > 74) {
+        console.log(line.trimEnd());
+        line = '  ' + word + ' ';
+      } else {
+        line += word + ' ';
+      }
+    }
+    if (line.trim()) console.log(line.trimEnd());
+  }
+
+  if (mig.to_package) {
+    const baseFrom = fromPackage.startsWith('@')
+      ? '@' + fromPackage.split('@')[1]
+      : fromPackage.split('@')[0];
+    console.log(`\n  ${chalk.bold.white('Commands:')}`);
+    console.log(`  ${chalk.gray('$')} npm install ${chalk.bold(mig.to_package)}`);
+    console.log(`  ${chalk.gray('$')} npm uninstall ${chalk.gray(baseFrom)}`);
+  }
+
+  if (tool.source) {
+    const docsUrl = tool.source.docs_url ?? tool.source.primary_url;
+    if (docsUrl) console.log(`\n  ${chalk.gray('Docs:')} ${docsUrl}`);
   }
 
   console.log('');

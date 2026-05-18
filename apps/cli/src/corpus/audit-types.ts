@@ -45,6 +45,11 @@ export interface MigrationWarning {
   notes: string;
 }
 
+export interface StackScore {
+  score: number;
+  grade: string;
+}
+
 export interface AuditResult {
   repoName: string;
   repoPath: string;
@@ -54,4 +59,5 @@ export interface AuditResult {
   migrationWarnings: MigrationWarning[];
   emergingTools: DetectedTool[];
   actionItems: ActionItem[];
+  stackScore: StackScore;
 }

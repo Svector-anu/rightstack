@@ -4,6 +4,8 @@ import { compare } from './commands/compare';
 import { workflow } from './commands/workflow';
 import { inspect } from './commands/inspect';
 import { repoAudit } from './commands/repo-audit';
+import { explain } from './commands/explain';
+import { migrate } from './commands/migrate';
 import {
   benchmarkRun,
   benchmarkCompare,
@@ -48,6 +50,22 @@ program
   .description('Inspect a tool record in detail')
   .action((id: string) => {
     inspect(id);
+  });
+
+program
+  .command('explain <query>')
+  .description('Look up a tool by package name, tool ID, or alias')
+  .option('--json', 'output raw JSON')
+  .action((query: string, opts: { json?: boolean }) => {
+    explain(query, opts);
+  });
+
+program
+  .command('migrate <from-package>')
+  .description('Show migration guide for a deprecated or renamed package')
+  .option('--json', 'output raw JSON')
+  .action((fromPackage: string, opts: { json?: boolean }) => {
+    migrate(fromPackage, opts);
   });
 
 program

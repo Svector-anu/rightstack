@@ -1,0 +1,128 @@
+name: RightStack Audit
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  audit:
+    name: Web3 Stack Audit
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install RightStack
+        run: npm install -g rightstack
+
+      - name: Run repo audit
+        id: audit
+        run: |
+          rightstack repo-audit . --json > audit-result.json 2>&1 || true
+          echo "result=$(cat audit-result.json | jq -c .)" >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('audit-result.json', 'utf8');
+
+            let audit;
+            try {
+              audit = JSON.parse(raw);
+            } catch {
+              core.warning('RightStack audit output could not be parsed. Skipping comment.');
+              return;
+            }
+
+            if (audit.error) {
+              core.warning(`RightStack audit error: ${audit.error}`);
+              return;
+            }
+
+            const { stackScore, actionItems = [], detectedTools = [], repoName } = audit;
+
+            const gradeEmoji = { A: '🟢', B: '🟡', C: '🟠', D: '🔴', F: '🔴' };
+            const emoji = gradeEmoji[stackScore?.grade] ?? '⚪';
+
+            const severityCounts = { critical: 0, high: 0, medium: 0, info: 0 };
+            for (const item of actionItems) {
+              severityCounts[item.severity] = (severityCounts[item.severity] ?? 0) + 1;
+            }
+
+            const countLine = [
+              severityCounts.critical > 0 ? `🔴 ${severityCounts.critical} critical` : null,
+              severityCounts.high > 0 ? `🟠 ${severityCounts.high} high` : null,
+              severityCounts.medium > 0 ? `🟡 ${severityCounts.medium} medium` : null,
+              severityCounts.info > 0 ? `ℹ️ ${severityCounts.info} info` : null,
+            ].filter(Boolean).join('  ') || 'No issues detected';
+
+            let body = `## ${emoji} RightStack Web3 Stack Audit\n\n`;
+            body += `**Health score:** ${stackScore?.score ?? 'N/A'}/100  **Grade:** ${stackScore?.grade ?? 'N/A'}\n\n`;
+            body += `${countLine}\n\n`;
+            body += `**Detected tools:** ${detectedTools.length}  |  **Repo:** \`${repoName}\`\n\n`;
+
+            const critical = actionItems.filter(i => i.severity === 'critical');
+            const high = actionItems.filter(i => i.severity === 'high');
+            const medium = actionItems.filter(i => i.severity === 'medium');
+            const actionable = [...critical, ...high, ...medium];
+
+            if (actionable.length > 0) {
+              body += `### Action Items\n\n`;
+              body += `| Severity | Tool | Issue | Fix |\n`;
+              body += `|----------|------|-------|-----|\n`;
+              for (const item of actionable.slice(0, 10)) {
+                const sev = item.severity.toUpperCase();
+                const fix = item.fix ? `\`${item.fix}\`` : '—';
+                body += `| ${sev} | ${item.toolName} | ${item.title} | ${fix} |\n`;
+              }
+              if (actionable.length > 10) {
+                body += `\n_...and ${actionable.length - 10} more. Run \`rightstack repo-audit\` locally for the full report._\n`;
+              }
+            } else {
+              body += `✅ **No critical, high, or medium issues found.**\n`;
+            }
+
+            body += `\n---\n_Powered by [RightStack](https://github.com/Svector-anu/rightstack) · Run \`rightstack repo-audit\` locally for full output_`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user?.login === 'github-actions[bot]' &&
+              c.body?.includes('RightStack Web3 Stack Audit')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

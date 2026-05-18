@@ -1,16 +1,39 @@
 {
   "id": "alchemy-account-kit",
   "name": "Alchemy Account Kit",
-  "aliases": ["@alchemy/aa-alchemy", "@account-kit/infra", "alchemy-aa"],
+  "aliases": [
+    "@alchemy/aa-alchemy",
+    "@account-kit/infra",
+    "alchemy-aa"
+  ],
   "category": "account-abstraction",
   "subcategory": "bundler+paymaster+smart-account",
   "description": "Alchemy's vertically integrated ERC-4337 stack: smart account (Light Account), bundler, and paymaster in a single provider. The single-vendor AA alternative to the Pimlico + ZeroDev combination. Preferred when an app is already fully invested in the Alchemy infrastructure stack.",
   "ecosystem_fit": [
-    { "ecosystem": "base", "strength": "strong", "notes": "Alchemy's primary focus chain for Account Kit. Tight integration with Alchemy RPC and webhooks on Base." },
-    { "ecosystem": "ethereum", "strength": "strong", "notes": "Production AA stack for Ethereum mainnet." },
-    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used as the gasless layer in Farcaster miniapps when the app is already on the Alchemy stack." },
-    { "ecosystem": "solana", "strength": "none", "notes": "ERC-4337 is EVM-only." },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "Alchemy's primary focus chain for Account Kit. Tight integration with Alchemy RPC and webhooks on Base."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong",
+      "notes": "Production AA stack for Ethereum mainnet."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "strong",
+      "notes": "Used as the gasless layer in Farcaster miniapps when the app is already on the Alchemy stack."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "none",
+      "notes": "ERC-4337 is EVM-only."
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "erc-4337-bundler",
@@ -22,7 +45,10 @@
     "session-keys",
     "account-recovery"
   ],
-  "workflow_positions": ["payment-layer", "smart-account-layer"],
+  "workflow_positions": [
+    "payment-layer",
+    "smart-account-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "alchemy-rpc",
@@ -52,10 +78,20 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["@account-kit/infra", "@account-kit/smart-contracts", "@account-kit/signer", "@alchemy/aa-alchemy", "@alchemy/aa-core"]
+    "npm": [
+      "@account-kit/infra",
+      "@account-kit/smart-contracts",
+      "@account-kit/signer",
+      "@alchemy/aa-alchemy",
+      "@alchemy/aa-core",
+      "@alchemy/aa-ethers"
+    ]
   },
   "skill_refs": [],
-  "workflow_refs": ["base-consumer-app", "farcaster-consumer-onboarding"],
+  "workflow_refs": [
+    "base-consumer-app",
+    "farcaster-consumer-onboarding"
+  ],
   "scale_guidance": {
     "hackathon": "Skip — Pimlico has simpler setup for hackathon demos.",
     "mvp": "Valid choice when already on Alchemy RPC. Reduces vendor count.",
@@ -77,11 +113,26 @@
     "Adopting Account Kit just to have a single vendor — the integration complexity of mixing Account Kit with non-Alchemy RPC negates the single-vendor benefit.",
     "Using Account Kit for Solana — ERC-4337 is EVM-only."
   ],
-  "retrieval_tags": ["erc-4337", "bundler", "paymaster", "smart-account", "light-account", "gasless", "account-abstraction", "alchemy"],
+  "retrieval_tags": [
+    "erc-4337",
+    "bundler",
+    "paymaster",
+    "smart-account",
+    "light-account",
+    "gasless",
+    "account-abstraction",
+    "alchemy"
+  ],
   "source": {
     "primary_url": "https://accountkit.alchemy.com",
     "docs_url": "https://accountkit.alchemy.com/docs",
     "github_url": "https://github.com/alchemyplatform/aa-sdk"
   },
-  "updated_at": "2026-05-17"
+  "updated_at": "2026-05-17",
+  "sdk_migration": {
+    "status": "migrating-from",
+    "from_package": "@alchemy/aa-core",
+    "to_package": "@account-kit/core",
+    "notes": "@alchemy/aa-* packages (aa-core, aa-alchemy, aa-ethers) were rebranded to @account-kit/* in mid-2024. The old packages last published August 2024 (v3.19.0) and receive no updates. @account-kit/core is actively maintained. Migration requires code changes beyond a package rename — the API surface changed between aa-sdk v3 and account-kit v4."
+  }
 }

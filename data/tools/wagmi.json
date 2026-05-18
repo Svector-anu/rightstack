@@ -1,7 +1,12 @@
 {
   "id": "wagmi",
   "name": "wagmi",
-  "aliases": ["wagmi-core", "@wagmi/core", "@wagmi/connectors", "use-wagmi"],
+  "aliases": [
+    "wagmi-core",
+    "@wagmi/core",
+    "@wagmi/connectors",
+    "use-wagmi"
+  ],
   "category": "frontend-sdk",
   "subcategory": "evm-hooks",
   "description": "The foundational React hooks library for EVM chain interactions — wallet connection, balance reads, contract calls, transaction status. The underlying data layer that OnchainKit and most Ethereum/Base frontend SDKs build on.",
@@ -26,7 +31,10 @@
       "strength": "none",
       "notes": "wagmi is EVM-only. Solana frontends use @solana/web3.js or @solana/kit for equivalent chain interactions."
     },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "wallet-connection-hooks",
@@ -40,7 +48,10 @@
     "transaction-signing",
     "ens-resolution-hooks"
   ],
-  "workflow_positions": ["ui-layer", "data-layer"],
+  "workflow_positions": [
+    "ui-layer",
+    "data-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "onchainkit",
@@ -100,13 +111,17 @@
     ]
   },
   "sdk_migration": {
-    "status": "stable",
+    "status": "migrating-from",
     "from_package": "wagmi@^1",
     "to_package": "wagmi@^2",
-    "notes": "wagmi v1 to v2 was a breaking change with significant API differences. Repos using wagmi@^1 should migrate to wagmi@^2. Key changes: hooks renamed (useContractRead → useReadContract), connector API refactored. v2 is the current stable version — all new projects should use v2."
+    "notes": "wagmi v1 to v2 was a breaking change with significant API differences. Repos using wagmi@^1 should migrate to wagmi@^2. Key changes: hooks renamed (useContractRead → useReadContract), connector API refactored. v2 is the current stable version — all new projects should use v2. Phase 5.1 semver matching will enable CRITICAL detection for ^1 repos."
   },
   "skill_refs": [],
-  "workflow_refs": ["base-consumer-app", "ethereum-aa-native-app", "farcaster-consumer-onboarding"],
+  "workflow_refs": [
+    "base-consumer-app",
+    "ethereum-aa-native-app",
+    "farcaster-consumer-onboarding"
+  ],
   "scale_guidance": {
     "hackathon": "Use OnchainKit instead for Base hackathons — OnchainKit builds on wagmi but provides ready-made components. Use wagmi directly only when OnchainKit's component opinions conflict with the design.",
     "mvp": "wagmi is the right choice when building custom UI components. For rapid Base development with Coinbase design, OnchainKit is faster. For Ethereum dApps with Reown, wagmi + Reown is the canonical stack.",
@@ -125,7 +140,16 @@
     "Calling wagmi hooks at the top level outside a WagmiProvider — hooks require the provider context. A common SSR error in Next.js apps.",
     "Using wagmi directly on Solana — wagmi is EVM-only. Solana frontends need @solana/web3.js or @solana/kit."
   ],
-  "retrieval_tags": ["react-hooks", "evm-hooks", "ethereum-frontend", "wallet-hooks", "contract-hooks", "base-frontend", "viem", "blockchain-react"],
+  "retrieval_tags": [
+    "react-hooks",
+    "evm-hooks",
+    "ethereum-frontend",
+    "wallet-hooks",
+    "contract-hooks",
+    "base-frontend",
+    "viem",
+    "blockchain-react"
+  ],
   "source": {
     "primary_url": "https://wagmi.sh",
     "docs_url": "https://wagmi.sh/react/getting-started",

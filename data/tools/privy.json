@@ -1,16 +1,38 @@
 {
   "id": "privy",
   "name": "Privy",
-  "aliases": ["@privy-io/react-auth", "@privy-io/server-auth", "@privy-io/expo"],
+  "aliases": [
+    "@privy-io/react-auth",
+    "@privy-io/server-auth",
+    "@privy-io/expo"
+  ],
   "category": "wallet-infrastructure",
   "subcategory": "embedded",
   "description": "Embedded wallet infrastructure for onboarding non-crypto-native users via email, social login, or passkeys — without requiring users to understand wallets. Also provides server-side wallet management for AI agents.",
   "ecosystem_fit": [
-    { "ecosystem": "base", "strength": "dominant", "notes": "Default wallet choice for Base consumer apps and Base AI agent stacks." },
-    { "ecosystem": "farcaster", "strength": "dominant", "notes": "Dominant wallet provider in Farcaster miniapps. Has a dedicated miniapp mode." },
-    { "ecosystem": "ethereum", "strength": "strong" },
-    { "ecosystem": "solana", "strength": "limited", "notes": "Supports Solana wallet addresses but ecosystem adoption is minimal — Solana builders primarily use other options." },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "Default wallet choice for Base consumer apps and Base AI agent stacks."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "dominant",
+      "notes": "Dominant wallet provider in Farcaster miniapps. Has a dedicated miniapp mode."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong"
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "limited",
+      "notes": "Supports Solana wallet addresses but ecosystem adoption is minimal — Solana builders primarily use other options."
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "embedded-wallet-creation",
@@ -23,7 +45,11 @@
     "custody-abstraction",
     "progressive-wallet-onboarding"
   ],
-  "workflow_positions": ["wallet-layer", "auth-layer", "signing-layer"],
+  "workflow_positions": [
+    "wallet-layer",
+    "auth-layer",
+    "signing-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "onchainkit",
@@ -71,7 +97,11 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["@privy-io/react-auth", "@privy-io/server-auth", "@privy-io/expo"]
+    "npm": [
+      "@privy-io/react-auth",
+      "@privy-io/server-auth",
+      "@privy-io/expo"
+    ]
   },
   "skill_refs": [],
   "workflow_refs": [
@@ -108,10 +138,23 @@
     "Relying on Privy as the sole identity layer without a backup auth method for production apps.",
     "Not planning for Privy key export flows — users may want to migrate to self-custody."
   ],
-  "retrieval_tags": ["gasless", "consumer-onboarding", "non-crypto-native", "invisible-wallet", "social-login", "miniapp"],
+  "retrieval_tags": [
+    "gasless",
+    "consumer-onboarding",
+    "non-crypto-native",
+    "invisible-wallet",
+    "social-login",
+    "miniapp"
+  ],
   "source": {
     "primary_url": "https://privy.io",
     "docs_url": "https://docs.privy.io"
   },
-  "updated_at": "2026-05-13"
+  "updated_at": "2026-05-13",
+  "sdk_migration": {
+    "status": "stable",
+    "from_package": null,
+    "to_package": null,
+    "notes": "@privy-io/react-auth is actively maintained at v3.26.0. No package rename. Two major breaking increments (v1→v2: hook signature changes, Solana subpath; v2→v3: transaction method renames, wallet type changes). Semver-tier candidate for Phase 5.1 to flag v1 repos."
+  }
 }

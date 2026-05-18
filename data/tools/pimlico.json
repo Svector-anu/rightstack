@@ -1,16 +1,39 @@
 {
   "id": "pimlico",
   "name": "Pimlico",
-  "aliases": ["permissionless", "@pimlico/sdk", "pimlico-bundler"],
+  "aliases": [
+    "permissionless",
+    "@pimlico/sdk",
+    "pimlico-bundler"
+  ],
   "category": "account-abstraction",
   "subcategory": "bundler+paymaster",
   "description": "The dominant ERC-4337 bundler and paymaster infrastructure for EVM chains. Submits UserOperations to the AA mempool and sponsors gas for users. The default AA infrastructure layer in Base and Ethereum consumer apps.",
   "ecosystem_fit": [
-    { "ecosystem": "base", "strength": "dominant", "notes": "Default AA infrastructure for Base consumer apps. Paired with Privy in the canonical gasless onboarding stack." },
-    { "ecosystem": "ethereum", "strength": "dominant", "notes": "Production-grade bundler and paymaster for Ethereum mainnet and L2s." },
-    { "ecosystem": "farcaster", "strength": "strong", "notes": "Used for gasless actions inside Farcaster miniapps on Base." },
-    { "ecosystem": "solana", "strength": "none", "notes": "ERC-4337 is EVM-only. Solana has a different account model — gasless patterns on Solana require different approaches." },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "Default AA infrastructure for Base consumer apps. Paired with Privy in the canonical gasless onboarding stack."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "dominant",
+      "notes": "Production-grade bundler and paymaster for Ethereum mainnet and L2s."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "strong",
+      "notes": "Used for gasless actions inside Farcaster miniapps on Base."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "none",
+      "notes": "ERC-4337 is EVM-only. Solana has a different account model — gasless patterns on Solana require different approaches."
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "erc-4337-bundler",
@@ -23,7 +46,9 @@
     "token-paymaster",
     "session-key-support"
   ],
-  "workflow_positions": ["payment-layer"],
+  "workflow_positions": [
+    "payment-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "privy",
@@ -83,10 +108,19 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["permissionless", "@pimlico/sdk", "@pimlico/permissionless"]
+    "npm": [
+      "permissionless",
+      "@pimlico/sdk",
+      "@pimlico/permissionless"
+    ]
   },
   "skill_refs": [],
-  "workflow_refs": ["embedded-wallet-onboarding", "farcaster-consumer-onboarding", "base-consumer-app", "ethereum-aa-native-app"],
+  "workflow_refs": [
+    "embedded-wallet-onboarding",
+    "farcaster-consumer-onboarding",
+    "base-consumer-app",
+    "ethereum-aa-native-app"
+  ],
   "scale_guidance": {
     "hackathon": "Use Pimlico's free tier for hackathons. Simple policy: sponsor all transactions.",
     "mvp": "Define gas policy early: per-user daily limits, per-transaction caps. Unbounded sponsorship is a budget risk.",
@@ -110,11 +144,25 @@
     "Treating Pimlico as a smart account provider — Pimlico is a bundler/paymaster. Smart account logic (session keys, plugins) requires ZeroDev Kernel or Safe.",
     "Skipping bundler failure handling — Pimlico's bundler can reject UserOperations; agents and apps must handle rejection gracefully."
   ],
-  "retrieval_tags": ["erc-4337", "bundler", "paymaster", "gasless", "gas-sponsorship", "account-abstraction", "useroperation"],
+  "retrieval_tags": [
+    "erc-4337",
+    "bundler",
+    "paymaster",
+    "gasless",
+    "gas-sponsorship",
+    "account-abstraction",
+    "useroperation"
+  ],
   "source": {
     "primary_url": "https://pimlico.io",
     "docs_url": "https://docs.pimlico.io",
     "github_url": "https://github.com/pimlicolabs/permissionless.js"
   },
-  "updated_at": "2026-05-13"
+  "updated_at": "2026-05-13",
+  "sdk_migration": {
+    "status": "stable",
+    "from_package": null,
+    "to_package": null,
+    "notes": "permissionless (Pimlico) is actively maintained at v0.3.5. No package rename. The 0.1→0.2 and 0.2→0.3 transitions had breaking changes (viem v2 dependency, ox peer dep, security patch). permissionless.js is not deprecated."
+  }
 }

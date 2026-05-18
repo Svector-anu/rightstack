@@ -1,16 +1,40 @@
 {
   "id": "zerodev",
   "name": "ZeroDev",
-  "aliases": ["@zerodev/sdk", "@zerodev/permissions", "zerodev-kernel", "@zerodev/wallet-client"],
+  "aliases": [
+    "@zerodev/sdk",
+    "@zerodev/permissions",
+    "zerodev-kernel",
+    "@zerodev/wallet-client"
+  ],
   "category": "account-abstraction",
   "subcategory": "smart-account",
   "description": "Modular smart account platform built on the Kernel smart account standard. Provides session keys, permissions plugins, and programmable transaction policies on top of ERC-4337. The preferred AA choice when session keys or advanced smart account programmability is needed beyond standard gas sponsorship.",
   "ecosystem_fit": [
-    { "ecosystem": "base", "strength": "strong", "notes": "Production-grade AA on Base. Preferred when session keys or per-action permission policies are needed in Base consumer apps." },
-    { "ecosystem": "ethereum", "strength": "strong", "notes": "Full Kernel smart account support on Ethereum mainnet. Core tool in the ethereum-aa-native-app workflow." },
-    { "ecosystem": "farcaster", "strength": "limited", "notes": "AA infrastructure can be used for gasless Farcaster miniapp actions, but Pimlico is typically sufficient without session key complexity." },
-    { "ecosystem": "solana", "strength": "none", "notes": "ERC-4337 is EVM-only. ZeroDev does not apply to Solana." },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "Production-grade AA on Base. Preferred when session keys or per-action permission policies are needed in Base consumer apps."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong",
+      "notes": "Full Kernel smart account support on Ethereum mainnet. Core tool in the ethereum-aa-native-app workflow."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "limited",
+      "notes": "AA infrastructure can be used for gasless Farcaster miniapp actions, but Pimlico is typically sufficient without session key complexity."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "none",
+      "notes": "ERC-4337 is EVM-only. ZeroDev does not apply to Solana."
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "session-keys",
@@ -25,7 +49,10 @@
     "batch-transactions",
     "account-plugins"
   ],
-  "workflow_positions": ["payment-layer", "smart-account-layer"],
+  "workflow_positions": [
+    "payment-layer",
+    "smart-account-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "pimlico",
@@ -75,10 +102,19 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["@zerodev/sdk", "@zerodev/permissions", "@zerodev/wallet-client", "@zerodev/ecdsa-validator"]
+    "npm": [
+      "@zerodev/sdk",
+      "@zerodev/permissions",
+      "@zerodev/wallet-client",
+      "@zerodev/ecdsa-validator"
+    ]
   },
   "skill_refs": [],
-  "workflow_refs": ["base-consumer-app", "embedded-wallet-onboarding", "ethereum-aa-native-app"],
+  "workflow_refs": [
+    "base-consumer-app",
+    "embedded-wallet-onboarding",
+    "ethereum-aa-native-app"
+  ],
   "scale_guidance": {
     "hackathon": "Use Pimlico directly for gas sponsorship at hackathon scale. ZeroDev session keys add complexity that isn't needed for demos.",
     "mvp": "Add ZeroDev when session keys are a core UX requirement — pre-approved recurring transaction flows, delegated signing for AI agents, or per-action spending policies.",
@@ -102,11 +138,27 @@
     "Conflating ZeroDev (smart account + bundler) with Pimlico (bundler + paymaster only) — they serve overlapping but distinct roles; understand which layer you're replacing.",
     "Deploying Kernel accounts without testing counterfactual address determinism — smart account address depends on the factory and salt; incorrect assumptions cause fund loss."
   ],
-  "retrieval_tags": ["session-keys", "smart-account", "erc-4337", "account-abstraction", "kernel", "permissions", "gasless", "bundler", "paymaster"],
+  "retrieval_tags": [
+    "session-keys",
+    "smart-account",
+    "erc-4337",
+    "account-abstraction",
+    "kernel",
+    "permissions",
+    "gasless",
+    "bundler",
+    "paymaster"
+  ],
   "source": {
     "primary_url": "https://zerodev.app",
     "docs_url": "https://docs.zerodev.app",
     "github_url": "https://github.com/zerodevapp/sdk"
   },
-  "updated_at": "2026-05-15"
+  "updated_at": "2026-05-15",
+  "sdk_migration": {
+    "status": "migrating-from",
+    "from_package": "@zerodev/sdk@^4",
+    "to_package": "@zerodev/sdk@^5",
+    "notes": "@zerodev/sdk v4 (last: 4.7.8, July 2024) is effectively abandoned with no formal npm deprecation. v5 (5.5.10) is the current version. Migration is high-effort: dependency model shifted from permissionless.js to viem native AA, function signatures changed extensively (sendTransaction rename, encodeCalls API, new client parameter). Phase 5.1 semver matching will enable CRITICAL detection for ^4 repos."
+  }
 }

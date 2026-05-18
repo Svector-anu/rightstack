@@ -1,7 +1,12 @@
 {
   "id": "dynamic",
   "name": "Dynamic",
-  "aliases": ["@dynamic-labs/sdk-react-core", "@dynamic-labs/ethereum", "@dynamic-labs/solana", "dynamic-labs"],
+  "aliases": [
+    "@dynamic-labs/sdk-react-core",
+    "@dynamic-labs/ethereum",
+    "@dynamic-labs/solana",
+    "dynamic-labs"
+  ],
   "category": "wallet-infrastructure",
   "subcategory": "hybrid",
   "description": "Multi-chain wallet SDK that handles both embedded wallet creation (for new users without wallets) and external wallet connection (for users with MetaMask, Coinbase Wallet, etc.) in a single unified flow. The only wallet infrastructure tool that resolves the hybrid_wallet constraint without building two separate onboarding paths.",
@@ -26,7 +31,10 @@
       "strength": "limited",
       "notes": "Dynamic can be used in Farcaster apps as an alternative to Privy, but Privy's miniapp-specific mode is purpose-built for Farcaster Frame environments. Dynamic is the better choice when non-Farcaster users also use the same app."
     },
-    { "ecosystem": "aptos", "strength": "limited" }
+    {
+      "ecosystem": "aptos",
+      "strength": "limited"
+    }
   ],
   "capabilities": [
     "embedded-wallet-creation",
@@ -41,7 +49,10 @@
     "farcaster-auth",
     "smart-wallet-support"
   ],
-  "workflow_positions": ["wallet-layer", "auth-layer"],
+  "workflow_positions": [
+    "wallet-layer",
+    "auth-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "pimlico",
@@ -98,7 +109,11 @@
     ]
   },
   "skill_refs": [],
-  "workflow_refs": ["embedded-wallet-onboarding", "base-consumer-app", "ethereum-aa-native-app"],
+  "workflow_refs": [
+    "embedded-wallet-onboarding",
+    "base-consumer-app",
+    "ethereum-aa-native-app"
+  ],
   "scale_guidance": {
     "hackathon": "Use Privy instead if only building embedded wallet flows — simpler setup. Use Dynamic when hackathon demo requires both wallet creation and wallet connection in the same flow.",
     "mvp": "Dynamic adds more configuration surface area than Privy for pure embedded wallet cases. Only add Dynamic when the hybrid_wallet constraint is real — determined by actual user research, not assumption.",
@@ -122,11 +137,26 @@
     "Configuring Dynamic for one chain when the app targets multiple chains without setting up multi-chain wallet support — Dynamic requires explicit configuration per chain connector.",
     "Not testing both the embedded creation path AND the external connection path in production — two wallet paths means double the edge cases in transaction signing, session management, and error handling."
   ],
-  "retrieval_tags": ["hybrid-wallet", "wallet-sdk", "embedded-wallet", "external-wallet", "multi-chain-wallet", "social-login", "walletconnect", "wallet-unification"],
+  "retrieval_tags": [
+    "hybrid-wallet",
+    "wallet-sdk",
+    "embedded-wallet",
+    "external-wallet",
+    "multi-chain-wallet",
+    "social-login",
+    "walletconnect",
+    "wallet-unification"
+  ],
   "source": {
     "primary_url": "https://dynamic.xyz",
     "docs_url": "https://docs.dynamic.xyz",
     "github_url": "https://github.com/dynamic-labs"
   },
-  "updated_at": "2026-05-14"
+  "updated_at": "2026-05-14",
+  "sdk_migration": {
+    "status": "migrating-from",
+    "from_package": "@dynamic-labs/sdk-react-core@<4",
+    "to_package": "@dynamic-labs/sdk-react-core@^4",
+    "notes": "All pre-v4 versions (0.x, 1.x, 2.x, 3.x) of @dynamic-labs/sdk-react-core carry a formal npm deprecated flag: \"no longer maintained, upgrade to v4 or later.\" v4.83.1 is current. This is the strongest npm deprecation signal in the corpus. Phase 5.1 semver matching will enable CRITICAL detection for <v4 repos."
+  }
 }

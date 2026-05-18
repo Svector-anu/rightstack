@@ -12,6 +12,7 @@ import type {
   AuditResult,
   ActionItem,
   ActionSeverity,
+  StackScore,
 } from '../corpus/audit-types';
 
 function readPackageJson(repoPath: string): Record<string, unknown> | null {
@@ -129,6 +130,26 @@ function buildMigrationWarnings(detectedTools: DetectedTool[]): MigrationWarning
   return warnings;
 }
 
+function computeStackScore(items: ActionItem[]): StackScore {
+  const criticals = items.filter(i => i.severity === 'critical').length;
+  const highs = items.filter(i => i.severity === 'high').length;
+  const mediums = items.filter(i => i.severity === 'medium').length;
+
+  const score = Math.max(
+    0,
+    100 - Math.min(criticals * 25, 75) - Math.min(highs * 10, 30) - Math.min(mediums * 3, 15)
+  );
+
+  let grade: string;
+  if (score >= 90) grade = 'A';
+  else if (score >= 75) grade = 'B';
+  else if (score >= 60) grade = 'C';
+  else if (score >= 40) grade = 'D';
+  else grade = 'F';
+
+  return { score, grade };
+}
+
 // _pkg reserved for Phase 5.1 semver range matching — do not remove
 function buildActionItems(
   detectedTools: DetectedTool[],
@@ -142,17 +163,32 @@ function buildActionItems(
       tool.sdk_migration?.status === 'deprecated' ||
       tool.sdk_migration?.status === 'migrating-from'
     ) {
-      criticalToolIds.add(tool.id);
-      items.push({
-        severity: 'critical',
-        toolId: tool.id,
-        toolName: tool.name,
-        title: tool.sdk_migration.status === 'deprecated'
-          ? 'Deprecated SDK detected'
-          : 'Package has been renamed/migrated',
-        detail: tool.sdk_migration.notes ?? `Migrate from ${tool.sdk_migration.from_package ?? tool.id}`,
-        fix: tool.sdk_migration.to_package,
-      });
+      const mig = tool.sdk_migration;
+      let shouldFireCritical = true;
+
+      if (mig.from_package) {
+        const raw = mig.from_package;
+        const fromBase = raw.startsWith('@')
+          ? '@' + raw.split('@')[1]
+          : raw.split('@')[0];
+        if (!matchedPackages.some(p => p === fromBase || p.startsWith(fromBase + '@'))) {
+          shouldFireCritical = false;
+        }
+      }
+
+      if (shouldFireCritical) {
+        criticalToolIds.add(tool.id);
+        items.push({
+          severity: 'critical',
+          toolId: tool.id,
+          toolName: tool.name,
+          title: mig.status === 'deprecated'
+            ? 'Deprecated SDK detected'
+            : 'Package has been renamed/migrated',
+          detail: mig.notes ?? `Migrate from ${mig.from_package ?? tool.id}`,
+          fix: mig.to_package,
+        });
+      }
     }
 
     if (tool.trust_state === 'experimental' || tool.trust_state === 'abandoned') {
@@ -219,6 +255,7 @@ export interface RepoAuditJson {
     detail: string;
     fix?: string;
   }>;
+  stackScore: { score: number; grade: string };
 }
 
 export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson> {
@@ -246,6 +283,8 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     d => d.tool.trust_state === 'emerging'
   );
 
+  const stackScore = computeStackScore(actionItems);
+
   const result: AuditResult = {
     repoName: typeof pkg['name'] === 'string' ? pkg['name'] : path.basename(resolvedPath),
     repoPath: resolvedPath,
@@ -255,6 +294,7 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     migrationWarnings,
     emergingTools,
     actionItems,
+    stackScore,
   };
 
   return {
@@ -277,6 +317,7 @@ export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson>
     migrationWarnings: result.migrationWarnings,
     emergingTools: result.emergingTools.map(d => d.tool.id),
     actionItems: result.actionItems,
+    stackScore: result.stackScore,
   };
 }
 
@@ -311,6 +352,7 @@ export async function repoAudit(
     .sort((a, b) => b.coverageScore - a.coverageScore);
   const actionItems = buildActionItems(detectedTools, pkg);
   const emergingTools = detectedTools.filter(d => d.tool.trust_state === 'emerging');
+  const stackScore = computeStackScore(actionItems);
   const result: AuditResult = {
     repoName: typeof pkg['name'] === 'string' ? pkg['name'] : path.basename(resolvedPath),
     repoPath: resolvedPath,
@@ -320,6 +362,7 @@ export async function repoAudit(
     migrationWarnings: [],
     emergingTools,
     actionItems,
+    stackScore,
   };
   printRepoAudit(result);
 }

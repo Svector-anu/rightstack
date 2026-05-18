@@ -1,16 +1,36 @@
 {
   "id": "onchainkit",
   "name": "OnchainKit",
-  "aliases": ["@coinbase/onchainkit"],
+  "aliases": [
+    "@coinbase/onchainkit"
+  ],
   "category": "frontend-sdk",
   "subcategory": "component-library",
   "description": "Coinbase-maintained React component library and toolkit for building Base-native consumer apps and Farcaster miniapps. Provides pre-built UI components for wallets, transactions, identity (Basenames), and Farcaster Frames.",
   "ecosystem_fit": [
-    { "ecosystem": "base", "strength": "dominant", "notes": "Maintained by Coinbase. The default UI and interaction toolkit for Base consumer applications." },
-    { "ecosystem": "farcaster", "strength": "strong", "notes": "Has dedicated Frames SDK integration. Key tool in Farcaster miniapp stacks." },
-    { "ecosystem": "ethereum", "strength": "limited", "notes": "Works on Ethereum but components are Base-opinionated. Less useful outside Base context." },
-    { "ecosystem": "solana", "strength": "none" },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "base",
+      "strength": "dominant",
+      "notes": "Maintained by Coinbase. The default UI and interaction toolkit for Base consumer applications."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "strong",
+      "notes": "Has dedicated Frames SDK integration. Key tool in Farcaster miniapp stacks."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "limited",
+      "notes": "Works on Ethereum but components are Base-opinionated. Less useful outside Base context."
+    },
+    {
+      "ecosystem": "solana",
+      "strength": "none"
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "wallet-ui-components",
@@ -23,7 +43,10 @@
     "token-display-components",
     "base-account-integration"
   ],
-  "workflow_positions": ["ui-layer", "wallet-layer"],
+  "workflow_positions": [
+    "ui-layer",
+    "wallet-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "privy",
@@ -65,10 +88,15 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["@coinbase/onchainkit"]
+    "npm": [
+      "@coinbase/onchainkit"
+    ]
   },
   "skill_refs": [],
-  "workflow_refs": ["base-consumer-app", "farcaster-consumer-onboarding"],
+  "workflow_refs": [
+    "base-consumer-app",
+    "farcaster-consumer-onboarding"
+  ],
   "scale_guidance": {
     "hackathon": "Fastest path to a working Base app with wallet, transaction, and identity UI.",
     "production": "Opinionated components reduce custom design flexibility. If product requires heavy custom UI, consider using OnchainKit's core logic hooks without its UI components."
@@ -85,11 +113,24 @@
     "Treating OnchainKit as a wallet provider — it is a UI layer. It wraps Privy, Coinbase Wallet SDK, or other wallet providers.",
     "Using OnchainKit components in production without understanding their Base-opinionated assumptions around chain ID and network."
   ],
-  "retrieval_tags": ["base-ui", "farcaster-frames", "react-components", "onchain-ui", "basenames", "coinbase"],
+  "retrieval_tags": [
+    "base-ui",
+    "farcaster-frames",
+    "react-components",
+    "onchain-ui",
+    "basenames",
+    "coinbase"
+  ],
   "source": {
     "primary_url": "https://onchainkit.xyz",
     "docs_url": "https://onchainkit.xyz/getting-started",
     "github_url": "https://github.com/coinbase/onchainkit"
   },
-  "updated_at": "2026-05-13"
+  "updated_at": "2026-05-13",
+  "sdk_migration": {
+    "status": "stable",
+    "from_package": null,
+    "to_package": null,
+    "notes": "@coinbase/onchainkit is actively maintained at v1.1.2 with no package rename and no formal version deprecation. The 0.x → 1.x transition added subpath exports incrementally."
+  }
 }

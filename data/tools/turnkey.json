@@ -1,16 +1,40 @@
 {
   "id": "turnkey",
   "name": "Turnkey",
-  "aliases": ["@turnkey/sdk-server", "@turnkey/ethers", "@turnkey/viem", "@turnkey/solana"],
+  "aliases": [
+    "@turnkey/sdk-server",
+    "@turnkey/ethers",
+    "@turnkey/viem",
+    "@turnkey/solana"
+  ],
   "category": "wallet-infrastructure",
   "subcategory": "server-side",
   "description": "Programmatic server-side key management and wallet signing for autonomous agents and server processes. Provides MPC-based key management with a policy engine for controlling signing permissions. The canonical solution for autonomous agent wallet infrastructure.",
   "ecosystem_fit": [
-    { "ecosystem": "solana", "strength": "dominant", "notes": "The recommended server-side signing solution in solana-trading-agent. No alternative of comparable quality for server-side Solana agent signing." },
-    { "ecosystem": "base", "strength": "strong", "notes": "Used in Base AI agent patterns where fully autonomous signing without user interaction is required." },
-    { "ecosystem": "ethereum", "strength": "strong", "notes": "Production server-side signing for Ethereum autonomous agents and institutional flows." },
-    { "ecosystem": "farcaster", "strength": "limited", "notes": "Used in Farcaster agents where autonomous transaction signing is required." },
-    { "ecosystem": "aptos", "strength": "none" }
+    {
+      "ecosystem": "solana",
+      "strength": "dominant",
+      "notes": "The recommended server-side signing solution in solana-trading-agent. No alternative of comparable quality for server-side Solana agent signing."
+    },
+    {
+      "ecosystem": "base",
+      "strength": "strong",
+      "notes": "Used in Base AI agent patterns where fully autonomous signing without user interaction is required."
+    },
+    {
+      "ecosystem": "ethereum",
+      "strength": "strong",
+      "notes": "Production server-side signing for Ethereum autonomous agents and institutional flows."
+    },
+    {
+      "ecosystem": "farcaster",
+      "strength": "limited",
+      "notes": "Used in Farcaster agents where autonomous transaction signing is required."
+    },
+    {
+      "ecosystem": "aptos",
+      "strength": "none"
+    }
   ],
   "capabilities": [
     "server-side-wallet-management",
@@ -24,7 +48,9 @@
     "key-export",
     "spending-limit-policies"
   ],
-  "workflow_positions": ["signing-layer"],
+  "workflow_positions": [
+    "signing-layer"
+  ],
   "common_pairings": [
     {
       "tool_id": "vercel-ai-sdk",
@@ -79,10 +105,22 @@
     }
   ],
   "package_identifiers": {
-    "npm": ["@turnkey/sdk-server", "@turnkey/sdk-browser", "@turnkey/ethers", "@turnkey/viem", "@turnkey/solana", "@turnkey/api-key-stamper"]
+    "npm": [
+      "@turnkey/react-wallet-kit",
+      "@turnkey/core",
+      "@turnkey/sdk-server",
+      "@turnkey/sdk-browser",
+      "@turnkey/ethers",
+      "@turnkey/viem",
+      "@turnkey/solana",
+      "@turnkey/api-key-stamper"
+    ]
   },
   "skill_refs": [],
-  "workflow_refs": ["solana-trading-agent", "base-onchain-ai-agent"],
+  "workflow_refs": [
+    "solana-trading-agent",
+    "base-onchain-ai-agent"
+  ],
   "scale_guidance": {
     "hackathon": "Skip Turnkey at hackathon scale. Use a simple keypair from a .env file for development. Never put private keys in production.",
     "mvp": "Integrate Turnkey before connecting to live funds. Private key in .env is not acceptable for any real value flow.",
@@ -101,11 +139,24 @@
     "Skipping Turnkey's policy engine configuration — an agent with no spending limits can execute expensive actions at machine speed.",
     "Using Turnkey without defining a sub-organization per agent — isolating agent keys to sub-organizations provides blast radius containment."
   ],
-  "retrieval_tags": ["server-side-wallet", "autonomous-agent", "mpc-signing", "key-management", "programmatic-signing", "agent-wallet"],
+  "retrieval_tags": [
+    "server-side-wallet",
+    "autonomous-agent",
+    "mpc-signing",
+    "key-management",
+    "programmatic-signing",
+    "agent-wallet"
+  ],
   "source": {
     "primary_url": "https://turnkey.com",
     "docs_url": "https://docs.turnkey.com",
     "github_url": "https://github.com/tkhq"
   },
-  "updated_at": "2026-05-13"
+  "updated_at": "2026-05-13",
+  "sdk_migration": {
+    "status": "migrating-from",
+    "from_package": "@turnkey/sdk-browser",
+    "to_package": "@turnkey/core",
+    "notes": "@turnkey/sdk-browser (v6.0.0) is self-described as deprecated in its README in favor of @turnkey/core (v2.0.0, May 2026). The npm deprecated flag is not formally set. @turnkey/http remains an actively maintained lower-level primitive. React users should migrate to @turnkey/react-wallet-kit v2.0.0."
+  }
 }
