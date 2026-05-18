@@ -608,13 +608,13 @@
   </div>
   <div class="nav-section">
     <span class="nav-label">Commands</span>
-    <a href="#recommend" class="nav-link" onclick="closeMobileNav()"><code>recommend</code></a>
     <a href="#compare" class="nav-link" onclick="closeMobileNav()"><code>compare</code></a>
     <a href="#workflow" class="nav-link" onclick="closeMobileNav()"><code>workflow</code></a>
     <a href="#inspect" class="nav-link" onclick="closeMobileNav()"><code>inspect</code></a>
     <a href="#explain" class="nav-link" onclick="closeMobileNav()"><code>explain</code></a>
     <a href="#migrate" class="nav-link" onclick="closeMobileNav()"><code>migrate</code></a>
     <a href="#repo-audit" class="nav-link" onclick="closeMobileNav()"><code>repo-audit</code></a>
+    <a href="#recommend" class="nav-link" onclick="closeMobileNav()"><code>recommend</code></a>
   </div>
   <div class="nav-section">
     <span class="nav-label">More</span>
@@ -693,27 +693,9 @@
       <span class="section-label">Reference</span>
       <h2 class="section-title">Commands</h2>
       <p class="section-desc">
-        All commands run locally. The <code>recommend</code> command calls Claude via your API key. Everything else works offline against the local corpus.
+        Install and run. No account, no config, no API key required. All 8 commands work out of the box — the full pipeline runs locally against the corpus.
       </p>
     </section>
-
-    <!-- recommend -->
-    <div id="recommend" class="cmd-entry fade-in">
-      <div class="cmd-header">
-        <span class="cmd-name">rightstack recommend</span>
-        <span class="cmd-badge badge-key">requires ANTHROPIC_API_KEY</span>
-      </div>
-      <p class="cmd-desc">
-        Describe your build goal in plain language. RightStack reasons over the local tool corpus and returns a stack recommendation with workflow phases, tradeoffs, and ecosystem context.
-      </p>
-      <div class="code-block">
-        <button class="copy-btn" data-copy="rightstack recommend &quot;consumer farcaster miniapp with embedded wallet&quot;">copy</button>
-        <pre><span class="prompt">$</span><span class="cmd"> rightstack recommend </span><span class="arg">"consumer farcaster miniapp with embedded wallet"</span></pre>
-      </div>
-      <div class="note">
-        <strong>Why does this need an API key?</strong> Every other command is a lookup — structured data returned directly from the local corpus. <code>recommend</code> is different: it reads your intent, reasons across workflows, weighs tradeoffs, and writes a recommendation tailored to your specific goal. That reasoning step runs through Claude. No key, no reasoning — just set <code>ANTHROPIC_API_KEY</code> in your environment and it works.
-      </div>
-    </div>
 
     <!-- compare -->
     <div id="compare" class="cmd-entry fade-in">
@@ -810,6 +792,21 @@
 <span class="output-line">  ✗ web3.js — deprecated, migrate to viem</span>
 <span class="output-line">  ⚠ no wallet abstraction layer found</span>
 <span class="output-line">  → recommended: @privy-io/react-auth or dynamic-labs</span></pre>
+      </div>
+    </div>
+
+    <!-- recommend -->
+    <div id="recommend" class="cmd-entry fade-in" style="margin-top:32px;">
+      <div class="cmd-header">
+        <span class="cmd-name">rightstack recommend</span>
+        <span class="cmd-badge badge-free">no key needed</span>
+      </div>
+      <p class="cmd-desc">
+        Describe your build goal in plain language. RightStack matches it against the workflow corpus and returns a full stack recommendation — workflow, phases, primary tools, alternatives, tradeoffs, and constraint notes. Runs fully offline.
+      </p>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="rightstack recommend &quot;consumer miniapp with embedded wallet&quot;">copy</button>
+        <pre><span class="prompt">$</span><span class="cmd"> rightstack recommend </span><span class="arg">"consumer miniapp with embedded wallet"</span></pre>
       </div>
     </div>
 

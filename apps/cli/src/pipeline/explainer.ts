@@ -150,10 +150,32 @@ function templateSummary(
   intent: QueryIntent,
   phases: PhaseExplanation[]
 ): string {
-  const primaryTools = phases
-    .filter(p => p.primaryTool)
-    .map(p => p.primaryTool!.tool.name)
-    .join(' + ');
+  const lines: string[] = [];
 
-  return `Recommended ${assembly.workflow.name} for ${intent.primary_ecosystem ?? 'your'} ${intent.scale ?? 'mvp'} build. Core stack: ${primaryTools}. This workflow is ${assembly.workflow.trust_state}.`;
+  lines.push(`Workflow: ${assembly.workflow.name} (${assembly.workflow.trust_state})`);
+  lines.push(`Goal: ${assembly.workflow.goal}`);
+
+  const stack = phases
+    .filter(p => p.primaryTool)
+    .map(p => `${p.role}: ${p.primaryTool!.tool.name}`)
+    .join(' · ');
+  if (stack) lines.push(`Stack: ${stack}`);
+
+  const activeConstraints = Object.entries(intent.constraints)
+    .filter(([, v]) => v === true)
+    .map(([k]) => k.replace(/_/g, ' '));
+  if (activeConstraints.length > 0) {
+    lines.push(`Constraints: ${activeConstraints.join(', ')}`);
+  }
+
+  if (assembly.workflow.tradeoffs && assembly.workflow.tradeoffs.length > 0) {
+    lines.push(`Key tradeoff: ${assembly.workflow.tradeoffs[0]}`);
+  }
+
+  const migrations = phases.flatMap(p => p.migrationWarnings);
+  if (migrations.length > 0) {
+    lines.push(`Migration: ${migrations[0]}`);
+  }
+
+  return lines.join('\n  ');
 }
