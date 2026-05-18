@@ -1,8 +1,8 @@
-import { loadCorpus } from '../corpus/loader';
+import { getCorpus } from '../corpus/loader';
 import { printWorkflow, printError } from '../output/formatter';
 
-export function workflow(id: string): void {
-  const corpus = loadCorpus();
+export async function workflow(id: string): Promise<void> {
+  const corpus = await getCorpus();
 
   const wf = corpus.workflows.get(id);
   if (!wf) {

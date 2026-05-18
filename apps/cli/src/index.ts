@@ -39,8 +39,8 @@ program
 program
   .command('workflow <id>')
   .description('Retrieve a specific workflow with full phase detail')
-  .action((id: string) => {
-    workflow(id);
+  .action(async (id: string) => {
+    await workflow(id);
   });
 
 program

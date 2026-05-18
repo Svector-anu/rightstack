@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadCorpus } from '../corpus/loader';
+import { getCorpus } from '../corpus/loader';
 import { printRepoAudit } from '../output/formatter';
 import type { ToolRecord, WorkflowRecord } from '../corpus/types';
 import type {
@@ -127,19 +127,30 @@ function buildMigrationWarnings(detectedTools: DetectedTool[]): MigrationWarning
   return warnings;
 }
 
-export async function repoAudit(
-  repoPath: string,
-  options: { json?: boolean }
-): Promise<void> {
+export interface RepoAuditJson {
+  repoName: string;
+  repoPath: string;
+  totalDeps: number;
+  detectedTools: Array<{ id: string; name: string; category: string; trust: string; matchedPackages: string[] }>;
+  workflowCoverages: Array<{
+    workflowId: string;
+    coverageScore: number;
+    coveredPhases: Array<{ id: string; role: string; required: boolean; tools: string[] }>;
+    missingPhases: Array<{ id: string; role: string; required: boolean; suggested: string[] }>;
+  }>;
+  migrationWarnings: MigrationWarning[];
+  emergingTools: string[];
+}
+
+export async function computeRepoAudit(repoPath: string): Promise<RepoAuditJson> {
   const resolvedPath = path.resolve(repoPath);
   const pkg = readPackageJson(resolvedPath);
 
   if (!pkg) {
-    console.error(`  Error: No package.json found at ${resolvedPath}\n`);
-    process.exit(1);
+    throw new Error(`No package.json found at ${resolvedPath}`);
   }
 
-  const corpus = loadCorpus();
+  const corpus = await getCorpus();
   const deps = extractDependencies(pkg);
   const detectedTools = detectTools(deps, corpus.tools);
   const detectedToolIds = new Set(detectedTools.map(d => d.tool.id));
@@ -165,30 +176,69 @@ export async function repoAudit(
     emergingTools,
   };
 
+  return {
+    repoName: result.repoName,
+    repoPath: result.repoPath,
+    totalDeps: result.totalDeps,
+    detectedTools: result.detectedTools.map(d => ({
+      id: d.tool.id,
+      name: d.tool.name,
+      category: d.tool.category,
+      trust: d.tool.trust_state,
+      matchedPackages: d.matchedPackages,
+    })),
+    workflowCoverages: result.workflowCoverages.slice(0, 3).map(c => ({
+      workflowId: c.workflow.id,
+      coverageScore: parseFloat(c.coverageScore.toFixed(2)),
+      coveredPhases: c.coveredPhases.map(p => ({ id: p.phaseId, role: p.role, required: p.required, tools: p.detectedToolIds })),
+      missingPhases: c.missingPhases.map(p => ({ id: p.phaseId, role: p.role, required: p.required, suggested: p.suggestedToolIds })),
+    })),
+    migrationWarnings: result.migrationWarnings,
+    emergingTools: result.emergingTools.map(d => d.tool.id),
+  };
+}
+
+export async function repoAudit(
+  repoPath: string,
+  options: { json?: boolean }
+): Promise<void> {
   if (options.json) {
-    const out = {
-      repoName: result.repoName,
-      repoPath: result.repoPath,
-      totalDeps: result.totalDeps,
-      detectedTools: result.detectedTools.map(d => ({
-        id: d.tool.id,
-        name: d.tool.name,
-        category: d.tool.category,
-        trust: d.tool.trust_state,
-        matchedPackages: d.matchedPackages,
-      })),
-      workflowCoverages: result.workflowCoverages.slice(0, 3).map(c => ({
-        workflowId: c.workflow.id,
-        coverageScore: parseFloat(c.coverageScore.toFixed(2)),
-        coveredPhases: c.coveredPhases.map(p => ({ id: p.phaseId, role: p.role, required: p.required, tools: p.detectedToolIds })),
-        missingPhases: c.missingPhases.map(p => ({ id: p.phaseId, role: p.role, required: p.required, suggested: p.suggestedToolIds })),
-      })),
-      migrationWarnings: result.migrationWarnings,
-      emergingTools: result.emergingTools.map(d => d.tool.id),
-    };
-    console.log(JSON.stringify(out, null, 2));
+    try {
+      const out = await computeRepoAudit(repoPath);
+      console.log(JSON.stringify(out, null, 2));
+    } catch (err) {
+      console.error(`  Error: ${err instanceof Error ? err.message : String(err)}\n`);
+      process.exit(1);
+    }
     return;
   }
 
+  const resolvedPath = path.resolve(repoPath);
+  const pkg = readPackageJson(resolvedPath);
+  if (!pkg) {
+    console.error(`  Error: No package.json found at ${resolvedPath}\n`);
+    process.exit(1);
+  }
+  const corpus = await getCorpus();
+  const deps = extractDependencies(pkg);
+  const detectedTools = detectTools(deps, corpus.tools);
+  const detectedToolIds = new Set(detectedTools.map(d => d.tool.id));
+  const workflowCoverages = [...corpus.workflows.values()]
+    .map(wf => computeWorkflowCoverage(wf, detectedToolIds))
+    .filter(c => c.coveredPhases.length > 0)
+    .sort((a, b) => b.coverageScore - a.coverageScore);
+  const migrationWarnings = buildMigrationWarnings(detectedTools);
+  const emergingTools = detectedTools.filter(
+    d => d.tool.trust_state === 'emerging' || d.tool.trust_state === 'experimental'
+  );
+  const result: AuditResult = {
+    repoName: typeof pkg['name'] === 'string' ? pkg['name'] : path.basename(resolvedPath),
+    repoPath: resolvedPath,
+    totalDeps: deps.size,
+    detectedTools,
+    workflowCoverages,
+    migrationWarnings,
+    emergingTools,
+  };
   printRepoAudit(result);
 }

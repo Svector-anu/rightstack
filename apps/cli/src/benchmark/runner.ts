@@ -112,6 +112,7 @@ function makeCrashResult(query: BenchmarkQuery, errorMessage: string): QueryResu
     missingRecords: [],
     hasWorkflowMatch: false,
     summary: '',
+    topWorkflowScore: 0,
   };
   return {
     queryId: query.id,

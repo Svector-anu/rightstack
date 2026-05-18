@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "AI-native web3 stack intelligence CLI",
   "bin": {
-    "rightstack": "./bin/rightstack.js"
+    "rightstack": "./bin/rightstack.js",
+    "rightstack-mcp": "./bin/rightstack-mcp.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",
@@ -13,10 +14,12 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "dotenv": "^17.4.2",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

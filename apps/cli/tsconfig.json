@@ -10,7 +10,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@modelcontextprotocol/sdk/server/mcp.js": ["./node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp"],
+      "@modelcontextprotocol/sdk/server/stdio.js": ["./node_modules/@modelcontextprotocol/sdk/dist/cjs/server/stdio"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
