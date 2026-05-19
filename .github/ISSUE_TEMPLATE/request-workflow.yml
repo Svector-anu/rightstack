@@ -1,0 +1,59 @@
+name: Request a Workflow
+description: Request a new build-goal workflow be added to the RightStack corpus
+title: "[workflow] "
+labels: ["corpus", "workflow-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A workflow is a build goal — like "Telegram Mini App with onchain features" or "Solana AI trading agent". Workflows are what `rightstack recommend` matches against.
+
+  - type: input
+    id: workflow-name
+    attributes:
+      label: Build goal
+      description: Describe the thing someone is trying to build in one line
+      placeholder: e.g. Onchain game on Base with session keys and gasless transactions
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Primary ecosystem(s)
+      description: Which chains/ecosystems does this workflow cover?
+      multiple: true
+      options:
+        - Base
+        - Ethereum
+        - Solana
+        - Farcaster
+        - Cross-chain
+        - AI agent tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: phases
+    attributes:
+      label: Key phases / tool categories
+      description: What are the main layers this build goal needs? (e.g. wallet setup, RPC provider, gas sponsorship, AI reasoning)
+      placeholder: |
+        - Wallet: embedded wallet for new users
+        - RPC: Solana mainnet
+        - Execution: DEX swaps
+        - Orchestration: durable background jobs
+
+  - type: textarea
+    id: tools
+    attributes:
+      label: Tools you'd expect to see recommended
+      description: If you know the right tools for this workflow, list them
+      placeholder: e.g. Dynamic, Helius, Jupiter, Turnkey, Trigger.dev
+
+  - type: textarea
+    id: why-missing
+    attributes:
+      label: Why is this workflow missing?
+      description: Is this a common build goal in the ecosystem? What makes it distinct from existing workflows?

@@ -1,0 +1,76 @@
+name: Request a Tool Record
+description: Request that a tool be added to the RightStack corpus
+title: "[tool] "
+labels: ["corpus", "tool-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing. Tool records are what power `rightstack recommend` and `rightstack compare`. Fill in what you know — we'll fill in the rest.
+
+  - type: input
+    id: tool-name
+    attributes:
+      label: Tool name
+      description: The display name of the tool or SDK
+      placeholder: e.g. Dynamic, Privy, Helius
+    validations:
+      required: true
+
+  - type: input
+    id: package-name
+    attributes:
+      label: npm package (or equivalent)
+      description: The primary package identifier
+      placeholder: e.g. @dynamic-labs/sdk-react-core
+
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Primary ecosystem
+      description: Which onchain ecosystem is this tool primarily for?
+      options:
+        - Base
+        - Ethereum
+        - Solana
+        - Farcaster
+        - Cross-chain / multiple
+        - AI agent tooling
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: trust-state
+    attributes:
+      label: Trust state
+      description: How production-ready is this tool?
+      options:
+        - production-grade — used in real production apps, maintained
+        - beta — public but API may change
+        - experimental — early/unstable
+        - deprecated — no longer maintained
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What does it do?
+      description: One or two sentences. What does this tool do and when should a builder reach for it?
+      placeholder: e.g. Dynamic provides embedded wallet creation and external wallet connection in a single SDK, with native support for Solana, EVM, and Aptos chains.
+    validations:
+      required: true
+
+  - type: textarea
+    id: anti-patterns
+    attributes:
+      label: Common anti-patterns
+      description: What do developers typically get wrong when using this tool?
+      placeholder: e.g. Using the browser SDK for server-side agent operations...
+
+  - type: input
+    id: docs-url
+    attributes:
+      label: Documentation URL
+      placeholder: https://docs.example.com
