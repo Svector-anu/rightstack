@@ -28,7 +28,7 @@ function buildLogo(): string {
     `  ${m('│   │')}  ${brand('RIGHTSTACK')}`,
     `  ${m('╰─┬─╯')}  ${sub('AI-native web3 stack intelligence')}`,
     `    ${m('│')}`,
-    `  ${m('╭─┴─╮')}  ${sub('v0.3.1')}`,
+    `  ${m('╭─┴─╮')}  ${sub('v0.3.2')}`,
     `  ${m('│   │')}`,
     `  ${m('╰─ ─╯')}`,
     '',
@@ -40,15 +40,15 @@ const program = new Command();
 program
   .name('rightstack')
   .description('AI-native web3 stack intelligence CLI')
-  .version('0.3.1')
+  .version('0.3.2')
   .addHelpText('before', buildLogo());
 
 program
-  .command('recommend <query>')
+  .command('recommend <query...>')
   .description('Get a stack recommendation for a build goal')
   .option('--trace', 'show retrieval pipeline trace output')
-  .action(async (query: string, opts: { trace?: boolean }) => {
-    await recommend(query, opts);
+  .action(async (queryParts: string[], opts: { trace?: boolean }) => {
+    await recommend(queryParts.join(' '), opts);
   });
 
 program
@@ -73,11 +73,11 @@ program
   });
 
 program
-  .command('explain <query>')
+  .command('explain <query...>')
   .description('Look up a tool by package name, tool ID, or alias')
   .option('--json', 'output raw JSON')
-  .action((query: string, opts: { json?: boolean }) => {
-    explain(query, opts);
+  .action((queryParts: string[], opts: { json?: boolean }) => {
+    explain(queryParts.join(' '), opts);
   });
 
 program
