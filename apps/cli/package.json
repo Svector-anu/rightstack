@@ -21,7 +21,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build && rm -rf ./data && cp -r ../../data ./data"
+    "prepack": "npm run build && rm -rf ./data && cp -r ../../data ./data",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
