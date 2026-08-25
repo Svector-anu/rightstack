@@ -1,10 +1,16 @@
 import { evaluate } from '../pipeline/evaluate';
 import { printRecommendation, printTrace, printWarning } from '../output/formatter';
 import { Tracer } from '../trace/tracer';
+import { recommendationContract } from '../output/contracts';
 
-export async function recommend(query: string, options: { trace?: boolean }): Promise<void> {
+export async function recommend(query: string, options: { trace?: boolean; json?: boolean }): Promise<void> {
   const tracer = new Tracer(options.trace ?? false);
   const result = await evaluate(query, { tracer });
+
+  if (options.json) {
+    console.log(JSON.stringify(recommendationContract(result), null, 2));
+    return;
+  }
 
   for (const m of result.missingRecords) printWarning(m);
 

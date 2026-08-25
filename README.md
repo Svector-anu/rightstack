@@ -32,6 +32,10 @@ rightstack migrate <package>       # check if a package is deprecated
 rightstack inspect <tool-id>       # full tool record
 ```
 
+`recommend`, `workflow`, and `compare` accept `--json` for agents and other
+integrations. Their deterministic output uses a top-level `schema_version`;
+consumers should reject unsupported major versions rather than guessing.
+
 ---
 
 ## mcp server

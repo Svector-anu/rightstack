@@ -47,22 +47,25 @@ program
   .command('recommend <query...>')
   .description('Get a stack recommendation for a build goal')
   .option('--trace', 'show retrieval pipeline trace output')
-  .action(async (queryParts: string[], opts: { trace?: boolean }) => {
+  .option('--json', 'output stable machine-readable JSON')
+  .action(async (queryParts: string[], opts: { trace?: boolean; json?: boolean }) => {
     await recommend(queryParts.join(' '), opts);
   });
 
 program
   .command('compare <tool1> <tool2>')
   .description('Compare two tools head-to-head in context')
-  .action((tool1: string, tool2: string) => {
-    compare(tool1, tool2);
+  .option('--json', 'output stable machine-readable JSON')
+  .action((tool1: string, tool2: string, opts: { json?: boolean }) => {
+    compare(tool1, tool2, opts);
   });
 
 program
   .command('workflow <id>')
   .description('Retrieve a specific workflow with full phase detail')
-  .action(async (id: string) => {
-    await workflow(id);
+  .option('--json', 'output stable machine-readable JSON')
+  .action(async (id: string, opts: { json?: boolean }) => {
+    await workflow(id, opts);
   });
 
 program
