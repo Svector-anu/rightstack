@@ -1,7 +1,8 @@
 import { loadCorpus } from '../corpus/loader';
 import { printCompare, printError } from '../output/formatter';
+import { comparisonContract } from '../output/contracts';
 
-export function compare(idA: string, idB: string): void {
+export function compare(idA: string, idB: string, options: { json?: boolean } = {}): void {
   const corpus = loadCorpus();
 
   const toolA = corpus.tools.get(idA);
@@ -16,5 +17,6 @@ export function compare(idA: string, idB: string): void {
     process.exit(1);
   }
 
-  printCompare(toolA, toolB);
+  if (options.json) console.log(JSON.stringify(comparisonContract(toolA, toolB), null, 2));
+  else printCompare(toolA, toolB);
 }

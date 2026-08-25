@@ -1,7 +1,8 @@
 import { getCorpus } from '../corpus/loader';
 import { printWorkflow, printError } from '../output/formatter';
+import { workflowContract } from '../output/contracts';
 
-export async function workflow(id: string): Promise<void> {
+export async function workflow(id: string, options: { json?: boolean } = {}): Promise<void> {
   const corpus = await getCorpus();
 
   const wf = corpus.workflows.get(id);
@@ -11,5 +12,6 @@ export async function workflow(id: string): Promise<void> {
     process.exit(1);
   }
 
-  printWorkflow(wf, corpus.tools);
+  if (options.json) console.log(JSON.stringify(workflowContract(wf, corpus.tools), null, 2));
+  else printWorkflow(wf, corpus.tools);
 }
