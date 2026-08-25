@@ -3,8 +3,8 @@
   "version": "0.3.2",
   "description": "AI-native web3 stack intelligence CLI",
   "bin": {
-    "rightstack": "./bin/rightstack.js",
-    "rightstack-mcp": "./bin/rightstack-mcp.js"
+    "rightstack": "bin/rightstack.js",
+    "rightstack-mcp": "bin/rightstack-mcp.js"
   },
   "files": [
     "bin",
