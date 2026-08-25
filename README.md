@@ -1,6 +1,6 @@
 # rightstack
 
-i built this because i kept hitting the same wall. every time i wanted to ship something onchain, i'd open a new tab, search, find 15 tools, and spend an hour figuring out which ones actually work together. too many options, not enough signal.
+i built this because i kept hitting the same wall. every time i wanted to ship something onchain, i'd open a new tab, search, find 15 tools, and spend an hour figuring out which ones actually work together.
 
 rightstack cuts through that. tell it what you're building. get the right stack back.
 
