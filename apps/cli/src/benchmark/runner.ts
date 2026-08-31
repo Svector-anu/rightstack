@@ -15,8 +15,12 @@ function findSuitePath(): string {
   if (process.env.RIGHTSTACK_BENCHMARK_SUITE) return process.env.RIGHTSTACK_BENCHMARK_SUITE;
   let dir = __dirname;
   for (let i = 0; i < 8; i++) {
-    const candidate = path.join(dir, 'research', 'benchmarks', 'benchmark-suite-v1.json');
-    if (fs.existsSync(candidate)) return candidate;
+    const candidates = [
+      path.join(dir, 'data', 'benchmarks', 'benchmark-suite-v1.json'),
+      path.join(dir, 'research', 'benchmarks', 'benchmark-suite-v1.json'),
+    ];
+    const match = candidates.find(candidate => fs.existsSync(candidate));
+    if (match) return match;
     dir = path.dirname(dir);
   }
   throw new Error('Cannot locate benchmark-suite-v1.json. Set RIGHTSTACK_BENCHMARK_SUITE env var.');
